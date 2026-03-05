@@ -293,7 +293,7 @@ export default function Landing({ onOpenSignUp, onOpenLogin }) {
                 <span
                   className="text-transparent bg-clip-text drop-shadow-none"
                   style={{
-                    backgroundImage: `linear-linear(to right, ${TOKENS.brand}, ${TOKENS.accent})`,
+                    backgroundImage: `linear-gradient(to right, ${TOKENS.brand}, ${TOKENS.accent})`,
                     WebkitBackgroundClip: "text",
                   }}
                 >
