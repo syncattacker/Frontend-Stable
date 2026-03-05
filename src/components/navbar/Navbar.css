@@ -1,0 +1,83 @@
+.cta-button {
+  isolation: isolate;
+}
+
+.animated-border {
+  position: absolute;
+  inset: -4px;
+  background: linear-gradient(90deg,
+      rgba(168, 85, 247, 0.7),
+      rgba(107, 33, 168, 0.7),
+      rgba(192, 132, 252, 0.7),
+      rgba(107, 33, 168, 0.7),
+      rgba(168, 85, 247, 0.7));
+  background-size: 300% 100%;
+  border-radius: 9999px;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.3s;
+  animation: gradientShift 3s linear infinite;
+}
+
+.cta-button:hover .animated-border {
+  opacity: 1;
+}
+
+.cta-button::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  background: rgba(0, 0, 0, 0.8);
+  border-radius: 9999px;
+  z-index: 1;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.navbar-container {
+  position: relative;
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  overflow: hidden;
+}
+
+.navbar-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(to right,
+      transparent,
+      rgba(255, 255, 255, 0.05),
+      transparent);
+  transform: skewX(-25deg);
+  transition: 0.75s;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.navbar-container:hover {
+  box-shadow:
+    0 0 30px rgba(168, 85, 247, 0.2),
+    0 0 60px rgba(168, 85, 247, 0.1),
+    inset 0 0 20px rgba(168, 85, 247, 0.05);
+  border-color: rgba(168, 85, 247, 0.4) !important;
+}
+
+.navbar-container:hover::before {
+  left: 150%;
+  transition: 0.75s cubic-bezier(0.23, 1, 0.32, 1);
+}
