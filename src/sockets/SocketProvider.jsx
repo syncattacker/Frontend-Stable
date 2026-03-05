@@ -25,7 +25,7 @@ export const SocketProvider = ({ children }) => {
 
     try {
       await API.post(
-        `${import.meta.env.NEXT_AUTH_LOGOUT_API}`,
+        `${process.env.NEXT_PUBLIC_AUTH_LOGOUT_API}`,
         {},
         { withCredentials: true },
       );
@@ -48,7 +48,7 @@ export const SocketProvider = ({ children }) => {
     if (isAuthenticated && !socketRef.current) {
       logoutTriggeredRef.current = false;
 
-      const socket = io(`${import.meta.env.NEXT_PUBLIC_BACKEND_URL}`, {
+      const socket = io(`${process.env.NEXT_PUBLIC_BACKEND_URL}`, {
         withCredentials: true,
         transports: ["websocket", "polling"],
         reconnection: true,

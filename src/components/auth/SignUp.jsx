@@ -28,6 +28,10 @@ export default function SignUp({
   onClose,
   onSignInClick,
 }) {
+  useEffect(() => {
+    console.log("BACKEND URL:", process.env.NEXT_PUBLIC_BACKEND_URL);
+  }, []);
+
   const [step, setStep] = useState(1);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -58,10 +62,7 @@ export default function SignUp({
     setIsLoading(true);
     try {
       const response = await API.post(
-        `${import.meta.env.NEXT_AUTH_EMAIL_VERIFY}/${token}`,
-        {
-          withCredentials: true,
-        },
+        `${process.env.NEXT_PUBLIC_AUTH_EMAIL_VERIFY}/${token}`,
       );
 
       if (response.data.success && response.status === 200) {
@@ -87,7 +88,7 @@ export default function SignUp({
     setUsernameChecking(true);
     try {
       const response = await API.get(
-        `${import.meta.env.NEXT_AUTH_USERNAME_CHECK}`,
+        `${process.env.NEXT_PUBLIC_AUTH_USERNAME_CHECK}`,
         {
           params: { username },
         },
@@ -272,9 +273,9 @@ export default function SignUp({
       if (validatePassword()) nextStep();
     } else if (step === 3) {
       const isValid =
-        validateTerms() &
-        validateUsername() &
-        validateFullName() &
+        validateTerms() &&
+        validateUsername() &&
+        validateFullName() &&
         validateCountry();
       if (isValid) handleSubmit();
     }
@@ -297,7 +298,7 @@ export default function SignUp({
     if (!isValid) return;
 
     setIsLoading(true);
-    const publicKey = import.meta.env.NEXT_PUBLIC_KEY;
+    const publicKey = process.env.NEXT_PUBLIC_KEY;
     const details = {
       email,
       encryptedPassword: encryptPassword(password, publicKey),
@@ -308,7 +309,7 @@ export default function SignUp({
 
     try {
       const response = await API.post(
-        `${import.meta.env.NEXT_AUTH_SIGNUP_API}`,
+        `${process.env.NEXT_PUBLIC_AUTH_SIGNUP_API}`,
         details,
         {
           withCredentials: true,

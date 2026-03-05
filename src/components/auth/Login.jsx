@@ -1,7 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { IconChevronRight as ChevronRight, IconX as X, IconEye as Eye, IconEyeOff as EyeOff, IconCircleCheck as CheckCircle, IconAlertCircle as AlertCircle, IconLoader2 as Loader2, IconLock as Lock, IconUser as User } from "@tabler/icons-react";
+import {
+  IconChevronRight as ChevronRight,
+  IconX as X,
+  IconEye as Eye,
+  IconEyeOff as EyeOff,
+  IconCircleCheck as CheckCircle,
+  IconAlertCircle as AlertCircle,
+  IconLoader2 as Loader2,
+  IconLock as Lock,
+  IconUser as User,
+} from "@tabler/icons-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch } from "react-redux";
 import { loginSuccess } from "@/store/authSlice";
@@ -60,14 +70,27 @@ const GlassNotification = ({ notification, onClose }) => {
       transition={{ type: "spring", stiffness: 300, damping: 25 }}
       className="fixed top-6 left-1/2 transform -translate-x-1/2 z-[100] w-full max-w-md px-4"
     >
-      <div className={`bg-black/60 backdrop-blur-2xl border ${getBorderColor()} p-5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-start space-x-4`}>
+      <div
+        className={`bg-black/60 backdrop-blur-2xl border ${getBorderColor()} p-5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-start space-x-4`}
+      >
         <div className="flex-shrink-0">{getIcon()}</div>
         <div className="flex-1">
-          <h4 className="text-white font-bold text-sm uppercase tracking-wider">{notification.title}</h4>
-          {notification.message && <p className="text-zinc-400 text-xs mt-1 leading-relaxed">{notification.message}</p>}
+          <h4 className="text-white font-bold text-sm uppercase tracking-wider">
+            {notification.title}
+          </h4>
+          {notification.message && (
+            <p className="text-zinc-400 text-xs mt-1 leading-relaxed">
+              {notification.message}
+            </p>
+          )}
         </div>
         {notification.type !== "loading" && (
-          <button onClick={onClose} className="text-zinc-500 hover:text-white transition-colors"><X size={16} /></button>
+          <button
+            onClick={onClose}
+            className="text-zinc-500 hover:text-white transition-colors"
+          >
+            <X size={16} />
+          </button>
         )}
       </div>
     </motion.div>
@@ -99,15 +122,25 @@ export default function Login({ isOpen, onClose, onSignUpClick }) {
 
   const dispatch = useDispatch();
   const router = useRouter();
-  const { notification, showSuccess, showError, showLoading, hideNotification } = useNotification();
+  const {
+    notification,
+    showSuccess,
+    showError,
+    showLoading,
+    hideNotification,
+  } = useNotification();
 
   const encryptPassword = (password, publicKey) => {
     const rsa = forge.pki.publicKeyFromPem(publicKey);
-    const encrypted = rsa.encrypt(password, "RSA-OAEP", { md: forge.md.sha256.create() });
+    const encrypted = rsa.encrypt(password, "RSA-OAEP", {
+      md: forge.md.sha256.create(),
+    });
+    console.log("PUBLIC KEY:", process.env.NEXT_PUBLIC_KEY);
     return forge.util.encode64(encrypted);
   };
 
   const handleLogin = async (e) => {
+    console.log("LOGIN FUNCTION TRIGGERED");
     if (e) e.preventDefault();
     if (!username.trim()) return setUsernameError("Username required");
     if (!password.trim()) return setPasswordError("Password required");
@@ -117,11 +150,18 @@ export default function Login({ isOpen, onClose, onSignUpClick }) {
 
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      await API.post(`${import.meta.env.NEXT_AUTH_LOGIN_API}`, {
-        username,
-        encryptedPassword: encryptPassword(password, import.meta.env.NEXT_PUBLIC_KEY),
-        timezone,
-      }, { withCredentials: true });
+      await API.post(
+        `${process.env.NEXT_PUBLIC_AUTH_LOGIN_API}`,
+        {
+          username,
+          encryptedPassword: encryptPassword(
+            password,
+            process.env.NEXT_PUBLIC_KEY,
+          ),
+          timezone,
+        },
+        { withCredentials: true },
+      );
 
       dispatch(loginSuccess({ user: { username }, isAuthenticated: true }));
       hideNotification();
@@ -134,7 +174,10 @@ export default function Login({ isOpen, onClose, onSignUpClick }) {
       }, 1500);
     } catch (error) {
       hideNotification();
-      showError("Access Denied", error.response?.data?.message || "Invalid credentials.");
+      showError(
+        "Access Denied",
+        error.response?.data?.message || "Invalid credentials.",
+      );
       setIsLoggingIn(false);
     }
   };
@@ -144,7 +187,12 @@ export default function Login({ isOpen, onClose, onSignUpClick }) {
   return (
     <>
       <AnimatePresence>
-        {notification && <GlassNotification notification={notification} onClose={hideNotification} />}
+        {notification && (
+          <GlassNotification
+            notification={notification}
+            onClose={hideNotification}
+          />
+        )}
       </AnimatePresence>
 
       <motion.div
@@ -153,11 +201,17 @@ export default function Login({ isOpen, onClose, onSignUpClick }) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
       >
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={onClose} />
+        <div
+          className="absolute inset-0 bg-black/60 backdrop-blur-md"
+          onClick={onClose}
+        />
 
         <motion.div
           className="relative w-full max-w-[440px] overflow-hidden rounded-[2.5rem] border shadow-2xl"
-          style={{ background: TOKENS.glassBg, borderColor: TOKENS.borderFocus }}
+          style={{
+            background: TOKENS.glassBg,
+            borderColor: TOKENS.borderFocus,
+          }}
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ type: "spring", stiffness: 300, damping: 25 }}
@@ -175,14 +229,20 @@ export default function Login({ isOpen, onClose, onSignUpClick }) {
 
           <div className="p-10 pt-14">
             <header className="mb-10">
-              <h2 className="text-4xl font-black uppercase tracking-tighter text-white font-outfit mb-2">Login</h2>
-              <p className="text-zinc-400 font-medium">Step back into the arena.</p>
+              <h2 className="text-4xl font-black uppercase tracking-tighter text-white font-outfit mb-2">
+                Login
+              </h2>
+              <p className="text-zinc-400 font-medium">
+                Step back into the arena.
+              </p>
             </header>
 
             <form onSubmit={handleLogin} className="space-y-6">
               {/* Username Input */}
               <div className="space-y-2">
-                <label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">Username</label>
+                <label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">
+                  Username
+                </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-4 flex items-center text-zinc-500 group-focus-within:text-purple-400 transition-colors">
                     <User size={18} />
@@ -190,21 +250,33 @@ export default function Login({ isOpen, onClose, onSignUpClick }) {
                   <input
                     type="text"
                     value={username}
-                    onChange={(e) => { setUsername(e.target.value); setUsernameError(""); }}
+                    onChange={(e) => {
+                      setUsername(e.target.value);
+                      setUsernameError("");
+                    }}
                     placeholder="Enter username"
                     className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-zinc-600 focus:outline-none focus:border-purple-500/50 focus:bg-white/[0.08] transition-all"
                   />
                 </div>
-                {usernameError && <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider ml-1">{usernameError}</p>}
+                {usernameError && (
+                  <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider ml-1">
+                    {usernameError}
+                  </p>
+                )}
               </div>
 
               {/* Password Input */}
               <div className="space-y-2">
                 <div className="flex justify-between items-center ml-1">
-                  <label className="text-xs font-black uppercase tracking-widest text-zinc-500">Password</label>
+                  <label className="text-xs font-black uppercase tracking-widest text-zinc-500">
+                    Password
+                  </label>
                   <button
                     type="button"
-                    onClick={() => { onClose(); router.push("/forgot-password"); }}
+                    onClick={() => {
+                      onClose();
+                      router.push("/forgot-password");
+                    }}
                     className="text-[10px] font-black uppercase tracking-wider text-purple-400 hover:text-purple-300 transition-all"
                   >
                     Forgot?
@@ -217,7 +289,10 @@ export default function Login({ isOpen, onClose, onSignUpClick }) {
                   <input
                     type={showPassword ? "text" : "password"}
                     value={password}
-                    onChange={(e) => { setPassword(e.target.value); setPasswordError(""); }}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setPasswordError("");
+                    }}
                     placeholder="Enter password"
                     className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-12 pr-12 text-white placeholder:text-zinc-600 focus:outline-none focus:border-purple-500/50 focus:bg-white/[0.08] transition-all"
                   />
@@ -229,7 +304,11 @@ export default function Login({ isOpen, onClose, onSignUpClick }) {
                     {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
                 </div>
-                {passwordError && <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider ml-1">{passwordError}</p>}
+                {passwordError && (
+                  <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider ml-1">
+                    {passwordError}
+                  </p>
+                )}
               </div>
 
               {/* Submit Button */}
@@ -257,7 +336,7 @@ export default function Login({ isOpen, onClose, onSignUpClick }) {
 
             <footer className="mt-10 text-center">
               <p className="text-zinc-500 text-sm font-medium">
-                Don't have an account?{" "}
+                Don&apos;t have an account?{" "}
                 <button
                   onClick={onSignUpClick}
                   className="text-purple-400 font-black hover:text-purple-300 transition-all ml-1 uppercase text-xs"

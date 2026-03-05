@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { verifyUser } from "@/store/authSlice";
@@ -11,43 +11,39 @@ export const withAuth = (WrappedComponent) => {
   const AuthenticatedComponent = (props) => {
     const router = useRouter();
     const dispatch = useDispatch();
+
     const { isAuthenticated, status } = useSelector((state) => state.auth);
-    const [isChecking, setIsChecking] = useState(true);
 
     useEffect(() => {
       const checkAuth = async () => {
-        if (!isAuthenticated && status === "idle") {
-          try {
+        try {
+          if (status === "idle") {
             await dispatch(verifyUser()).unwrap();
-          } catch (error) {
-            showToast("error", "Invalid Session, please try logging in");
-            router.replace("/");
           }
+        } catch (error) {
+          showToast("error", "Invalid session, please login again");
+          router.replace("/");
         }
-        setIsChecking(false);
       };
 
       checkAuth();
-    }, [dispatch, isAuthenticated, status]);
+    }, [dispatch, status, router]);
 
-    useEffect(() => {
-      if (!isChecking && !isAuthenticated && status === "failed") {
-        router.replace("/");
-      }
-    }, [isChecking, isAuthenticated, status]);
-
-    if (isChecking || status === "loading") {
+    if (status === "loading" || status === "idle") {
       return <NotAuthenticatedLoader />;
     }
 
     if (!isAuthenticated) {
+      router.replace("/");
       return <NotAuthenticatedLoader />;
     }
 
     return <WrappedComponent {...props} />;
   };
 
-  AuthenticatedComponent.displayName = `withAuth(${WrappedComponent.displayName || WrappedComponent.name || 'Component'})`;
+  AuthenticatedComponent.displayName = `withAuth(${
+    WrappedComponent.displayName || WrappedComponent.name || "Component"
+  })`;
 
   return AuthenticatedComponent;
 };
