@@ -23,7 +23,7 @@ import {
   RiUserLine,
 } from "@remixicon/react";
 import API from "@/utils/axios";
-import { showToast } from "@/utils/Toast";
+import { showToast } from "@/utils/Toast.jsx";
 import BoxLoader from "@/components/loaders/BoxLoader";
 import { withAuth } from "@/utils/withAuth";
 

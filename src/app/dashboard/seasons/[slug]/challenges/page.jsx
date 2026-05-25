@@ -15,7 +15,7 @@ import {
   IconTag,
   IconLoader2,
 } from "@tabler/icons-react";
-import { showToast } from "@/utils/Toast";
+import { showToast } from "@/utils/Toast.jsx";
 import API from "@/utils/axios";
 import ReactMarkdown from "react-markdown";
 import { useParams, useRouter } from "next/navigation";

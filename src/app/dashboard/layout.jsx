@@ -7,7 +7,7 @@ import Image from "next/image";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "@/store/authSlice";
 import API from "@/utils/axios";
-import { showToast } from "@/utils/Toast";
+import { showToast } from "@/utils/Toast.jsx";
 
 import {
   IconTrophy as IconTrophy,

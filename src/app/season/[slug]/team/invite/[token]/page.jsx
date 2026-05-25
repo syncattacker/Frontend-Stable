@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { useSelector } from "react-redux";
 import API from "@/utils/axios";
-import { showToast } from "@/utils/Toast";
+import { showToast } from "@/utils/Toast.jsx";
 
 function Spinner() {
   return (

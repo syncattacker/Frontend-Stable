@@ -23,7 +23,7 @@ import {
   RiLockUnlockLine as LockOpenIcon,
 } from "@remixicon/react";
 import API from "@/utils/axios";
-import { showToast } from "@/utils/Toast";
+import { showToast } from "@/utils/Toast.jsx";
 import watermark from "@/img/white.svg";
 import Image from "next/image";
 import { useRouter } from "next/navigation";

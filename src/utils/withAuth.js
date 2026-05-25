@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { verifyUser } from "@/store/authSlice";
-import { showToast } from "@/utils/Toast";
+import { showToast } from "@/utils/Toast.jsx";
 import NotAuthenticatedLoader from "@/components/loaders/NotAuthenticatedLoader";
 
 export const withAuth = (WrappedComponent) => {
