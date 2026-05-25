@@ -1,8 +1,8 @@
-import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 import Providers from "@/providers";
 import { SocketProvider } from "@/sockets/SocketProvider";
 import AuthInitializer from "@/components/auth/AuthInitializer";
+import { Toaster } from "sonner";
 
 export const metadata = {
   title: "gopwnit",
@@ -24,7 +24,7 @@ export default function RootLayout({ children }) {
         <Providers>
           <AuthInitializer />
           <SocketProvider>{children}</SocketProvider>
-          <Toaster position="bottom-right" richColors />
+          <Toaster position="bottom-right" duration={3000} theme="dark" />
         </Providers>
       </body>
     </html>

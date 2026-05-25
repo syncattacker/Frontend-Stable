@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSelector, useDispatch } from "react-redux";
 import { verifyUser } from "@/store/authSlice";
-import { showToast } from "@/utils/toast";
+import { showToast } from "@/utils/Toast";
 import NotAuthenticatedLoader from "@/components/loaders/NotAuthenticatedLoader";
 
 export const withAuth = (WrappedComponent) => {
@@ -29,12 +29,17 @@ export const withAuth = (WrappedComponent) => {
       checkAuth();
     }, [dispatch, status, router]);
 
+    useEffect(() => {
+      if (status !== "loading" && status !== "idle" && !isAuthenticated) {
+        router.replace("/");
+      }
+    }, [isAuthenticated, status, router]);
+
     if (status === "loading" || status === "idle") {
       return <NotAuthenticatedLoader />;
     }
 
     if (!isAuthenticated) {
-      router.replace("/");
       return <NotAuthenticatedLoader />;
     }
 

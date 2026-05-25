@@ -19,67 +19,62 @@ import API from "@/utils/axios";
 import forge from "node-forge";
 import { useRouter } from "next/navigation";
 
-/* ─── Premium Design Tokens ─────────────────────────────────────────── */
-const TOKENS = {
-  brand: "#a855f7", // Royal Orchid
-  brandHover: "#c084fc",
-  bgDeep: "#020205",
-  glassBg: "rgba(8, 8, 12, 0.7)",
-  border: "rgba(255, 255, 255, 0.05)",
-  borderFocus: "rgba(168, 85, 247, 0.3)",
-  textPrimary: "#FFFFFF",
-  textMuted: "#94a3b8",
-  error: "#ef4444",
-  success: "#22c55e",
+const T = {
+  bg: "#0A0A0A",
+  surface: "rgba(12, 12, 12, 0.97)",
+  cream: "#F0EDE6 ",
+  muted: "#888880",
+  border: "rgba(255,255,255,0.12)",
+  borderFocus: "rgba(232,228,217,0.30)",
+  error: "#f87171",
+  success: "#86efac",
 };
 
-const GlassNotification = ({ notification, onClose }) => {
+const Notification = ({ notification, onClose }) => {
   if (!notification) return null;
 
-  const getIcon = () => {
-    switch (notification.type) {
-      case "success":
-        return <CheckCircle className="text-green-400" size={24} />;
-      case "error":
-        return <AlertCircle className="text-red-400" size={24} />;
-      case "loading":
-        return <Loader2 className="text-purple-400 animate-spin" size={24} />;
-      default:
-        return <AlertCircle className="text-yellow-400" size={24} />;
-    }
+  const config = {
+    success: { icon: CheckCircle, color: T.success },
+    error: { icon: AlertCircle, color: T.error },
+    loading: { icon: Loader2, color: T.muted },
   };
-
-  const getBorderColor = () => {
-    switch (notification.type) {
-      case "success":
-        return "border-green-500/30";
-      case "error":
-        return "border-red-500/30";
-      case "loading":
-        return "border-purple-500/30";
-      default:
-        return "border-yellow-500/30";
-    }
-  };
+  const { icon: Icon, color } = config[notification.type] ?? config.error;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -50, scale: 0.9 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, y: -50, scale: 0.9 }}
-      transition={{ type: "spring", stiffness: 300, damping: 25 }}
-      className="fixed top-6 left-1/2 transform -translate-x-1/2 z-[100] w-full max-w-md px-4"
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+      className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4"
     >
       <div
-        className={`bg-black/60 backdrop-blur-2xl border ${getBorderColor()} p-5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex items-start space-x-4`}
+        className="flex items-start gap-3.5 px-5 py-4"
+        style={{
+          background: T.surface,
+          border: `1px solid ${T.border}`,
+          backdropFilter: "blur(20px)",
+          boxShadow: "0 24px 48px rgba(0,0,0,0.6)",
+        }}
       >
-        <div className="flex-shrink-0">{getIcon()}</div>
-        <div className="flex-1">
-          <h4 className="text-white font-bold text-sm uppercase tracking-wider">
+        <Icon
+          size={15}
+          strokeWidth={1.5}
+          style={{ color, flexShrink: 0, marginTop: 2 }}
+          className={notification.type === "loading" ? "animate-spin" : ""}
+        />
+        <div className="flex-1 min-w-0">
+          <p
+            className="text-[11px] font-bold tracking-[0.15em] uppercase font-outfit"
+            style={{ color: T.cream }}
+          >
             {notification.title}
-          </h4>
+          </p>
           {notification.message && (
-            <p className="text-zinc-400 text-xs mt-1 leading-relaxed">
+            <p
+              className="text-[11px] mt-1 leading-relaxed font-outfit"
+              style={{ color: T.muted }}
+            >
               {notification.message}
             </p>
           )}
@@ -87,9 +82,10 @@ const GlassNotification = ({ notification, onClose }) => {
         {notification.type !== "loading" && (
           <button
             onClick={onClose}
-            className="text-zinc-500 hover:text-white transition-colors"
+            className="transition-opacity opacity-30 hover:opacity-80 mt-0.5"
+            style={{ color: T.cream }}
           >
-            <X size={16} />
+            <X size={12} strokeWidth={1.5} />
           </button>
         )}
       </div>
@@ -111,6 +107,77 @@ const useNotification = () => {
     showLoading: (t, m, d) => showNotification("loading", t, m, d),
   };
 };
+
+const Field = ({ label, error, children, action }) => (
+  <div className="flex flex-col gap-2">
+    <div className="flex items-center justify-between">
+      <label
+        className="text-[10px] font-bold tracking-[0.2em] uppercase font-outfit"
+        style={{ color: T.muted }}
+      >
+        {label}
+      </label>
+      {action}
+    </div>
+    {children}
+    <AnimatePresence>
+      {error && (
+        <motion.p
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -4 }}
+          transition={{ duration: 0.18 }}
+          className="text-[11px] tracking-wide font-outfit"
+          style={{ color: T.error }}
+        >
+          {error}
+        </motion.p>
+      )}
+    </AnimatePresence>
+  </div>
+);
+
+/* ─── Input — zero border-radius, matches Landing style ─────────────── */
+const Input = ({ icon: Icon, right, ...props }) => (
+  <div className="relative">
+    <div
+      className="absolute inset-y-0 left-4 flex items-center pointer-events-none"
+      style={{ color: T.muted }}
+    >
+      <Icon size={15} strokeWidth={1.5} />
+    </div>
+    <input
+      {...props}
+      className="w-full py-3.5 pl-11 pr-11 text-[13px] font-outfit outline-none transition-all duration-200
+    [&:-webkit-autofill]:!bg-transparent
+    [&:-webkit-autofill]:![background-color:rgba(255,255,255,0.04)]
+    [&:-webkit-autofill]:[transition:background-color_9999s_ease_0s]
+    [&:-webkit-autofill]:![-webkit-text-fill-color:#F0EDE6]
+    [&:-webkit-autofill:hover]:![background-color:rgba(255,255,255,0.04)]
+    [&:-webkit-autofill:focus]:![background-color:rgba(255,255,255,0.04)]"
+      style={{
+        background: "rgba(255,255,255,0.02)",
+        border: `1px solid ${T.border}`,
+        color: T.cream,
+      }}
+      onFocus={(e) => {
+        e.target.style.background = "rgba(255,255,255,0.04)";
+        e.target.style.borderColor = T.borderFocus;
+        props.onFocus?.(e);
+      }}
+      onBlur={(e) => {
+        e.target.style.background = "rgba(255,255,255,0.02)";
+        e.target.style.borderColor = T.border;
+        props.onBlur?.(e);
+      }}
+    />
+    {right && (
+      <div className="absolute inset-y-0 right-4 flex items-center">
+        {right}
+      </div>
+    )}
+  </div>
+);
 
 export default function Login({ isOpen, onClose, onSignUpClick }) {
   const [username, setUsername] = useState("");
@@ -135,12 +202,10 @@ export default function Login({ isOpen, onClose, onSignUpClick }) {
     const encrypted = rsa.encrypt(password, "RSA-OAEP", {
       md: forge.md.sha256.create(),
     });
-    console.log("PUBLIC KEY:", process.env.NEXT_PUBLIC_KEY);
     return forge.util.encode64(encrypted);
   };
 
   const handleLogin = async (e) => {
-    console.log("LOGIN FUNCTION TRIGGERED");
     if (e) e.preventDefault();
     if (!username.trim()) return setUsernameError("Username required");
     if (!password.trim()) return setPasswordError("Password required");
@@ -150,7 +215,7 @@ export default function Login({ isOpen, onClose, onSignUpClick }) {
 
     try {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      await API.post(
+      const res = await API.post(
         `${process.env.NEXT_PUBLIC_AUTH_LOGIN_API}`,
         {
           username,
@@ -165,19 +230,16 @@ export default function Login({ isOpen, onClose, onSignUpClick }) {
 
       dispatch(loginSuccess({ user: { username }, isAuthenticated: true }));
       hideNotification();
-      showSuccess("Welcome Back", "Authentication successful.");
+      showSuccess("Success", res.data.message);
 
       setTimeout(() => {
         onClose();
-        router.push("/seasons");
+        router.push("/dashboard/seasons");
         setIsLoggingIn(false);
       }, 1500);
     } catch (error) {
       hideNotification();
-      showError(
-        "Access Denied",
-        error.response?.data?.message || "Invalid credentials.",
-      );
+      showError("Authentication Failed", error.response?.data?.message);
       setIsLoggingIn(false);
     }
   };
@@ -188,7 +250,7 @@ export default function Login({ isOpen, onClose, onSignUpClick }) {
     <>
       <AnimatePresence>
         {notification && (
-          <GlassNotification
+          <Notification
             notification={notification}
             onClose={hideNotification}
           />
@@ -196,155 +258,207 @@ export default function Login({ isOpen, onClose, onSignUpClick }) {
       </AnimatePresence>
 
       <motion.div
-        className="fixed inset-0 flex items-center justify-center z-[90] px-4 font-outfit"
+        className="fixed inset-0 flex items-center justify-center z-[90] px-4"
+        style={{ fontFamily: "'Outfit', sans-serif" }}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
+        transition={{ duration: 0.18 }}
       >
+        {/* Backdrop */}
         <div
-          className="absolute inset-0 bg-black/60 backdrop-blur-md"
+          className="absolute inset-0"
+          style={{
+            background: "rgba(0,0,0,0.82)",
+            backdropFilter: "blur(6px)",
+          }}
           onClick={onClose}
         />
 
         <motion.div
-          className="relative w-full max-w-[440px] overflow-hidden rounded-[2.5rem] border shadow-2xl"
+          className="relative w-full max-w-[400px] overflow-hidden"
           style={{
-            background: TOKENS.glassBg,
-            borderColor: TOKENS.borderFocus,
+            background: T.surface,
+            border: `1px solid ${T.border}`,
+            backdropFilter: "blur(40px)",
+            boxShadow: "0 40px 80px rgba(0,0,0,0.8)",
           }}
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 20 }}
+          transition={{ duration: 0.26, ease: [0.22, 1, 0.36, 1] }}
         >
-          {/* Top accent line */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-50" />
-
-          {/* Close Button */}
           <button
             onClick={onClose}
-            className="absolute top-6 right-8 text-zinc-500 hover:text-white transition-all z-10"
+            className="absolute top-5 right-5 flex items-center justify-center w-7 h-7 z-10 transition-all duration-150 hover:bg-white/[0.04]"
+            style={{ border: `1px solid ${T.border}`, color: T.muted }}
           >
-            <X size={24} />
+            <X size={12} strokeWidth={1.5} />
           </button>
 
-          <div className="p-10 pt-14">
-            <header className="mb-10">
-              <h2 className="text-4xl font-black uppercase tracking-tighter text-white font-outfit mb-2">
-                Login
+          <div className="px-8 pt-10 pb-8">
+            <div className="flex items-center gap-3 mb-6">
+              <span
+                className="text-[10px] font-bold tracking-[0.22em] uppercase font-outfit"
+                style={{ color: T.muted }}
+              >
+                Secure Access
+              </span>
+              <div className="h-px flex-1" style={{ background: T.border }} />
+              <div className="w-7" /> {/* spacer matching close button width */}
+            </div>
+
+            <motion.div
+              className="mb-8"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                delay: 0.05,
+                duration: 0.26,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+            >
+              <h2
+                className="font-black uppercase tracking-tight leading-none mb-2 font-outfit"
+                style={{
+                  fontSize: "clamp(1.75rem, 4vw, 2.1rem)",
+                  color: T.cream,
+                }}
+              >
+                Welcome Back
               </h2>
-              <p className="text-zinc-400 font-medium">
-                Step back into the arena.
+              <p
+                className="text-[13px] leading-relaxed font-outfit"
+                style={{ color: T.muted }}
+              >
+                Sign in to your account to continue.
               </p>
-            </header>
+            </motion.div>
 
-            <form onSubmit={handleLogin} className="space-y-6">
-              {/* Username Input */}
-              <div className="space-y-2">
-                <label className="text-xs font-black uppercase tracking-widest text-zinc-500 ml-1">
-                  Username
-                </label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-4 flex items-center text-zinc-500 group-focus-within:text-purple-400 transition-colors">
-                    <User size={18} />
-                  </div>
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => {
-                      setUsername(e.target.value);
-                      setUsernameError("");
-                    }}
-                    placeholder="Enter username"
-                    className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-zinc-600 focus:outline-none focus:border-purple-500/50 focus:bg-white/[0.08] transition-all"
-                  />
-                </div>
-                {usernameError && (
-                  <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider ml-1">
-                    {usernameError}
-                  </p>
-                )}
-              </div>
+            <motion.form
+              onSubmit={handleLogin}
+              className="flex flex-col gap-5"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                delay: 0.1,
+                duration: 0.28,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+            >
+              {/* Username */}
+              <Field label="Username" error={usernameError}>
+                <Input
+                  icon={User}
+                  type="text"
+                  value={username}
+                  placeholder="Enter your username"
+                  onChange={(e) => {
+                    setUsername(e.target.value);
+                    setUsernameError("");
+                  }}
+                />
+              </Field>
 
-              {/* Password Input */}
-              <div className="space-y-2">
-                <div className="flex justify-between items-center ml-1">
-                  <label className="text-xs font-black uppercase tracking-widest text-zinc-500">
-                    Password
-                  </label>
+              {/* Password */}
+              <Field
+                label="Password"
+                error={passwordError}
+                action={
                   <button
                     type="button"
                     onClick={() => {
                       onClose();
                       router.push("/forgot-password");
                     }}
-                    className="text-[10px] font-black uppercase tracking-wider text-purple-400 hover:text-purple-300 transition-all"
+                    className="text-[10px] font-bold tracking-[0.15em] uppercase font-outfit transition-opacity opacity-35 hover:opacity-75 duration-150"
+                    style={{ color: T.cream }}
                   >
                     Forgot?
                   </button>
-                </div>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-4 flex items-center text-zinc-500 group-focus-within:text-purple-400 transition-colors">
-                    <Lock size={18} />
-                  </div>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      setPasswordError("");
-                    }}
-                    placeholder="Enter password"
-                    className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-12 pr-12 text-white placeholder:text-zinc-600 focus:outline-none focus:border-purple-500/50 focus:bg-white/[0.08] transition-all"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-4 flex items-center text-zinc-500 hover:text-white transition-colors"
-                  >
-                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                  </button>
-                </div>
-                {passwordError && (
-                  <p className="text-[10px] text-red-500 font-bold uppercase tracking-wider ml-1">
-                    {passwordError}
-                  </p>
-                )}
-              </div>
-
-              {/* Submit Button */}
-              <button
-                type="submit"
-                disabled={isLoggingIn}
-                className="w-full relative group overflow-hidden rounded-2xl py-4 mt-4 font-black uppercase tracking-widest text-white transition-all disabled:opacity-50"
-                style={{ background: TOKENS.brand }}
+                }
               >
-                <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-                <span className="relative z-10 flex items-center justify-center gap-2">
+                <Input
+                  icon={Lock}
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  placeholder="Enter your password"
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    setPasswordError("");
+                  }}
+                  right={
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="transition-opacity opacity-30 hover:opacity-70 duration-150"
+                      style={{ color: T.cream }}
+                    >
+                      {showPassword ? (
+                        <EyeOff size={13} strokeWidth={1.5} />
+                      ) : (
+                        <Eye size={13} strokeWidth={1.5} />
+                      )}
+                    </button>
+                  }
+                />
+              </Field>
+
+              <div className="pt-1">
+                <button
+                  type="submit"
+                  disabled={isLoggingIn}
+                  className="w-full py-3.5 flex items-center justify-center gap-2.5 font-black uppercase tracking-[0.18em] text-[11px] font-outfit transition-all duration-200 group disabled:opacity-40"
+                  style={{ background: T.cream, color: T.bg }}
+                  onMouseEnter={(e) => {
+                    if (!isLoggingIn)
+                      e.currentTarget.style.background = "#FFFFFF";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = T.cream;
+                  }}
+                >
                   {isLoggingIn ? (
                     <>
-                      <Loader2 className="animate-spin" size={18} />
+                      <Loader2
+                        size={13}
+                        strokeWidth={2}
+                        className="animate-spin"
+                      />
                       Authenticating
                     </>
                   ) : (
                     <>
-                      Login <ChevronRight size={18} />
+                      Sign In
+                      <ChevronRight
+                        size={13}
+                        strokeWidth={2.5}
+                        className="group-hover:translate-x-0.5 transition-transform duration-150"
+                      />
                     </>
                   )}
-                </span>
-              </button>
-            </form>
+                </button>
+              </div>
+            </motion.form>
 
-            <footer className="mt-10 text-center">
-              <p className="text-zinc-500 text-sm font-medium">
+            <motion.div
+              className="mt-7 pt-6 text-center"
+              style={{ borderTop: `1px solid ${T.border}` }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.18, duration: 0.22 }}
+            >
+              <p className="text-[12px] font-outfit" style={{ color: T.muted }}>
                 Don&apos;t have an account?{" "}
                 <button
                   onClick={onSignUpClick}
-                  className="text-purple-400 font-black hover:text-purple-300 transition-all ml-1 uppercase text-xs"
+                  className=" uppercase tracking-[0.12em] text-[10px] transition-opacity opacity-80 hover:opacity-100 duration-150 ml-1 font-outfit"
+                  style={{ color: T.cream }}
                 >
-                  Create One
+                  Register
                 </button>
               </p>
-            </footer>
+            </motion.div>
           </div>
         </motion.div>
       </motion.div>

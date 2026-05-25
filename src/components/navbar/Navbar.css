@@ -1,4 +1,4 @@
-.cta-button {
+/* .cta-button {
   isolation: isolate;
 }
 
@@ -75,6 +75,91 @@
     0 0 60px rgba(168, 85, 247, 0.1),
     inset 0 0 20px rgba(168, 85, 247, 0.05);
   border-color: rgba(168, 85, 247, 0.4) !important;
+}
+
+.navbar-container:hover::before {
+  left: 150%;
+  transition: 0.75s cubic-bezier(0.23, 1, 0.32, 1);
+}
+ */
+
+
+ .cta-button {
+  isolation: isolate;
+}
+
+/* Animated border — cream/white shimmer instead of purple gradient */
+.animated-border {
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(
+    90deg,
+    rgba(232, 228, 217, 0.5),
+    rgba(255, 255, 255, 0.2),
+    rgba(232, 228, 217, 0.5),
+    rgba(255, 255, 255, 0.15),
+    rgba(232, 228, 217, 0.5)
+  );
+  background-size: 300% 100%;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 0.3s;
+  animation: gradientShift 3s linear infinite;
+}
+
+.cta-button:hover .animated-border {
+  opacity: 1;
+}
+
+/* Inner fill — keeps button background dark */
+.cta-button::after {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  background: rgba(10, 10, 10, 0.92);
+  z-index: 1;
+}
+
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* Navbar container */
+.navbar-container {
+  position: relative;
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  overflow: hidden;
+}
+
+/* Subtle light sweep on hover */
+.navbar-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(255, 255, 255, 0.03),
+    transparent
+  );
+  transform: skewX(-25deg);
+  transition: 0.75s;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Hover state — faint white glow, no purple */
+.navbar-container:hover {
+  box-shadow:
+    0 0 30px rgba(255, 255, 255, 0.04),
+    0 0 60px rgba(255, 255, 255, 0.02),
+    inset 0 0 20px rgba(255, 255, 255, 0.01);
+  border-color: rgba(232, 228, 217, 0.15) !important;
 }
 
 .navbar-container:hover::before {

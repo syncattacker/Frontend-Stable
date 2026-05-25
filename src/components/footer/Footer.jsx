@@ -2,30 +2,66 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { Instagram, Linkedin } from "lucide-react";
-import logo from "@/img/f2.svg";
+import {
+  IconBrandInstagram as Instagram,
+  IconBrandLinkedin as Linkedin,
+  IconBrandGithub as GitHub,
+} from "@tabler/icons-react";
+import logo from "@/img/white.svg";
+
+const T = {
+  bg: "#0A0A0A",
+  cream: "#F0EDE699",
+  muted: "#888880",
+  border: "rgba(255,255,255,0.12)",
+};
 
 const footerData = {
   links: [
     { id: 1, name: "Home", href: "/", external: false },
     { id: 2, name: "About Us", href: "/reviewboard", external: false },
-    { id: 3, name: "API Documentation", href: "https://docs.gopwnit.com", external: true },
+    {
+      id: 3,
+      name: "API Documentation",
+      href: "https://docs.gopwnit.com",
+      external: true,
+    },
     { id: 4, name: "Tool Documentation", href: "#", external: false },
     { id: 5, name: "System Status", href: "#", external: false },
   ],
   development: [
     { id: 1, name: "Bug Bounty", href: "#", external: false },
-    { id: 2, name: "Become a Creator", href: "#", external: false },
-    { id: 3, name: "GitHub", href: "https://github.com/GoPWNIt", external: true },
+    { id: 2, name: "Open Source Contributor", href: "#", external: false },
+    {
+      id: 3,
+      name: "GitHub",
+      href: "https://github.com/GoPWNIt",
+      external: true,
+    },
   ],
   community: [
-    { id: 1, name: "Discord", href: "https://discord.gg/4Mb6xXce8q", external: true },
-    { id: 2, name: "WhatsApp", href: "https://chat.whatsapp.com/CpS6ajvaWeY1gHkHUutRrw", external: true },
+    {
+      id: 1,
+      name: "Discord",
+      href: "https://discord.gg/4Mb6xXce8q",
+      external: true,
+    },
+    {
+      id: 2,
+      name: "WhatsApp",
+      href: "https://chat.whatsapp.com/CpS6ajvaWeY1gHkHUutRrw",
+      external: true,
+    },
   ],
   policies: [
     { id: 1, name: "Cookie Policy", href: "#", external: false },
     { id: 2, name: "Privacy Policy", href: "/privacy-policy", external: false },
-    { id: 3, name: "Code of Conduct", href: "/code-of-conduct", external: false },
+    {
+      id: 3,
+      name: "Code of Conduct",
+      href: "/code-of-conduct",
+      external: false,
+    },
   ],
   copyright: {
     year: "2025",
@@ -34,131 +70,204 @@ const footerData = {
   },
 };
 
-const TOKENS = {
-  brand: "#a855f7",
-  brandHover: "#c084fc",
-  accent: "#1e1b4b",
-  bgDeep: "#020205",
-  border: "rgba(255, 255, 255, 0.05)",
-};
-
-const NavLink = ({ href, external, children, className }) => {
-  if (external) {
+const NavLink = ({ href, external, children }) => {
+  const cls =
+    "text-[12px] font-outfit transition-opacity duration-150 opacity-50 hover:opacity-100";
+  const style = { color: T.cream };
+  if (external)
     return (
-      <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={cls}
+        style={style}
+      >
         {children}
       </a>
     );
-  }
   return (
-    <Link href={href} className={className}>
+    <Link href={href} className={cls} style={style}>
       {children}
     </Link>
   );
 };
 
-const Footer = () => {
-  return (
-    <footer
-      className="relative mt-auto w-full py-20 px-6 overflow-hidden bg-[#020205] border-t font-outfit"
-      style={{ borderColor: TOKENS.border }}
-    >
-      {/* Background Decor */}
-      <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-[#a855f7]/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-[#1e1b4b]/10 rounded-full blur-[120px] pointer-events-none" />
+const ColHead = ({ children }) => (
+  <h3
+    className="text-[12px] font-roundo font-bold uppercase tracking-[0.22em] mb-5"
+    style={{ color: T.muted }}
+  >
+    {children}
+  </h3>
+);
 
-      <div className="relative z-10 mx-auto max-w-7xl px-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-12">
-          {/* Logo + Socials */}
-          <div className="sm:col-span-2 md:col-span-1 flex flex-col space-y-8">
-            <Image
-              src={logo}
-              alt="GoPWNIt"
-              width={120}
-              height={48}
-              className="brightness-110"
-            />
+const Footer = () => (
+  <footer
+    className="relative w-full font-outfit"
+    style={{ background: T.bg, borderTop: `1px solid ${T.border}` }}
+  >
+    <div className="mx-auto max-w-7xl px-8 py-20">
+      <div
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6"
+        style={{
+          borderLeft: `1px solid ${T.border}`,
+          borderTop: `1px solid ${T.border}`,
+        }}
+      >
+        <div
+          className="sm:col-span-2 flex flex-col justify-between p-8 gap-10"
+          style={{
+            borderRight: `1px solid ${T.border}`,
+            borderBottom: `1px solid ${T.border}`,
+          }}
+        >
+          <Image
+            src={logo}
+            alt="GoPWNIt"
+            width={200}
+            height={54}
+            className="brightness-110"
+          />
 
-            <div className="flex space-x-3">
+          <div>
+            <p
+              className="text-[15px] font-outfit leading-relaxed mb-6 max-w-50"
+              style={{ color: T.muted }}
+            >
+              Learn offensive security through real-world labs and global CTF
+              competitions.
+            </p>
+
+            {/* Social icons — square */}
+            <div className="flex gap-2">
               {[
                 {
-                  icon: Instagram,
+                  Icon: Instagram,
                   href: "https://www.instagram.com/gopwnit.india",
                 },
                 {
-                  icon: Linkedin,
+                  Icon: Linkedin,
                   href: "https://www.linkedin.com/company/gopwnit/",
                 },
-              ].map((s, i) => (
+                { Icon: GitHub, href: "https://github.com/GoPWNIt" },
+              ].map(({ Icon, href }, i) => (
                 <a
                   key={i}
-                  href={s.href}
+                  href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 hover:border-[#a855f7]/50 hover:bg-[#a855f7]/5 hover:scale-110 transition-all duration-300"
+                  className="flex items-center justify-center w-8 h-8 transition-all duration-150 opacity-40 hover:opacity-100"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor =
+                      "rgba(240,237,230,0.30)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = T.border;
+                  }}
                 >
-                  <s.icon size={16} className="text-zinc-400" />
+                  <Icon size={24} strokeWidth={1.5} />
                 </a>
               ))}
             </div>
           </div>
-
-          {/* Links, Development, Community */}
-          {[
-            { title: "Links", items: footerData.links },
-            { title: "Development", items: footerData.development },
-            { title: "Community", items: footerData.community },
-          ].map((sec, i) => (
-            <div key={i}>
-              <h3 className="text-white text-sm font-black uppercase tracking-[0.2em] mb-6 font-outfit">
-                {sec.title}
-              </h3>
-              <ul className="space-y-4">
-                {sec.items.map((item) => (
-                  <li key={item.id}>
-                    <NavLink
-                      href={item.href}
-                      external={item.external}
-                      className="text-zinc-400 text-sm font-medium hover:text-[#a855f7] transition-colors"
-                    >
-                      {item.name}
-                    </NavLink>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
-
-          {/* Policies */}
-          <div className="lg:col-span-2">
-            <h3 className="text-white text-sm font-black uppercase tracking-[0.2em] mb-6 font-outfit">
-              Policies
-            </h3>
-            <ul className="space-y-4">
-              {footerData.policies.map((p) => (
-                <li key={p.id}>
-                  <NavLink
-                    href={p.href}
-                    external={p.external}
-                    className="text-zinc-400 text-sm font-medium hover:text-[#a855f7] transition-colors"
-                  >
-                    {p.name}
-                  </NavLink>
-                </li>
-              ))}
-            </ul>
-          </div>
         </div>
 
-        {/* Copyright */}
-        <div className="mt-20 pt-8 border-t border-white/5 text-center text-zinc-500 text-xs font-medium tracking-widest uppercase">
-          © {footerData.copyright.year} {footerData.copyright.company}.{" "}
-          {footerData.copyright.text}
+        <div
+          className="p-8"
+          style={{
+            borderRight: `1px solid ${T.border}`,
+            borderBottom: `1px solid ${T.border}`,
+          }}
+        >
+          <ColHead>Links</ColHead>
+          <ul className="flex flex-col gap-3.5">
+            {footerData.links.map((item) => (
+              <li key={item.id}>
+                <NavLink href={item.href} external={item.external}>
+                  {item.name}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* ── Development ────────────────────────────────── */}
+        <div
+          className="p-8"
+          style={{
+            borderRight: `1px solid ${T.border}`,
+            borderBottom: `1px solid ${T.border}`,
+          }}
+        >
+          <ColHead>Development</ColHead>
+          <ul className="flex flex-col gap-3.5">
+            {footerData.development.map((item) => (
+              <li key={item.id}>
+                <NavLink href={item.href} external={item.external}>
+                  {item.name}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* ── Community ──────────────────────────────────── */}
+        <div
+          className="p-8"
+          style={{
+            borderRight: `1px solid ${T.border}`,
+            borderBottom: `1px solid ${T.border}`,
+          }}
+        >
+          <ColHead>Community</ColHead>
+          <ul className="flex flex-col gap-3.5">
+            {footerData.community.map((item) => (
+              <li key={item.id}>
+                <NavLink href={item.href} external={item.external}>
+                  {item.name}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* ── Policies ───────────────────────────────────── */}
+        <div className="p-8" style={{ borderBottom: `1px solid ${T.border}` }}>
+          <ColHead>Policies</ColHead>
+          <ul className="flex flex-col gap-3.5">
+            {footerData.policies.map((item) => (
+              <li key={item.id}>
+                <NavLink href={item.href} external={item.external}>
+                  {item.name}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
 
-    </footer>
-  );
-};
+      {/* ── Copyright bar ────────────────────────────────── */}
+      <div
+        className="flex flex-col md:flex-row items-center justify-between gap-3 pt-8 mt-0"
+        style={{ borderTop: `1px solid ${T.border}` }}
+      >
+        <p
+          className="text-[11px] font-outfit tracking-[0.15em] uppercase"
+          style={{ color: T.muted }}
+        >
+          © {footerData.copyright.year} — {footerData.copyright.company}.{" "}
+          {footerData.copyright.text}
+        </p>
+        <p
+          className="text-[11px] font-outfit tracking-[0.15em] uppercase"
+          style={{ color: T.muted, opacity: 0.5 }}
+        >
+          Built for the security community.
+        </p>
+      </div>
+    </div>
+  </footer>
+);
 
 export default Footer;
