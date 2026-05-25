@@ -15,7 +15,7 @@ import {
   IconUsers,
   IconTrophy,
 } from "@tabler/icons-react";
-import { showToast } from "@/utils/Toast.jsx";
+import { showToast } from "@/utils/toast.jsx";
 import { useRouter } from "next/navigation";
 import API from "@/utils/axios";
 import { withAuth } from "@/utils/withAuth";

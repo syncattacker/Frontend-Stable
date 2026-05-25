@@ -38,7 +38,7 @@ import {
   RiLinkedinLine as FaLinkedin,
   RiGithubLine as FaGithub,
 } from "@remixicon/react";
-import { showToast } from "@/utils/Toast.jsx";
+import { showToast } from "@/utils/toast.jsx";
 import { useRouter } from "next/navigation";
 import { logout } from "@/store/authSlice";
 import Image from "next/image";

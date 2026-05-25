@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "@/store/authSlice";
-import { showToast } from "@/utils/Toast.jsx";
+import { showToast } from "@/utils/toast.jsx";
 import API from "@/utils/axios";
 
 const SocketContext = createContext(null);

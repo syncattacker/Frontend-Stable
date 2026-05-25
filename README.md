@@ -91,7 +91,7 @@
     │   └── store.js
     └── utils
         ├── axios.js
-        ├── Toast.jsx
+        ├── toast.jsx
         └── withAuth.js
 
 

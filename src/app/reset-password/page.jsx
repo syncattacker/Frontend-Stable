@@ -18,7 +18,7 @@ import Image from "next/image";
 import photo from "@/img/purple.svg";
 import Footer from "@/components/footer/Footer";
 import API from "@/utils/axios";
-import { showToast } from "@/utils/Toast.jsx";
+import { showToast } from "@/utils/toast.jsx";
 
 const T = {
   bg:          "#111113",
