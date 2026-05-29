@@ -956,9 +956,8 @@ export default withAuth(function SeasonCTF() {
                             <span
                               className="ctf-roundo flex items-center gap-1.5 px-2.5 py-1 text-[10px]"
                               style={{
-                                border: "1px solid rgba(239,68,68,0.1)",
-                                background: "rgba(239,68,68,0.03)",
-                                color: "rgba(239,68,68,0.35)",
+                                border: "1px solid rgba(239,68,68,0.5)",
+                                color: "rgba(239,68,68,0.7)",
                               }}
                             >
                               No first blood yet

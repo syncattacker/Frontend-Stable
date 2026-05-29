@@ -634,7 +634,7 @@ const TeamSetup = () => {
             </GhostBtn>
           )}
           <button
-            onClick={() => router.push(`/seasons/${slug}/challenges`)}
+            onClick={() => router.push(`/dashboard/seasons/${slug}/challenges`)}
             className="flex items-center gap-1.5 px-5 py-2 text-xs font-bold tracking-wide transition-all"
             style={{ background: T.cream, color: "#000", fontFamily: "'Outfit', sans-serif", letterSpacing: "0.08em" }}
             onMouseEnter={(e) => (e.currentTarget.style.background = "rgba(254,252,232,0.85)")}
