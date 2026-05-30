@@ -12,7 +12,7 @@ import Image from "next/image";
 import watermark from "@/img/white.svg";
 import SeasonCard from "@/components/season/SeasonCard";
 import API from "@/utils/axios";
-import BoxLoader from "@/components/loaders/BoxLoader";
+import BoxLoader from "@/components/loaders/LogoLoader";
 import { withAuth } from "@/utils/withAuth";
 
 const T = {
@@ -101,11 +101,13 @@ const SeasonDash = () => {
 
   if (loading) {
     return (
-      <div
-        className="w-full min-h-screen flex items-center justify-center"
-        style={{ background: T.bg }}
-      >
-        <BoxLoader />
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="text-center">
+          <BoxLoader />
+          <p className="text-[#a1a1aa] font-bold uppercase tracking-[0.3em] text-xs mt-6">
+            Loading...
+          </p>
+        </div>
       </div>
     );
   }

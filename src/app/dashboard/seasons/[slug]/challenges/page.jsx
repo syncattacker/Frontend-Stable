@@ -688,7 +688,7 @@ export default withAuth(function SeasonCTF() {
                             >
                               by{" "}
                               <span style={{ color: `rgba(254,252,232,0.45)` }}>
-                                {ch.creator}
+                                {ch.creatorUsername}
                               </span>
                             </p>
 
@@ -903,7 +903,7 @@ export default withAuth(function SeasonCTF() {
                         >
                           crafted by{" "}
                           <span style={{ color: `rgba(254,252,232,0.55)` }}>
-                            {selectedChallenge.creator}
+                            {selectedChallenge.creatorUsername}
                           </span>
                         </p>
 

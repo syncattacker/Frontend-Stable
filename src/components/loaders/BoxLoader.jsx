@@ -1,236 +1,162 @@
-"use client";
-
-import React from "react";
-import styled from "styled-components";
+import React from 'react';
+import styled from 'styled-components';
 
 const BoxLoader = () => {
   return (
     <StyledWrapper>
-      <svg xmlns="http://www.w3.org/2000/svg" height={200} width={200}>
-        <g style={{ order: -1 }}>
-          <polygon
-            transform="rotate(45 100 100)"
-            strokeWidth={1}
-            stroke="#a3e635"
-            fill="none"
-            points="70,70 148,50 130,130 50,150"
-            id="bounce"
-          />
-
-          <polygon
-            transform="rotate(45 100 100)"
-            strokeWidth={1}
-            stroke="#a3e635"
-            fill="none"
-            points="70,70 148,50 130,130 50,150"
-            id="bounce2"
-          />
-
-          <polygon
-            transform="rotate(45 100 100)"
-            strokeWidth={2}
-            stroke="none"
-            fill="#414750"
-            points="70,70 150,50 130,130 50,150"
-          />
-
-          <polygon
-            strokeWidth={2}
-            stroke="none"
-            fill="url(#gradiente)"
-            points="100,70 150,100 100,130 50,100"
-          />
-
-          <defs>
-            <linearGradient y2="100%" x2="10%" y1="0%" x1="0%" id="gradiente">
-              <stop
-                style={{ stopColor: "#1e2026", stopOpacity: 1 }}
-                offset="20%"
-              />
-              <stop
-                style={{ stopColor: "#414750", stopOpacity: 1 }}
-                offset="60%"
-              />
-            </linearGradient>
-          </defs>
-
-          <polygon
-            transform="translate(20, 31)"
-            strokeWidth={2}
-            stroke="none"
-            fill="#84cc16"
-            points="80,50 80,75 80,99 40,75"
-          />
-
-          <polygon
-            transform="translate(20, 31)"
-            strokeWidth={2}
-            stroke="none"
-            fill="url(#gradiente2)"
-            points="40,-40 80,-40 80,99 40,75"
-          />
-
-          <defs>
-            <linearGradient
-              y2="100%"
-              x2="0%"
-              y1="-17%"
-              x1="10%"
-              id="gradiente2"
-            >
-              <stop
-                style={{ stopColor: "#a3e63500", stopOpacity: 1 }}
-                offset="20%"
-              />
-              <stop
-                style={{ stopColor: "#a3e63554", stopOpacity: 1 }}
-                offset="100%"
-                id="animatedStop1"
-              />
-            </linearGradient>
-          </defs>
-
-          <polygon
-            transform="rotate(180 100 100) translate(20, 20)"
-            strokeWidth={2}
-            stroke="none"
-            fill="#a3e635"
-            points="80,50 80,75 80,99 40,75"
-          />
-
-          <polygon
-            transform="rotate(0 100 100) translate(60, 20)"
-            strokeWidth={2}
-            stroke="none"
-            fill="url(#gradiente3)"
-            points="40,-40 80,-40 80,85 40,110.2"
-          />
-
-          <defs>
-            <linearGradient y2="100%" x2="10%" y1="0%" x1="0%" id="gradiente3">
-              <stop
-                style={{ stopColor: "#a3e63500", stopOpacity: 1 }}
-                offset="20%"
-              />
-              <stop
-                style={{ stopColor: "#a3e63554", stopOpacity: 1 }}
-                offset="100%"
-                id="animatedStop2"
-              />
-            </linearGradient>
-          </defs>
-
-          <polygon
-            transform="rotate(45 100 100) translate(80, 95)"
-            strokeWidth={2}
-            stroke="none"
-            fill="#bef264"
-            points="5,0 5,5 0,5 0,0"
-            id="particles1"
-          />
-
-          <polygon
-            transform="rotate(45 100 100) translate(80, 55)"
-            strokeWidth={2}
-            stroke="none"
-            fill="#a3e635"
-            points="6,0 6,6 0,6 0,0"
-            id="particles2"
-          />
-
-          <polygon
-            transform="rotate(45 100 100) translate(70, 80)"
-            strokeWidth={2}
-            stroke="none"
-            fill="#ecfccb"
-            points="2,0 2,2 0,2 0,0"
-            id="particles3"
-          />
-
-          <polygon
-            strokeWidth={2}
-            stroke="none"
-            fill="#292d34"
-            points="29.5,99.8 100,142 100,172 29.5,130"
-          />
-
-          <polygon
-            transform="translate(50, 92)"
-            strokeWidth={2}
-            stroke="none"
-            fill="#1f2127"
-            points="50,50 120.5,8 120.5,35 50,80"
-          />
-        </g>
-      </svg>
+      <div className="loader">
+        <div className="loader-square" />
+        <div className="loader-square" />
+        <div className="loader-square" />
+        <div className="loader-square" />
+        <div className="loader-square" />
+        <div className="loader-square" />
+        <div className="loader-square" />
+      </div>
     </StyledWrapper>
   );
-};
+}
 
 const StyledWrapper = styled.div`
-  @keyframes bounce {
-    0%,
-    100% {
-      translate: 0px 36px;
-    }
-    50% {
-      translate: 0px 46px;
-    }
+  @keyframes square-animation {
+   0% {
+    left: 0;
+    top: 0;
+   }
+
+   10.5% {
+    left: 0;
+    top: 0;
+   }
+
+   12.5% {
+    left: 32px;
+    top: 0;
+   }
+
+   23% {
+    left: 32px;
+    top: 0;
+   }
+
+   25% {
+    left: 64px;
+    top: 0;
+   }
+
+   35.5% {
+    left: 64px;
+    top: 0;
+   }
+
+   37.5% {
+    left: 64px;
+    top: 32px;
+   }
+
+   48% {
+    left: 64px;
+    top: 32px;
+   }
+
+   50% {
+    left: 32px;
+    top: 32px;
+   }
+
+   60.5% {
+    left: 32px;
+    top: 32px;
+   }
+
+   62.5% {
+    left: 32px;
+    top: 64px;
+   }
+
+   73% {
+    left: 32px;
+    top: 64px;
+   }
+
+   75% {
+    left: 0;
+    top: 64px;
+   }
+
+   85.5% {
+    left: 0;
+    top: 64px;
+   }
+
+   87.5% {
+    left: 0;
+    top: 32px;
+   }
+
+   98% {
+    left: 0;
+    top: 32px;
+   }
+
+   100% {
+    left: 0;
+    top: 0;
+   }
   }
 
-  @keyframes bounce2 {
-    0%,
-    100% {
-      translate: 0px 46px;
-    }
-    50% {
-      translate: 0px 56px;
-    }
+  .loader {
+   position: relative;
+   width: 96px;
+   height: 96px;
+   transform: rotate(45deg);
   }
 
-  @keyframes umbral {
-    0% {
-      stop-color: #a3e6352e;
-    }
-    50% {
-      stop-color: rgba(163, 230, 53, 0.8);
-    }
-    100% {
-      stop-color: #a3e6352e;
-    }
+  .loader-square {
+   position: absolute;
+   top: 0;
+   left: 0;
+   width: 28px;
+   height: 28px;
+   margin: 2px;
+   border-radius: 0px;
+   background: #fefce8;
+   background-size: cover;
+   background-position: center;
+   background-attachment: fixed;
+   animation: square-animation 10s ease-in-out infinite both;
   }
 
-  @keyframes partciles {
-    0%,
-    100% {
-      translate: 0px 16px;
-    }
-    50% {
-      translate: 0px 6px;
-    }
+  .loader-square:nth-of-type(0) {
+   animation-delay: 0s;
   }
 
-  #particles1,
-  #particles2,
-  #particles3 {
-    animation: partciles 1s ease-in-out infinite;
+  .loader-square:nth-of-type(1) {
+   animation-delay: -1.4285714286s;
   }
 
-  #animatedStop1,
-  #animatedStop2 {
-    animation: umbral 1s infinite;
+  .loader-square:nth-of-type(2) {
+   animation-delay: -2.8571428571s;
   }
 
-  #bounce {
-    animation: bounce 1s ease-in-out infinite;
-    translate: 0px 36px;
+  .loader-square:nth-of-type(3) {
+   animation-delay: -4.2857142857s;
   }
 
-  #bounce2 {
-    animation: bounce2 1s ease-in-out infinite;
-    translate: 0px 46px;
-    animation-delay: 0.125s;
+  .loader-square:nth-of-type(4) {
+   animation-delay: -5.7142857143s;
   }
-`;
+
+  .loader-square:nth-of-type(5) {
+   animation-delay: -7.1428571429s;
+  }
+
+  .loader-square:nth-of-type(6) {
+   animation-delay: -8.5714285714s;
+  }
+
+  .loader-square:nth-of-type(7) {
+   animation-delay: -10s;
+  }`;
 
 export default BoxLoader;

@@ -232,30 +232,21 @@ export default function DashboardLayout({ children }) {
           ))}
 
           {/* Season Studio */}
-          {!seasonsLoading &&
-            (editableSeasons.length > 0 ? (
-              <>
-                <SectionLabel label="Season Studio" collapsed={collapsed} />
-                {editableSeasons.map((season) => (
-                  <NavItem
-                    key={season.slug}
-                    label={season.name}
-                    href={`/season-studio/${season.slug}`}
-                    icon={IconSparkles}
-                    isActive={pathname === `/season-studio/${season.slug}`}
-                    collapsed={collapsed}
-                  />
-                ))}
-              </>
-            ) : (
-              <NavItem
-                label="Season Studio"
-                href="/season-studio"
-                icon={IconSparkles}
-                isActive={pathname.startsWith("/season-studio")}
-                collapsed={collapsed}
-              />
-            ))}
+          {!seasonsLoading && editableSeasons.length > 0 && (
+  <>
+    <SectionLabel label="Season Studio" collapsed={collapsed} />
+    {editableSeasons.map((season) => (
+      <NavItem
+        key={season.slug}
+        label={season.name}
+        href={`/season-studio/${season.slug}`}
+        icon={IconSparkles}
+        isActive={pathname === `/season-studio/${season.slug}`}
+        collapsed={collapsed}
+      />
+    ))}
+  </>
+)}
         </nav>
 
         {/* Sign out */}

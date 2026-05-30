@@ -1493,7 +1493,7 @@ export default withAuth(function SeasonStudio() {
 
   return (
     <div
-      className="min-h-screen w-full"
+      className="h-screen w-full flex flex-col overflow-hidden"
       style={{
         background: T.bg,
         color: T.cream,

@@ -18,7 +18,7 @@ import {
 import API from "@/utils/axios";
 import Image from "next/image";
 import logo from "@/img/white.svg";
-import BoxLoader from "@/components/loaders/BoxLoader";
+import BoxLoader from "@/components/loaders/LogoLoader";
 import { motion } from "framer-motion";
 import { withAuth } from "@/utils/withAuth";
 

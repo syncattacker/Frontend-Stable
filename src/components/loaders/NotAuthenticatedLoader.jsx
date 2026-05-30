@@ -1,96 +1,384 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 
-const NotAuthenticatedLoader = () => {
-  const [mounted, setMounted] = useState(false);
+export default function NotAuthenticatedLoader() {
+  const [visible, setVisible] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [step, setStep] = useState(0);
+
+  const steps = ["Checking session", "Verifying credentials", "Access denied"];
 
   useEffect(() => {
-    const timeout = setTimeout(() => setMounted(true), 100);
-    return () => clearTimeout(timeout);
+    const t = setTimeout(() => setVisible(true), 60);
+    return () => clearTimeout(t);
+  }, []);
+
+  // Animate progress bar: fill to ~85% then stop (simulating a failed check)
+  useEffect(() => {
+    let frame;
+    let current = 0;
+    const targets = [30, 65, 85]; // pause points
+    let stepIndex = 0;
+
+    const tick = () => {
+      const target = targets[stepIndex] ?? 85;
+      if (current < target) {
+        current += 0.6;
+        setProgress(current);
+        frame = requestAnimationFrame(tick);
+      } else {
+        // pause, then move to next step
+        if (stepIndex < targets.length - 1) {
+          setTimeout(() => {
+            stepIndex++;
+            setStep(stepIndex);
+            frame = requestAnimationFrame(tick);
+          }, 500);
+        }
+      }
+    };
+
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   return (
-    <div className="min-h-screen font-outfit flex items-center justify-center bg-black px-4 relative overflow-hidden">
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px] [mask-image:radial-gradient(ellipse_at_center,black_20%,transparent_80%)]" />
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#0C0C0A",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: 24,
+        fontFamily: "'Outfit', sans-serif",
+      }}
+    >
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
-      <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-[120px] animate-pulse" />
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/20 rounded-full blur-[120px] animate-pulse delay-1000" />
+        @keyframes cardRise {
+          from { opacity: 0; transform: translateY(14px); }
+          to   { opacity: 1; transform: translateY(0);    }
+        }
+        @keyframes fromLeft {
+          from { opacity: 0; transform: translateX(-10px); }
+          to   { opacity: 1; transform: translateX(0);     }
+        }
+        @keyframes fromRight {
+          from { opacity: 0; transform: translateX(10px); }
+          to   { opacity: 1; transform: translateX(0);    }
+        }
+        @keyframes shimmer {
+          0%   { background-position: -200% center; }
+          100% { background-position:  200% center; }
+        }
+        @keyframes dotBlink {
+          0%, 100% { opacity: 0.2; }
+          50%       { opacity: 1;   }
+        }
+        @keyframes scanPulse {
+          0%, 100% { opacity: 0.4; transform: scaleY(1);   }
+          50%       { opacity: 0.9; transform: scaleY(1.1); }
+        }
+        @keyframes lockShake {
+          0%,100% { transform: rotate(0deg);   }
+          20%      { transform: rotate(-4deg);  }
+          40%      { transform: rotate(4deg);   }
+          60%      { transform: rotate(-3deg);  }
+          80%      { transform: rotate(3deg);   }
+        }
+
+        .na-card  { animation: cardRise  0.45s cubic-bezier(0.16,1,0.3,1) forwards; }
+        .na-left  { animation: fromLeft  0.5s  cubic-bezier(0.16,1,0.3,1) 0.1s forwards; opacity: 0; }
+        .na-right { animation: fromRight 0.5s  cubic-bezier(0.16,1,0.3,1) 0.15s forwards; opacity: 0; }
+
+        .na-btn {
+          transition: background 0.15s, border-color 0.15s;
+          cursor: pointer;
+        }
+        .na-btn:hover {
+          background: rgba(232,229,223,0.05) !important;
+          border-color: rgba(232,229,223,0.3) !important;
+        }
+        .na-btn:active { transform: scale(0.985); }
+        .na-arrow { transition: transform 0.15s; }
+        .na-btn:hover .na-arrow { transform: translateX(3px); }
+
+        .na-dot {
+          width: 4px; height: 4px; border-radius: 50%;
+          background: #9E9B94;
+          animation: dotBlink 1.2s ease-in-out infinite;
+        }
+        .na-dot:nth-child(2) { animation-delay: 0.2s; }
+        .na-dot:nth-child(3) { animation-delay: 0.4s; }
+
+        .na-shimmer-bar {
+          background: linear-gradient(
+            90deg,
+            rgba(254,252,232,0.06) 0%,
+            rgba(254,252,232,0.22) 40%,
+            rgba(254,252,232,0.06) 80%
+          );
+          background-size: 200% 100%;
+          animation: shimmer 1.6s linear infinite;
+        }
+
+        .na-lock-shake { animation: lockShake 0.5s ease 1.2s 1; }
+
+        .na-step-done   { color: #6B6860; }
+        .na-step-active { color: #B0ADA6; }
+        .na-step-denied { color: #C97070; }
+
+        @media (max-width: 520px) {
+          .na-card  { flex-direction: column !important; }
+          .na-left  { border-right: none !important; border-bottom: 0.5px solid rgba(255,255,255,0.06) !important; padding: 32px !important; }
+          .na-right { padding: 32px !important; }
+        }
+      `}</style>
 
       <div
-        className={`relative transition-all duration-700 ease-out transform ${
-          mounted ? "opacity-100 scale-100" : "opacity-0 scale-95"
-        } w-full max-w-2xl`}
+        className="na-card"
+        style={{
+          width: "100%",
+          maxWidth: 580,
+          opacity: 0,
+          display: "flex",
+          flexDirection: "row",
+          background: "rgba(255,255,255,0.018)",
+          border: "0.5px solid rgba(255,255,255,0.08)",
+          borderRadius: 20,
+          overflow: "hidden",
+        }}
       >
-        <div className="relative bg-linear-to-br from-zinc-900/90 via-black/95 to-zinc-950/90 backdrop-blur-2xl rounded-3xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-white/20 to-transparent" />
+        {/* LEFT — lock icon */}
+        <div
+          className="na-left"
+          style={{
+            width: "38%",
+            flexShrink: 0,
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 24,
+            padding: "48px 36px",
+            background: "rgba(255,255,255,0.022)",
+            borderRight: "0.5px solid rgba(255,255,255,0.06)",
+          }}
+        >
+          {/* Lock icon — shakes when denied */}
+          <svg
+            className="na-lock-shake"
+            width="34" height="38"
+            viewBox="0 0 34 38"
+            fill="none"
+          >
+            <rect
+              x="1.8" y="17"
+              width="30.4" height="20"
+              rx="4.5"
+              stroke="#E8E5DF"
+              strokeWidth="1.2"
+            />
+            <path
+              d="M9.5 17V12.5a7.5 7.5 0 0 1 15 0V17"
+              stroke="#E8E5DF"
+              strokeWidth="1.2"
+              strokeLinecap="round"
+            />
+          </svg>
 
-          <div className="flex flex-col sm:flex-row gap-8 p-10">
-            <div
-              className={`flex flex-col items-center justify-center bg-linear-to-br from-zinc-800/50 to-zinc-900/50 p-8 rounded-2xl w-full sm:w-[40%] relative overflow-hidden transition-all duration-700 ease-out ${
-                mounted
-                  ? "translate-x-0 opacity-100"
-                  : "-translate-x-10 opacity-0"
-              }`}
-            >
-              <div className="relative mb-4">
-                <div className="w-20 h-20 border-[7px] border-transparent border-t-purple-400 border-r-blue-400 rounded-full animate-spin" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 border border-white/10 rounded-full" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-purple-500/20 rounded-full blur-xl animate-pulse" />
-              </div>
-            </div>
-
-            <div
-              className={`flex flex-col justify-center gap-4 w-full sm:w-[60%] transition-all duration-700 delay-150 ease-out ${
-                mounted
-                  ? "translate-x-0 opacity-100"
-                  : "translate-x-10 opacity-0"
-              }`}
-            >
-              <div className="space-y-2">
-                <div className="inline-block px-3 py-1 bg-white/5 border border-white/10 rounded-full mb-2">
-                  <span className="text-[11px] font-semibold text-white/50 tracking-[0.15em] uppercase">
-                    Access Denied
-                  </span>
-                </div>
-
-                <h2 className="text-3xl font-bold tracking-tight leading-tight">
-                  <span className="bg-linear-to-r from-white via-white to-white/60 bg-clip-text text-transparent">
-                    Authentication Required
-                  </span>
-                </h2>
-
-                <p className="text-sm text-white/40 leading-relaxed">
-                  Your session has expired or you're not currently
-                  authenticated. Please sign in to access this secure area.
-                </p>
-              </div>
-
-              <button className="group relative mt-2 px-6 py-3 bg-linear-to-r from-purple-600 to-blue-600 rounded-xl font-medium text-sm text-white overflow-hidden transition-all duration-300 hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] hover:scale-[1.02] active:scale-[0.98]">
-                <div className="absolute inset-0 bg-linear-to-r from-purple-400 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <span className="relative flex items-center justify-center gap-2">
-                  Sign In
-                  <svg
-                    className="w-4 h-4 transition-transform group-hover:translate-x-1"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 7l5 5m0 0l-5 5m5-5H6"
-                    />
+          {/* Step checklist */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%" }}>
+            {steps.map((s, i) => (
+              <div
+                key={s}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontSize: 11,
+                  fontFamily: "'Outfit', sans-serif",
+                  letterSpacing: "0.04em",
+                  transition: "color 0.4s",
+                }}
+                className={
+                  i < step
+                    ? "na-step-done"
+                    : i === step
+                    ? "na-step-active"
+                    : "na-step-done"
+                }
+              >
+                {/* Icon per step */}
+                {i < step ? (
+                  // done — checkmark
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                    <path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="#6B6860" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
                   </svg>
+                ) : i === step && step < 2 ? (
+                  // active — spinner dots
+                  <div style={{ display: "flex", gap: 2 }}>
+                    <span className="na-dot" />
+                    <span className="na-dot" />
+                    <span className="na-dot" />
+                  </div>
+                ) : i === 2 && step === 2 ? (
+                  // denied — X
+                  <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                    <path d="M2 2l6 6M8 2l-6 6" stroke="#C97070" strokeWidth="1.2" strokeLinecap="round"/>
+                  </svg>
+                ) : (
+                  <div style={{ width: 10, height: 10, borderRadius: "50%", border: "1px solid #3A3835" }} />
+                )}
+                <span style={{ color: i === 2 && step === 2 ? "#C97070" : undefined }}>
+                  {s}
                 </span>
-              </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* RIGHT — content */}
+        <div
+          className="na-right"
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            gap: 20,
+            padding: "44px 40px",
+          }}
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            <span
+              style={{
+                fontFamily: "'Outfit', sans-serif",
+                fontSize: 11,
+                fontWeight: 500,
+                letterSpacing: "0.16em",
+                textTransform: "uppercase",
+                color: "#7A7770",
+              }}
+            >
+              Access Denied
+            </span>
+
+            <h2
+              style={{
+                margin: 0,
+                fontSize: 42,
+                fontWeight: 700,
+                color: "#F0EDE8",
+                lineHeight: 1.2,
+                letterSpacing: "-0.02em",
+                fontFamily: "'Outfit', sans-serif",
+              }}
+            >
+              Authentication<br />Required
+            </h2>
+
+            <p
+              style={{
+                margin: 0,
+                fontSize: 14,
+                fontWeight: 300,
+                color: "#8A8880",
+                lineHeight: 1.75,
+                fontFamily: "'Outfit', sans-serif",
+              }}
+            >
+              Your session has expired or you're not currently authenticated.
+              Please sign in to continue.
+            </p>
+          </div>
+
+          {/* ── Progress bar ── */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <div
+              style={{
+                height: 2,
+                borderRadius: 99,
+                background: "rgba(255,255,255,0.1)",
+                overflow: "hidden",
+              }}
+            >
+              <div
+                className={progress < 85 ? "na-shimmer-bar" : ""}
+                style={{
+                  height: "100%",
+                  width: `${progress}%`,
+                  borderRadius: 99,
+                  background: progress >= 85
+                    ? "rgba(180,80,80,0.85)"
+                    : "rgba(254,252,232,0.55)",
+                  transition: "width 0.1s linear, background 0.5s ease",
+                }}
+              />
+            </div>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                fontFamily: "'Outfit', sans-serif",
+                fontSize: 11,
+                fontWeight: 400,
+                color: "#7A7770",
+                letterSpacing: "0.03em",
+              }}
+            >
+              <span>
+                {step === 0 && "Checking session..."}
+                {step === 1 && "Verifying credentials..."}
+                {step === 2 && "Access denied"}
+              </span>
+              <span>{Math.round(progress)}%</span>
             </div>
           </div>
 
-          <div className="absolute bottom-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-white/10 to-transparent" />
+          <div style={{ height: "0.5px", background: "rgba(255,255,255,0.06)" }} />
+
+          <button
+            className="na-btn"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              width: "100%",
+              padding: "13px 20px",
+              background: "transparent",
+              border: "0.5px solid rgba(232,229,223,0.16)",
+              borderRadius: 10,
+              color: "#E8E5DF",
+              fontSize: 14,
+              fontWeight: 500,
+              letterSpacing: "0.04em",
+              fontFamily: "'Outfit', sans-serif",
+            }}
+            onClick={() => location.reload()}
+          >
+            Retry
+            <svg
+              className="na-arrow"
+              width="14" height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+            >
+              <path
+                d="M2 7h10M8 3l4 4-4 4"
+                stroke="#E8E5DF"
+                strokeWidth="1.1"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
         </div>
       </div>
     </div>
   );
-};
-
-export default NotAuthenticatedLoader;
+} 
