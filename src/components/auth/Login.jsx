@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   IconChevronRight as ChevronRight,
   IconX as X,
@@ -122,6 +122,9 @@ export default function Login({ isOpen, onClose, onSignUpClick }) {
 
   const dispatch = useDispatch();
   const router = useRouter();
+  useEffect(() => {
+    router.prefetch("/seasons");
+  }, [router]);
   const {
     notification,
     showSuccess,
@@ -135,12 +138,10 @@ export default function Login({ isOpen, onClose, onSignUpClick }) {
     const encrypted = rsa.encrypt(password, "RSA-OAEP", {
       md: forge.md.sha256.create(),
     });
-    console.log("PUBLIC KEY:", process.env.NEXT_PUBLIC_KEY);
     return forge.util.encode64(encrypted);
   };
 
   const handleLogin = async (e) => {
-    console.log("LOGIN FUNCTION TRIGGERED");
     if (e) e.preventDefault();
     if (!username.trim()) return setUsernameError("Username required");
     if (!password.trim()) return setPasswordError("Password required");
@@ -171,7 +172,7 @@ export default function Login({ isOpen, onClose, onSignUpClick }) {
         onClose();
         router.push("/seasons");
         setIsLoggingIn(false);
-      }, 1500);
+      }, 800);
     } catch (error) {
       hideNotification();
       showError(
