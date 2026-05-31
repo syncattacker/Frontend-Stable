@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import API from "@/utils/axios";
 import { motion } from "framer-motion";
-import logo from "@/img/purple.svg";
 import {
   User,
   Mail,
@@ -16,12 +15,10 @@ import {
   Globe,
   Calendar,
   Target,
-  Play,
   Check,
   Edit,
   Lock,
   X,
-  Delete,
   Activity,
   TrendingUp,
   Zap,
@@ -42,11 +39,374 @@ import { showToast } from "@/utils/toast.jsx";
 import { useRouter } from "next/navigation";
 import { logout } from "@/store/authSlice";
 import Image from "next/image";
-import tick from "../../../public/tick.svg";
+import tick from "@/img/tick.svg";
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   DESIGN TOKENS
+───────────────────────────────────────────────────────────────────────────── */
+const T = {
+  bg: "#060606",
+  cream: "#ede9df",
+  mid: "#5a5a5a",
+  muted: "#2e2e2e",
+  border: "#1c1c1c",
+  surface: "#0c0c0c",
+  ok: "#3d6b4a",
+  warn: "#7a6230",
+  err: "#6b3535",
+  okText: "#6aad82",
+  warnText: "#c4993a",
+  errText: "#c46060",
+};
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   GLOBAL CSS — injected once as <style>
+   Handles hover states, transitions, and anything inline styles can't do.
+───────────────────────────────────────────────────────────────────────────── */
+const CSS = `
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* Root */
+  .up { background: ${T.bg}; min-height: 100vh; font-family: 'Outfit', sans-serif; color: ${T.cream}; }
+
+  /* Tabs */
+  .up-tab {
+    background: none; border: none; border-bottom: 1px solid transparent;
+    color: ${T.mid}; cursor: pointer; font-family: 'Outfit', sans-serif;
+    font-size: 9px; letter-spacing: 0.24em; text-transform: uppercase;
+    padding: 11px 20px; margin-bottom: -1px; transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+  .up-tab:hover { color: #888; }
+  .up-tab.active { color: ${T.cream}; border-bottom-color: ${T.cream}; }
+
+  /* Ghost button */
+  .btn-g {
+    background: none; border: 1px solid ${T.border}; color: ${T.mid};
+    cursor: pointer; font-family: 'Outfit', sans-serif; font-size: 9px;
+    letter-spacing: 0.18em; text-transform: uppercase; padding: 7px 14px;
+    display: inline-flex; align-items: center; gap: 5px;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .btn-g:hover:not(:disabled) { border-color: ${T.mid}; color: ${T.cream}; }
+  .btn-g:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* Primary button */
+  .btn-p {
+    background: ${T.cream}; border: 1px solid ${T.cream}; color: ${T.bg};
+    cursor: pointer; font-family: 'Outfit', sans-serif; font-size: 9px;
+    letter-spacing: 0.18em; text-transform: uppercase; padding: 7px 14px;
+    display: inline-flex; align-items: center; gap: 5px;
+    transition: opacity 0.15s;
+  }
+  .btn-p:hover:not(:disabled) { opacity: 0.82; }
+  .btn-p:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* Danger button */
+  .btn-d {
+    background: none; border: 1px solid ${T.err}; color: ${T.errText};
+    cursor: pointer; font-family: 'Outfit', sans-serif; font-size: 9px;
+    letter-spacing: 0.18em; text-transform: uppercase; padding: 7px 14px;
+    display: inline-flex; align-items: center; gap: 5px;
+    transition: opacity 0.15s;
+  }
+  .btn-d:hover:not(:disabled) { opacity: 0.78; }
+  .btn-d:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* Icon button */
+  .ibtn {
+    background: none; border: 1px solid ${T.border}; color: ${T.mid};
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; text-decoration: none;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .ibtn:hover { border-color: ${T.mid}; color: ${T.cream}; }
+  .ibtn.danger { border-color: ${T.err}; color: ${T.errText}; }
+  .ibtn.danger:hover { opacity: 0.75; }
+
+  /* Input */
+  .up-input {
+    background: ${T.surface}; border: 1px solid ${T.border}; color: ${T.cream};
+    font-family: 'Outfit', sans-serif; font-size: 13px;
+    padding: 10px 14px; width: 100%; outline: none;
+    transition: border-color 0.15s;
+  }
+  .up-input:focus { border-color: ${T.mid}; }
+
+  /* Card — just a border box, no background fill */
+  .card { border: 1px solid ${T.border}; overflow: hidden; }
+
+  /* List rows */
+  .lrow { border-bottom: 1px solid ${T.muted}; transition: background 0.12s; }
+  .lrow:last-child { border-bottom: none; }
+  .lrow:hover { background: ${T.surface}; }
+
+  /* Stat grid — 1px gap shows grid background as dividers */
+  .sg3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: ${T.border}; }
+  .sg4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: ${T.border}; }
+  .sg2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: ${T.border}; }
+  .sc  { background: ${T.bg}; padding: 20px 24px; }
+
+  /* Filter pills */
+  .fpill {
+    background: none; border: 1px solid ${T.border}; color: ${T.mid};
+    cursor: pointer; font-family: 'Outfit', sans-serif; font-size: 9px;
+    letter-spacing: 0.16em; text-transform: uppercase; padding: 6px 14px;
+    transition: all 0.15s;
+  }
+  .fpill:hover { border-color: ${T.mid}; color: #888; }
+  .fpill.on { background: ${T.cream}; border-color: ${T.cream}; color: ${T.bg}; }
+
+  /* Activity cell */
+  .acell {
+    border: none; cursor: pointer; display: block;
+    transition: opacity 0.12s;
+  }
+  .acell:hover { opacity: 0.65; }
+
+  /* Anchor */
+  .up-a { text-decoration: none; transition: color 0.15s; }
+  .up-a:hover { color: ${T.cream} !important; }
+
+  /* Filter row scroll */
+  .tab-scroll { overflow-x: auto; scrollbar-width: none; }
+  .tab-scroll::-webkit-scrollbar { display: none; }
+
+  /* Keyframes */
+  @keyframes spin    { to { transform: rotate(360deg); } }
+  @keyframes fadeUp  { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:none; } }
+  .fade-up { animation: fadeUp 0.22s ease both; }
+  .spin    { animation: spin 0.8s linear infinite; }
+
+  /* Setting rows */
+  .srow {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 24px; border-bottom: 1px solid ${T.muted};
+  }
+  .srow:last-child { border-bottom: none; }
+
+  /* Progress */
+  .pbar { height: 1px; background: ${T.muted}; width: 100%; }
+  .pfill { height: 1px; background: ${T.cream}; transition: width 0.4s ease; }
+
+  /* Header stat strip */
+  .hstat { border-right: 1px solid ${T.border}; padding: 20px 28px; }
+  .hstat:last-child { border-right: none; }
+
+  /* Social link hover */
+  .social-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 13px 24px; border-bottom: 1px solid ${T.muted};
+    transition: background 0.12s;
+  }
+  .social-row:last-child { border-bottom: none; }
+  .social-row:hover { background: ${T.surface}; }
+`;
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   PRIMITIVE COMPONENTS
+───────────────────────────────────────────────────────────────────────────── */
+const Micro = ({ children, style = {} }) => (
+  <p
+    style={{
+      fontFamily: "'Outfit', sans-serif",
+      fontSize: "9px",
+      letterSpacing: "0.22em",
+      textTransform: "uppercase",
+      color: T.mid,
+      ...style,
+    }}
+  >
+    {children}
+  </p>
+);
+
+const Display = ({ children, size = "2.8rem", style = {} }) => (
+  <p
+    style={{
+      fontFamily: "'Bebas Neue', sans-serif",
+      fontSize: size,
+      color: T.cream,
+      lineHeight: 1,
+      letterSpacing: "-0.01em",
+      ...style,
+    }}
+  >
+    {children}
+  </p>
+);
+
+const Rule = ({ style = {} }) => (
+  <div style={{ height: "1px", background: T.border, ...style }} />
+);
+
+const Pill = ({ children, color = T.mid }) => (
+  <span
+    style={{
+      fontFamily: "'Outfit', sans-serif",
+      fontSize: "9px",
+      letterSpacing: "0.14em",
+      textTransform: "uppercase",
+      color,
+      border: `1px solid ${color}`,
+      padding: "2px 8px",
+    }}
+  >
+    {children}
+  </span>
+);
+
+/* Card with an accent-bar header */
+const Section = ({ label, action, children, bodyPad = "24px" }) => (
+  <div className="card fade-up">
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        padding: "12px 24px",
+        borderBottom: `1px solid ${T.border}`,
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+        <span
+          style={{
+            display: "block",
+            width: "2px",
+            height: "13px",
+            background: T.cream,
+            flexShrink: 0,
+          }}
+        />
+        <Micro>{label}</Micro>
+      </div>
+      {action && <div>{action}</div>}
+    </div>
+    <div style={{ padding: bodyPad }}>{children}</div>
+  </div>
+);
+
+/* Info row used inside Account Information */
+const InfoRow = ({ icon: Icon, label, children, last }) => (
+  <div
+    style={{
+      display: "flex",
+      gap: "14px",
+      alignItems: "flex-start",
+      paddingBottom: last ? 0 : "16px",
+      marginBottom: last ? 0 : "16px",
+      borderBottom: last ? "none" : `1px solid ${T.muted}`,
+    }}
+  >
+    {Icon && (
+      <Icon size={13} color={T.mid} style={{ marginTop: 3, flexShrink: 0 }} />
+    )}
+    <div>
+      <Micro style={{ marginBottom: "4px" }}>{label}</Micro>
+      <div
+        style={{
+          fontFamily: "'Outfit', sans-serif",
+          fontSize: "13px",
+          color: T.cream,
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  </div>
+);
+
+/* Modal shell */
+const Modal = ({ title, onClose, children }) => (
+  <div
+    style={{
+      position: "fixed",
+      inset: 0,
+      zIndex: 70,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "16px",
+      background: "rgba(0,0,0,0.93)",
+    }}
+  >
+    <div
+      className="card fade-up"
+      style={{ maxWidth: "460px", width: "100%", background: T.bg }}
+    >
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "18px 24px",
+          borderBottom: `1px solid ${T.border}`,
+        }}
+      >
+        <Display size="1.8rem">{title}</Display>
+        <button
+          onClick={onClose}
+          style={{
+            background: "none",
+            border: "none",
+            cursor: "pointer",
+            color: T.mid,
+            display: "flex",
+            padding: "2px",
+          }}
+        >
+          <X size={15} />
+        </button>
+      </div>
+      <div style={{ padding: "24px" }}>{children}</div>
+    </div>
+  </div>
+);
+
+/* Labelled input */
+const Field = ({ label, error, textarea, rows, ...props }) => (
+  <div style={{ marginBottom: "18px" }}>
+    <Micro style={{ marginBottom: "7px" }}>{label}</Micro>
+    {textarea ? (
+      <textarea
+        rows={rows || 3}
+        className="up-input"
+        style={{ resize: "none" }}
+        {...props}
+      />
+    ) : (
+      <input className="up-input" {...props} />
+    )}
+    {error && (
+      <p
+        style={{
+          fontFamily: "'Outfit', sans-serif",
+          fontSize: "11px",
+          color: T.errText,
+          marginTop: "5px",
+        }}
+      >
+        {error}
+      </p>
+    )}
+  </div>
+);
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   ACTIVITY CELL PALETTE — pure monochrome scale
+───────────────────────────────────────────────────────────────────────────── */
+const CELLS = ["#111111", "#1e1e1e", "#383838", "#686868", T.cream];
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   MAIN COMPONENT
+───────────────────────────────────────────────────────────────────────────── */
 const UserProfile = () => {
   const dispatch = useDispatch();
   const router = useRouter();
+
+  /* State */
   const [profileData, setProfileData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -56,7 +416,6 @@ const UserProfile = () => {
     instagram: "",
   });
   const [deletingBlogSlug, setDeletingBlogSlug] = useState(null);
-
   const [isEditingSocials, setIsEditingSocials] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [activeTab, setActiveTab] = useState("personal");
@@ -80,373 +439,350 @@ const UserProfile = () => {
   const [passwordStrength, setPasswordStrength] = useState({
     score: 0,
     label: "Weak",
-    color: "red-500",
+    color: T.errText,
   });
   const [toastMessage, setToastMessage] = useState(null);
   const [deleteReason, setDeleteReason] = useState("");
   const [confirmationPhrase, setConfirmationPhrase] = useState("");
-  const [userBlogs, setUserBlogs] = useState([]);
 
+  /* Effects */
   useEffect(() => {
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    setUserTimezone(timezone);
+    setUserTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone);
   }, []);
 
-  const formatDateKey = (date, timezone) => {
-    return new Intl.DateTimeFormat("en-CA", {
-      timeZone: timezone,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(date);
-  };
-
   useEffect(() => {
-    const fetchUserData = async () => {
+    (async () => {
       try {
-        setLoading(true);
-        setError(null);
-        const response = await API.get("/api/v1/users/unified-profile");
-        if (response.data.success) {
-          setProfileData(response.data.profile);
-          setNewUsername(response.data.profile.user.username);
+        const res = await API.get("/api/v1/users/unified-profile");
+        if (res.data.success) {
+          setProfileData(res.data.profile);
+          setNewUsername(res.data.profile.user.username);
           setSocialLinks({
-            linkedIn: response.data.profile.user.linkedIn || "",
-            github: response.data.profile.user.github || "",
-            instagram: response.data.profile.user.instagram || "",
+            linkedIn: res.data.profile.user.linkedIn || "",
+            github: res.data.profile.user.github || "",
+            instagram: res.data.profile.user.instagram || "",
           });
-        } else {
-          setError("Failed to load profile");
-        }
-      } catch (err) {
-        console.error("Error fetching profile:", err);
+        } else setError("Failed to load profile");
+      } catch {
         setError("Failed to load user profile");
       } finally {
         setLoading(false);
       }
-    };
-    fetchUserData();
+    })();
   }, []);
 
-  const getTimezoneFromCookie = () => {
-    const cookies = document.cookie.split(";");
-    for (let cookie of cookies) {
-      const [name, value] = cookie.trim().split("=");
-      if (name === "timezone") {
-        return decodeURIComponent(value);
-      }
+  useEffect(() => {
+    if (toastMessage) {
+      const t = setTimeout(() => setToastMessage(null), 3200);
+      return () => clearTimeout(t);
     }
-    return Intl.DateTimeFormat().resolvedOptions().timeZone;
-  };
+  }, [toastMessage]);
 
-  const convertToUserTimezone = (dateString, timezone) => {
-    if (!timezone) return new Date(dateString);
+  /* Helpers */
+  const formatDateKey = (d, tz) =>
+    new Intl.DateTimeFormat("en-CA", {
+      timeZone: tz,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    }).format(d);
 
+  const convertToUserTimezone = (ds, tz) => {
+    if (!tz) return new Date(ds);
     try {
-      const date = new Date(dateString);
-      return new Date(date.toLocaleString("en-US", { timeZone: timezone }));
-    } catch (error) {
-      console.warn("Invalid timezone, using browser default:", error);
-      return new Date(dateString);
+      return new Date(new Date(ds).toLocaleString("en-US", { timeZone: tz }));
+    } catch {
+      return new Date(ds);
     }
   };
 
+  const formatDate = (ts) =>
+    ts
+      ? new Date(ts).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        })
+      : "—";
+  const formatJoinDate = (ts) =>
+    ts
+      ? new Date(ts).toLocaleDateString("en-US", {
+          year: "2-digit",
+          month: "long",
+        })
+      : "—";
+
+  const getCountryFlag = (c) =>
+    ({
+      India: "🇮🇳",
+      USA: "🇺🇸",
+      UK: "🇬🇧",
+      Canada: "🇨🇦",
+      Australia: "🇦🇺",
+      Germany: "🇩🇪",
+      France: "🇫🇷",
+      Japan: "🇯🇵",
+      China: "🇨🇳",
+      Russia: "🇷🇺",
+      Pakistan: "🇵🇰",
+    })[c] || "🌍";
+
+  const diffColor = (d) =>
+    d === "Easy"
+      ? T.okText
+      : d === "Medium"
+        ? T.warnText
+        : d === "Hard"
+          ? T.errText
+          : T.mid;
+
+  /* Activity data */
+  const generateActivityData = () => {
+    const map = {};
+    for (const a of profileData?.userActivity || []) {
+      const key = `${a._id.year}-${a._id.month.padStart(2, "0")}-${a._id.day.padStart(2, "0")}`;
+      map[key] = (map[key] || 0) + a.contributions;
+    }
+    const today = new Date();
+    const tz = userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return Array.from({ length: 365 }, (_, i) => {
+      const d = new Date(today);
+      d.setDate(today.getDate() - (364 - i));
+      const key = formatDateKey(d, tz);
+      const cnt = map[key] || 0;
+      return {
+        date: key,
+        count: cnt,
+        level: cnt === 0 ? 0 : cnt <= 2 ? 1 : cnt <= 5 ? 2 : cnt <= 10 ? 3 : 4,
+      };
+    });
+  };
+
+  const totalActivity =
+    profileData?.userActivity?.reduce(
+      (s, a) => s + (a.contributions || 0),
+      0,
+    ) || 0;
+  const activeDays =
+    new Set(
+      profileData?.userActivity?.map(
+        (i) => `${i._id.year}-${i._id.month}-${i._id.day}`,
+      ),
+    ).size || 0;
+
+  const calculateStreak = () => {
+    if (!profileData?.userActivity?.length) return 0;
+    const sorted = [...profileData.userActivity].sort(
+      (a, b) =>
+        new Date(`${b._id.year}-${b._id.month}-${b._id.day}`) -
+        new Date(`${a._id.year}-${a._id.month}-${a._id.day}`),
+    );
+    let streak = 0;
+    const cur = userTimezone
+      ? convertToUserTimezone(new Date().toISOString(), userTimezone)
+      : new Date();
+    for (const a of sorted) {
+      const diff = Math.floor(
+        (cur - new Date(`${a._id.year}-${a._id.month}-${a._id.day}`)) /
+          86400000,
+      );
+      if (diff === streak) streak++;
+      else if (diff > streak) break;
+    }
+    return streak;
+  };
+
+  /* Handlers */
   const handleCopyProfileLink = async () => {
     if (typeof window === "undefined") return;
-
-    const profileUrl = `${window.location.origin}/pwn/${profileData?.user?.username}`;
-    let copied = false;
-
+    const url = `${window.location.origin}/pwn/${profileData?.user?.username}`;
+    let ok = false;
     if (navigator.clipboard && window.isSecureContext) {
       try {
-        await navigator.clipboard.writeText(profileUrl);
-        copied = true;
-      } catch (err) {
-        console.warn("Clipboard API blocked, falling back", err);
-      }
+        await navigator.clipboard.writeText(url);
+        ok = true;
+      } catch {}
     }
-
-    if (!copied) {
+    if (!ok) {
+      const ta = document.createElement("textarea");
+      ta.value = url;
+      ta.style.cssText = "position:absolute;left:-9999px";
+      document.body.appendChild(ta);
+      ta.select();
       try {
-        const textArea = document.createElement("textarea");
-        textArea.value = profileUrl;
-        textArea.setAttribute("readonly", "");
-        textArea.style.cssText = "position:absolute; left:-9999px";
-        document.body.appendChild(textArea);
-        textArea.select();
         document.execCommand("copy");
-        document.body.removeChild(textArea);
-        copied = true;
-      } catch (err) {
-        console.error("Fallback copy failed", err);
-      }
+        ok = true;
+      } catch {}
+      document.body.removeChild(ta);
     }
-
-    if (copied) {
+    if (ok) {
       setIsCopied(true);
-      showToast("success", "Profile link copied to clipboard!");
+      showToast("success", "Link copied");
       setTimeout(() => setIsCopied(false), 2000);
-    } else {
-      showToast("error", "Failed to copy link.");
-    }
+    } else showToast("error", "Failed to copy");
   };
 
-  const handleSocialLinkChange = (e) => {
-    const { name, value } = e.target;
-    setSocialLinks({ ...socialLinks, [name]: value });
-  };
+  const handleSocialLinkChange = (e) =>
+    setSocialLinks({ ...socialLinks, [e.target.name]: e.target.value });
 
   const handleUpdateSocials = async (e) => {
     e.preventDefault();
     try {
-      const payload = {
-        linkedIn: socialLinks.linkedIn,
-        github: socialLinks.github,
-        instagram: socialLinks.instagram,
-      };
-
-      const response = await API.patch("/auth/update-social-links", payload);
-      showToast(
-        "success",
-        response.data.message || "Social links updated successfully!",
-      );
+      await API.patch("/auth/update-social-links", socialLinks);
+      showToast("success", "Social links updated");
       setIsEditingSocials(false);
-
-      const updatedResponse = await API.get("/api/v1/users/unified-profile");
-      if (updatedResponse.data.success) {
-        setProfileData(updatedResponse.data.profile);
-      }
+      const r = await API.get("/api/v1/users/unified-profile");
+      if (r.data.success) setProfileData(r.data.profile);
     } catch (err) {
-      showToast(
-        "error",
-        err.response?.data?.message || "Failed to update social links",
-      );
+      showToast("error", err.response?.data?.message || "Failed");
     }
   };
 
-  const generateActivityData = () => {
-    const activityMap = {};
-
-    if (profileData?.userActivity?.length > 0) {
-      for (const activity of profileData.userActivity) {
-        const year = activity._id.year;
-        const month = activity._id.month.padStart(2, "0");
-        const day = activity._id.day.padStart(2, "0");
-        const dateKey = `${year}-${month}-${day}`;
-        activityMap[dateKey] =
-          (activityMap[dateKey] || 0) + activity.contributions;
-      }
+  const handleEditUsername = async (e) => {
+    e.preventDefault();
+    setIsUpdatingUsername(true);
+    setUsernameError("");
+    if (!newUsername.trim()) {
+      setUsernameError("Username cannot be empty");
+      setIsUpdatingUsername(false);
+      return;
     }
+    try {
+      await API.patch(
+        "/auth/update-username",
+        { newUsername },
+        { withCredentials: true },
+      );
+      showToast("success", "Username updated");
+      setShowEditUsernameModal(false);
+      const r = await API.get("/api/v1/users/unified-profile");
+      if (r.data.success) setProfileData(r.data.profile);
+    } catch (err) {
+      setUsernameError(err.response?.data?.message || "Failed");
+    } finally {
+      setIsUpdatingUsername(false);
+    }
+  };
 
-    const today = new Date(); // use local date directly
-    const tz = userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordForm({ ...passwordForm, [name]: value });
+    if (errors[name]) setErrors({ ...errors, [name]: "" });
+    if (name === "newPassword") calcStrength(value);
+  };
 
-    const data = [];
+  const calcStrength = (pw) => {
+    if (!pw) {
+      setPasswordStrength({ score: 0, label: "Weak", color: T.errText });
+      return;
+    }
+    const s = [
+      pw.length >= 8,
+      pw.length >= 12,
+      /[A-Z]/.test(pw),
+      /[a-z]/.test(pw),
+      /[0-9]/.test(pw),
+      /[^A-Za-z0-9]/.test(pw),
+    ].filter(Boolean).length;
+    setPasswordStrength(
+      s <= 2
+        ? { score: s, label: "Weak", color: T.errText }
+        : s <= 4
+          ? { score: s, label: "Medium", color: T.warnText }
+          : { score: s, label: "Strong", color: T.okText },
+    );
+  };
 
-    for (let i = 364; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(today.getDate() - i);
+  const validatePasswordForm = () => {
+    const e = { currentPassword: "", newPassword: "" };
+    let ok = true;
+    if (!passwordForm.currentPassword) {
+      e.currentPassword = "Required";
+      ok = false;
+    }
+    if (
+      !/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/.test(
+        passwordForm.newPassword,
+      )
+    ) {
+      e.newPassword = "8+ chars, uppercase, number & special char";
+      ok = false;
+    }
+    setErrors(e);
+    return ok;
+  };
 
-      const dateKey = formatDateKey(date, tz);
-      const contributions = activityMap[dateKey] || 0;
-
-      let level = 0;
-      if (contributions > 0) {
-        if (contributions <= 2) level = 1;
-        else if (contributions <= 5) level = 2;
-        else if (contributions <= 10) level = 3;
-        else level = 4;
-      }
-
-      data.push({
-        date: dateKey,
-        count: contributions,
-        level,
+  const handleSubmitPasswordChange = async (e) => {
+    e.preventDefault();
+    if (!validatePasswordForm()) return;
+    try {
+      const res = await API.patch(
+        "/auth/update-password",
+        {
+          currentPassword: passwordForm.currentPassword,
+          newPassword: passwordForm.newPassword,
+        },
+        { withCredentials: true },
+      );
+      setToastMessage({
+        type: "success",
+        text: res.data.message || "Password updated",
+      });
+      setPasswordForm({ currentPassword: "", newPassword: "" });
+      setShowChangePasswordModal(false);
+      dispatch(logout());
+      router.push("/");
+    } catch (err) {
+      setToastMessage({
+        type: "error",
+        text: err.response?.data?.message || "Failed",
       });
     }
-
-    return data;
   };
 
-  const getActivityColor = (level) => {
-    const colors = {
-      0: "bg-[#3f2b96]/20",
-      1: "bg-[#5d3fd3]/40",
-      2: "bg-[#5d3fd3]/60",
-      3: "bg-[#7c52ff]/80",
-      4: "bg-[#a890fe]",
-    };
-    return colors[level] || "bg-[#3f2b96]/20";
+  const handleDeleteAccount = async () => {
+    try {
+      const res = await API.delete("/auth/delete", {
+        data: {
+          reason: deleteReason.trim() || null,
+          confirmation: confirmationPhrase,
+        },
+      });
+      if (res.status === 200) {
+        alert("Account deleted");
+        window.location.href = "/";
+      } else alert("Failed to delete account");
+    } catch (err) {
+      alert(err.response?.data?.message || "Error");
+    }
   };
 
-  // Add this function before renderPersonalDetails
-  const renderSocialsSection = () => {
-    const SocialLinkRow = ({ platform, link, icon: Icon }) => (
-      <div className="flex items-center justify-between p-3 rounded-lg bg-zinc-800/50">
-        <div className="flex items-center gap-3">
-          <Icon className="w-5 h-5 text-[#a890fe]" />
-          <span className="text-gray-300 capitalize">{platform}</span>
-        </div>
-        {link ? (
-          <a
-            href={link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-zinc-400 hover:text-[#a890fe] transition-colors"
-          >
-            {link.length > 30 ? `${link.substring(0, 30)}...` : link}
-          </a>
-        ) : (
-          <span className="text-sm text-zinc-500">Not provided</span>
-        )}
-      </div>
-    );
-
-    const SocialInputRow = ({ platform, value, onChange, icon: Icon }) => (
-      <div className="flex items-center gap-3 border-b border-zinc-700 pb-3">
-        <Icon className="w-5 h-5 text-[#a890fe]" />
-        <label
-          htmlFor={platform}
-          className="block text-sm font-medium text-zinc-400 capitalize w-24"
-        >
-          {platform}
-        </label>
-        <input
-          type="url"
-          id={platform}
-          name={platform}
-          value={value}
-          onChange={onChange}
-          className="block w-full border-b border-zinc-700/50 py-2 px-4 text-white focus:outline-none focus:border-[#7c52ff]/80 bg-transparent"
-          placeholder={`https://www.${platform}.com/your-profile`}
-        />
-      </div>
-    );
-
-    return getSectionCard(
-      "Socials",
-      <div className="space-y-6">
-        {/* Share Profile Section */}
-        <div>
-          <h3 className="text-sm font-medium text-gray-400 mb-2">
-            SHARE YOUR PROFILE
-          </h3>
-          <div className="flex items-center justify-between p-3 rounded-lg bg-zinc-800/50">
-            <div className="flex items-center gap-3">
-              <Share2 className="w-5 h-5 text-[#a890fe]" />
-              <p className="text-sm text-zinc-400 truncate">
-                {`${window.location.origin}/pwn/${profileData?.user?.username}`}
-              </p>
-            </div>
-            <button
-              onClick={handleCopyProfileLink}
-              className="flex items-center gap-2 px-3 py-1 text-xs bg-[#0c081e] hover:bg-[#3f2b96]/20 border border-[#3f2b96]/40 text-white rounded-md font-semibold transition-colors"
-            >
-              {isCopied ? (
-                <>
-                  <Check className="w-3 h-3" />
-                  Copied!
-                </>
-              ) : (
-                <>
-                  <Copy className="w-3 h-3" />
-                  Copy
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-
-        {/* Social Links Section */}
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-sm font-medium text-gray-400">SOCIAL LINKS</h3>
-            {!isEditingSocials && (
-              <button
-                onClick={() => setIsEditingSocials(true)}
-                className="flex items-center gap-2 text-sm text-[#a890fe] hover:text-[#c4afff] font-semibold"
-              >
-                <Edit className="w-4 h-4" /> Edit
-              </button>
-            )}
-          </div>
-
-          {isEditingSocials ? (
-            <form onSubmit={handleUpdateSocials} className="space-y-4">
-              <SocialInputRow
-                platform="linkedIn"
-                value={socialLinks.linkedIn}
-                onChange={handleSocialLinkChange}
-                icon={FaLinkedin}
-              />
-
-              <SocialInputRow
-                platform="github"
-                value={socialLinks.github}
-                onChange={handleSocialLinkChange}
-                icon={FaGithub}
-              />
-              <SocialInputRow
-                platform="instagram"
-                value={socialLinks.instagram}
-                onChange={handleSocialLinkChange}
-                icon={FaInstagram}
-              />
-              <div className="flex justify-end space-x-3 pt-4">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsEditingSocials(false);
-                    setSocialLinks({
-                      linkedIn: profileData?.user?.linkedIn || "",
-                      github: profileData?.user?.github || "",
-                      instagram: profileData?.user?.instagram || "",
-                    });
-                  }}
-                  className="px-4 py-2 bg-[#0c081e] hover:bg-[#3f2b96]/20 border border-[#3f2b96]/40 text-white rounded-md transition-colors duration-200"
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-[#5d3fd3] hover:bg-linear-to-r from-[#5d3fd3] to-[#7c52ff] text-white rounded-xl font-semibold transition-colors duration-200"
-                >
-                  Save Changes
-                </button>
-              </div>
-            </form>
-          ) : (
-            <div className="space-y-3">
-              <SocialLinkRow
-                platform="linkedIn"
-                link={profileData?.user?.linkedIn}
-                icon={FaLinkedin}
-              />
-              <SocialLinkRow
-                platform="github"
-                link={profileData?.user?.github}
-                icon={FaGithub}
-              />
-              <SocialLinkRow
-                platform="instagram"
-                link={profileData?.user?.instagram}
-                icon={FaInstagram}
-              />
-            </div>
-          )}
-        </div>
-      </div>,
-    );
+  const handleDeleteUserBlog = async (slug) => {
+    if (!window.confirm("Delete this article? Cannot be undone.")) return;
+    setDeletingBlogSlug(slug);
+    try {
+      await API.delete(`/api/v1/resource/${slug}`, { withCredentials: true });
+      setProfileData((p) => ({
+        ...p,
+        articles: p.articles.filter((b) => b.slug !== slug),
+      }));
+      showToast("success", "Article deleted");
+    } catch {
+      showToast("error", "Failed to delete");
+    } finally {
+      setDeletingBlogSlug(null);
+    }
   };
 
+  const requiredPhrase = `gopwnit/delete/${profileData?.user?.username || ""}`;
+
+  /* ── ACTIVITY GRAPH ──────────────────────────────────────────────────────── */
   const ActivityGraph = () => {
-    const [selectedDay, setSelectedDay] = useState(null);
-    const activityData = generateActivityData();
-
+    const [sel, setSel] = useState(null);
+    const data = generateActivityData();
     const weeks = [];
-    const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const monthNames = [
+    for (let i = 0; i < data.length; i += 7) weeks.push(data.slice(i, i + 7));
+    const MN = [
       "Jan",
       "Feb",
       "Mar",
@@ -460,491 +796,1064 @@ const UserProfile = () => {
       "Nov",
       "Dec",
     ];
+    const WD = ["S", "M", "T", "W", "T", "F", "S"];
 
-    for (let i = 0; i < activityData.length; i += 7) {
-      weeks.push(activityData.slice(i, i + 7));
-    }
-
-    const getMonthGroups = () => {
-      const groups = [];
-      let currentMonth = null;
-      let currentWeeks = [];
-      let currentMonthIndex = null;
-
+    const monthGroups = (() => {
+      const g = [];
+      let cur = null,
+        curI = null,
+        curW = [];
       for (let i = 0; i < weeks.length; i++) {
-        const week = weeks[i];
-        const weekMonth = new Date(week[0].date).getMonth();
-
-        if (currentMonth === null) {
-          currentMonth = weekMonth;
-          currentMonthIndex = i;
+        const m = new Date(weeks[i][0].date).getMonth();
+        if (cur === null) {
+          cur = m;
+          curI = i;
         }
-
-        if (weekMonth !== currentMonth) {
-          groups.push({
-            month: currentMonth,
-            monthIndex: currentMonthIndex,
-            weeks: currentWeeks,
-          });
-          currentMonth = weekMonth;
-          currentMonthIndex = i;
-          currentWeeks = [];
+        if (m !== cur) {
+          g.push({ m: cur, i: curI, w: curW });
+          cur = m;
+          curI = i;
+          curW = [];
         }
-        currentWeeks.push(week);
+        curW.push(weeks[i]);
       }
-
-      if (currentWeeks.length > 0) {
-        groups.push({
-          month: currentMonth,
-          monthIndex: currentMonthIndex,
-          weeks: currentWeeks,
-        });
-      }
-
-      return groups;
-    };
-
-    const monthGroups = getMonthGroups();
-
-    const handleDayClick = (day) => {
-      setSelectedDay(day);
-    };
+      if (curW.length) g.push({ m: cur, i: curI, w: curW });
+      return g;
+    })();
 
     return (
-      <div className="relative backdrop-blur-xl bg-[#0c081e]/80 border border-[#3f2b96]/30 rounded-2xl p-8 shadow-[0_8px_32px_rgba(0,0,0,0.4)]">
-        <div className="absolute inset-0 bg-linear-to-br from-[#5d3fd3]/5 to-transparent rounded-2xl"></div>
-        <div className="relative">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-2xl font-bold text-white flex items-center gap-3">
-              <div className="p-2 bg-[#7c52ff]/10 rounded-xl border border-[#7c52ff]/20">
-                <Activity className="w-6 h-6 text-[#a890fe]" />
-              </div>
-              Activity Overview
-            </h3>
-            <div className="flex items-center gap-6">
-              <div className="bg-[#080517] border border-[#3f2b96]/40 rounded-xl px-2 py-1 min-w-[180px] h-[60px] flex items-center justify-center">
-                {selectedDay ? (
-                  <div className="text-center">
-                    <div className="text-sm font-medium text-white">
-                      {selectedDay.count} contributions
-                    </div>
-                    <div className="text-xs text-zinc-400">
-                      {new Date(selectedDay.date).toLocaleDateString("en-US", {
-                        weekday: "short",
-                        month: "short",
-                        day: "numeric",
-                        timeZone: userTimezone || undefined,
-                      })}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-sm text-zinc-500">
-                    Click on a day to see details
-                  </div>
-                )}
-              </div>
-
-              <div className="flex items-center gap-3 text-sm text-zinc-400">
-                <span className="font-medium">Less</span>
-                <div className="flex gap-1">
-                  {[0, 1, 2, 3, 4].map((level) => (
-                    <div
-                      key={level}
-                      className={`w-3 h-3 rounded-sm ${getActivityColor(
-                        level,
-                      )}`}
-                    />
-                  ))}
+      <Section
+        label="Contribution Graph"
+        action={
+          sel ? (
+            <p
+              style={{
+                fontFamily: "'Outfit', sans-serif",
+                fontSize: "11px",
+                color: T.mid,
+              }}
+            >
+              {sel.count} contributions ·{" "}
+              {new Date(sel.date).toLocaleDateString("en-US", {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+              })}
+            </p>
+          ) : (
+            <p
+              style={{
+                fontFamily: "'Outfit', sans-serif",
+                fontSize: "10px",
+                color: T.muted,
+                letterSpacing: "0.08em",
+              }}
+            >
+              Click a cell to inspect
+            </p>
+          )
+        }
+      >
+        <div style={{ overflowX: "auto" }}>
+          <div style={{ display: "flex", gap: "3px", minWidth: "max-content" }}>
+            {/* Weekday labels */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "2px",
+                paddingTop: "18px",
+                marginRight: "2px",
+              }}
+            >
+              {WD.map((d, i) => (
+                <div
+                  key={i}
+                  style={{
+                    width: "10px",
+                    height: "12px",
+                    fontFamily: "'Outfit', sans-serif",
+                    fontSize: "8px",
+                    color: T.muted,
+                    display: "flex",
+                    alignItems: "center",
+                  }}
+                >
+                  {i % 2 === 1 ? d : ""}
                 </div>
-                <span className="font-medium">More</span>
-              </div>
+              ))}
             </div>
-          </div>
-
-          <div className="w-full overflow-x-auto p-1">
-            <div className="flex gap-1 whitespace-nowrap">
-              <div className="flex flex-col gap-1 mx-2 pt-5">
-                {daysOfWeek.map((day) => (
-                  <div
-                    key={day}
-                    className="w-7 h-3 text-sm text-zinc-400 font-medium flex items-center justify-end px-1"
-                  >
-                    {day}
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex gap-3 overflow-visible">
-                {monthGroups.map((group, groupIdx) => (
-                  <div
-                    key={group.month + "-" + group.monthIndex}
-                    className="flex flex-col items-center"
-                  >
-                    <div className="mb-1 h-5 flex items-center justify-center w-full">
-                      <span className="text-sm text-zinc-400 px-1 rounded z-20">
-                        {monthNames[group.month]}
-                      </span>
-                    </div>
-                    <div className="flex gap-1">
-                      {group.weeks.map((week, weekIndex) => (
-                        <div
-                          key={weekIndex}
-                          className="flex flex-col gap-1 relative z-10"
-                        >
-                          {week.map((day, dayIndex) => (
-                            <button
-                              key={`${group.month}-${group.monthIndex}-${weekIndex}-${dayIndex}`}
-                              onClick={() => handleDayClick(day)}
-                              className={`w-3 h-3 ${getActivityColor(
-                                day.level,
-                              )} transition-all cursor-pointer rounded-sm focus:outline-none focus:ring-1 focus:ring-[#7c52ff] focus:ring-offset-1 focus:ring-offset-[#0c081e] hover:brightness-125 ${
-                                selectedDay?.date === day.date
-                                  ? "ring-1 ring-[#7c52ff] ring-offset-1 ring-offset-[#0c081e]"
-                                  : ""
-                              }`}
-                            />
-                          ))}
-                        </div>
+            {/* Month groups */}
+            {monthGroups.map((g, gi) => (
+              <div
+                key={gi}
+                style={{ display: "flex", flexDirection: "column" }}
+              >
+                <p
+                  style={{
+                    fontFamily: "'Outfit', sans-serif",
+                    fontSize: "8px",
+                    letterSpacing: "0.12em",
+                    textTransform: "uppercase",
+                    color: T.muted,
+                    height: "16px",
+                    lineHeight: "16px",
+                  }}
+                >
+                  {MN[g.m]}
+                </p>
+                <div style={{ display: "flex", gap: "2px" }}>
+                  {g.w.map((week, wi) => (
+                    <div
+                      key={wi}
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "2px",
+                      }}
+                    >
+                      {week.map((day, di) => (
+                        <button
+                          key={di}
+                          className="acell"
+                          onClick={() => setSel(day)}
+                          style={{
+                            width: "12px",
+                            height: "12px",
+                            background: CELLS[day.level],
+                            outline:
+                              sel?.date === day.date
+                                ? `1px solid ${T.cream}`
+                                : "none",
+                            outlineOffset: "1px",
+                          }}
+                        />
                       ))}
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
+            ))}
           </div>
         </div>
+        {/* Legend */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "5px",
+            marginTop: "14px",
+            justifyContent: "flex-end",
+          }}
+        >
+          <Micro style={{ marginRight: "2px" }}>Less</Micro>
+          {CELLS.map((col, i) => (
+            <div
+              key={i}
+              style={{ width: "10px", height: "10px", background: col }}
+            />
+          ))}
+          <Micro style={{ marginLeft: "2px" }}>More</Micro>
+        </div>
+      </Section>
+    );
+  };
+
+  /* ── TAB DEFINITIONS ─────────────────────────────────────────────────────── */
+  const TABS = [
+    { id: "personal", label: "Personal" },
+    { id: "ctf", label: "CTF" },
+    { id: "courses", label: "Courses" },
+    { id: "activity", label: "Activity" },
+    { id: "socials", label: "Socials" },
+    { id: "myblogs", label: "Blogs" },
+  ];
+
+  /* ── PERSONAL ────────────────────────────────────────────────────────────── */
+  const renderPersonalDetails = () => (
+    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+      <Section label="Account Information">
+        <InfoRow icon={User} label="Username">
+          {profileData?.user?.username || "—"}
+        </InfoRow>
+        <InfoRow icon={Mail} label="Email">
+          <span style={{ marginRight: "10px" }}>
+            {profileData?.user?.email || "—"}
+          </span>
+          {profileData?.user?.isVerified && (
+            <Pill color={T.okText}>Verified</Pill>
+          )}
+        </InfoRow>
+        <InfoRow icon={User} label="Full Name">
+          {profileData?.user?.fullName || "Not provided"}
+        </InfoRow>
+        <InfoRow icon={Globe} label="Country">
+          {profileData?.user?.country || "Not specified"}
+        </InfoRow>
+        <InfoRow icon={Calendar} label="Member Since" last>
+          {formatJoinDate(profileData?.user?.createdAt)}
+        </InfoRow>
+      </Section>
+
+      <Section label="Account Status">
+        {[
+          {
+            Icon: Shield,
+            label: "Account Status",
+            val: profileData?.user?.isBanned ? "Banned" : "Active",
+            c: profileData?.user?.isBanned ? T.errText : T.okText,
+          },
+          {
+            Icon: CheckCircle,
+            label: "Email Verification",
+            val: profileData?.user?.isVerified ? "Verified" : "Pending",
+            c: profileData?.user?.isVerified ? T.okText : T.warnText,
+          },
+          { Icon: Crown, label: "Plan", val: "Free", c: T.mid },
+        ].map(({ Icon, label, val, c }, i, arr) => (
+          <div
+            key={label}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              padding: "13px 0",
+              borderBottom:
+                i < arr.length - 1 ? `1px solid ${T.muted}` : "none",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <Icon size={13} color={T.mid} />
+              <p
+                style={{
+                  fontFamily: "'Outfit', sans-serif",
+                  fontSize: "13px",
+                  color: T.mid,
+                }}
+              >
+                {label}
+              </p>
+            </div>
+            <Pill color={c}>{val}</Pill>
+          </div>
+        ))}
+      </Section>
+
+      <Section label="Account Settings" bodyPad="0">
+        {[
+          {
+            label: "Change username",
+            onClik: () => {
+              setNewUsername(profileData?.user?.username || "");
+              setShowEditUsernameModal(true);
+            },
+            danger: false,
+          },
+          {
+            label: "Change password",
+            onClik: () => setShowChangePasswordModal(true),
+            danger: false,
+          },
+          {
+            label: "Delete account",
+            onClik: () => setShowDeleteAccountModal(true),
+            danger: true,
+          },
+        ].map(({ label, onClik, danger }) => (
+          <div key={label} className="srow">
+            <p
+              style={{
+                fontFamily: "'Outfit', sans-serif",
+                fontSize: "13px",
+                color: T.mid,
+              }}
+            >
+              {label}
+            </p>
+            <button className={danger ? "btn-d" : "btn-g"} onClick={onClik}>
+              {danger ? "Delete" : "Change"}
+            </button>
+          </div>
+        ))}
+      </Section>
+    </div>
+  );
+
+  /* ── CTF ─────────────────────────────────────────────────────────────────── */
+  const renderCTFDetails = () => {
+    const totalDiff = Object.values(
+      profileData?.ctf?.difficultyBreakdown || {},
+    ).reduce((s, c) => s + c, 0);
+    const totalCat = Object.values(
+      profileData?.ctf?.categoriesCompleted || {},
+    ).reduce((s, c) => s + c, 0);
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        {/* Hero stats */}
+        <div className="sg3 card">
+          {[
+            {
+              label: "Rank",
+              value:
+                profileData?.ctf?.rank === "Unranked"
+                  ? "NuB"
+                  : `#${profileData?.ctf?.rank}`,
+            },
+            {
+              label: "Points",
+              value: profileData?.ctf?.totalPoints?.toLocaleString() || "0",
+            },
+            {
+              label: "Solved",
+              value: String(profileData?.ctf?.totalSolved || "0"),
+            },
+          ].map((s) => (
+            <div key={s.label} className="sc">
+              <Micro style={{ marginBottom: "8px" }}>{s.label}</Micro>
+              <Display size="3rem">{s.value}</Display>
+            </div>
+          ))}
+        </div>
+
+        {/* Difficulty */}
+        <Section label="Difficulty Breakdown">
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3,1fr)",
+              gap: "12px",
+            }}
+          >
+            {Object.entries(profileData?.ctf?.difficultyBreakdown || {}).map(
+              ([d, cnt]) => (
+                <div
+                  key={d}
+                  style={{
+                    border: `1px solid ${T.border}`,
+                    padding: "18px 20px",
+                  }}
+                >
+                  <Display size="2.6rem" style={{ color: diffColor(d) }}>
+                    {cnt}
+                  </Display>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "baseline",
+                      marginTop: "8px",
+                    }}
+                  >
+                    <Micro>{d}</Micro>
+                    <p
+                      style={{
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontSize: "10px",
+                        color: T.mid,
+                      }}
+                    >
+                      {totalDiff > 0 ? Math.round((cnt / totalDiff) * 100) : 0}%
+                    </p>
+                  </div>
+                </div>
+              ),
+            )}
+          </div>
+        </Section>
+
+        {/* Categories */}
+        <Section label="Categories">
+          {Object.entries(profileData?.ctf?.categoriesCompleted || {}).filter(
+            ([, c]) => c > 0,
+          ).length === 0 ? (
+            <div style={{ textAlign: "center", padding: "40px 0" }}>
+              <Target
+                size={26}
+                color={T.muted}
+                style={{ margin: "0 auto 10px", display: "block" }}
+              />
+              <p
+                style={{
+                  fontFamily: "'Outfit', sans-serif",
+                  fontSize: "13px",
+                  color: T.mid,
+                }}
+              >
+                No challenges solved yet
+              </p>
+            </div>
+          ) : (
+            <div
+              style={{ display: "flex", flexDirection: "column", gap: "14px" }}
+            >
+              {Object.entries(profileData?.ctf?.categoriesCompleted || {})
+                .filter(([, c]) => c > 0)
+                .map(([cat, cnt]) => (
+                  <div key={cat}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        marginBottom: "7px",
+                      }}
+                    >
+                      <Micro>{cat}</Micro>
+                      <p
+                        style={{
+                          fontFamily: "'JetBrains Mono', monospace",
+                          fontSize: "10px",
+                          color: T.mid,
+                        }}
+                      >
+                        {cnt}
+                      </p>
+                    </div>
+                    <div className="pbar">
+                      <div
+                        className="pfill"
+                        style={{
+                          width: `${totalCat > 0 ? (cnt / totalCat) * 100 : 0}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
+        </Section>
+
+        {/* Recent challenges */}
+        {profileData?.ctf?.solved?.length > 0 && (
+          <Section label="Recent Challenges" bodyPad="0">
+            {profileData.ctf.solved.map((c, i) => (
+              <div
+                key={i}
+                className="lrow"
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "13px 24px",
+                }}
+              >
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "12px" }}
+                >
+                  <div
+                    style={{
+                      width: "5px",
+                      height: "5px",
+                      borderRadius: "50%",
+                      background: diffColor(c.difficulty),
+                      flexShrink: 0,
+                    }}
+                  />
+                  <div>
+                    <p
+                      style={{
+                        fontFamily: "'Outfit', sans-serif",
+                        fontSize: "13px",
+                        color: T.cream,
+                      }}
+                    >
+                      {c.name}
+                    </p>
+                    <Micro>{c.category}</Micro>
+                  </div>
+                </div>
+                <div style={{ textAlign: "right" }}>
+                  <p
+                    style={{
+                      fontFamily: "'JetBrains Mono', monospace",
+                      fontSize: "12px",
+                      color: T.cream,
+                    }}
+                  >
+                    {c.points} pts
+                  </p>
+                  <p
+                    style={{
+                      fontFamily: "'Outfit', sans-serif",
+                      fontSize: "10px",
+                      color: T.mid,
+                    }}
+                  >
+                    {formatDate(c.solvedAt)}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </Section>
+        )}
       </div>
     );
   };
 
-  const StatCard = ({ icon: Icon, label, value }) => (
-    <div className="group relative backdrop-blur-xl bg-[#0c081e]/80 border border-[#3f2b96]/30 rounded-2xl p-6 hover:border-[#7c52ff]/50 transition-all duration-300 shadow-xl">
-      <div className="absolute inset-0 bg-linear-to-br from-[#5d3fd3]/5 to-transparent rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-      <div className="relative">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-zinc-400 text-sm font-medium mb-1">{label}</p>
-            <p className="text-3xl font-bold text-white">{value}</p>
-          </div>
-          <div className="p-3 rounded-xl bg-[#3f2b96]/20 border border-[#7c52ff]/20 group-hover:scale-110 transition-transform">
-            <Icon className="w-6 h-6 text-[#a890fe]" />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  // Calculate activity statistics
-  const totalActivity =
-    profileData?.userActivity?.reduce(
-      (sum, activity) => sum + (activity.contributions || 0),
-      0,
-    ) || 0;
-
-  const activeDays =
-    new Set(
-      profileData?.userActivity?.map((item) => {
-        const { year, month, day } = item._id || {};
-        return `${year}-${month}-${day}`;
-      }),
-    ).size || 0;
-
-  const calculateStreak = () => {
-    if (!profileData?.userActivity?.length) return 0;
-
-    const sortedActivities = [...profileData.userActivity].sort((a, b) => {
-      const dateA = new Date(`${a._id.year}-${a._id.month}-${a._id.day}`);
-      const dateB = new Date(`${b._id.year}-${b._id.month}-${b._id.day}`);
-      return dateB - dateA;
-    });
-
-    let streak = 0;
-    let currentDate = userTimezone
-      ? convertToUserTimezone(new Date().toISOString(), userTimezone)
-      : new Date();
-
-    for (const activity of sortedActivities) {
-      const activityDate = new Date(
-        `${activity._id.year}-${activity._id.month}-${activity._id.day}`,
-      );
-      const daysDiff = Math.floor(
-        (currentDate - activityDate) / (1000 * 60 * 60 * 24),
-      );
-
-      if (daysDiff === streak) {
-        streak++;
-      } else if (daysDiff > streak) {
-        break;
-      }
-    }
-
-    return streak;
-  };
-
-  // Other helper functions remain the same...
-  const formatDate = (timestamp) => {
-    if (!timestamp) return "Unknown";
-    const date = new Date(timestamp);
-    const options = { year: "numeric", month: "long", day: "numeric" };
-    return date.toLocaleDateString("en-US", options);
-  };
-
-  const formatJoinDate = (timestamp) => {
-    if (!timestamp) return "Unknown";
-    const date = new Date(timestamp);
-    const options = { year: "2-digit", month: "long" };
-    return date.toLocaleDateString("en-US", options);
-  };
-
-  const getDifficultyBadge = (difficulty) => {
-    let bgColor, textColor;
-    switch (difficulty) {
-      case "Easy":
-        bgColor = "bg-linear-to-br from-green-400 to-green-600";
-        textColor = "text-white text-lg font-bold tracking-wide";
-        break;
-      case "Medium":
-        bgColor = "bg-linear-to-br from-amber-500 to-amber-700";
-        textColor = "text-white text-lg font-bold tracking-wide";
-        break;
-      case "Hard":
-        bgColor = "bg-linear-to-br from-rose-500 to-red-700";
-        textColor = "text-white text-2xl font-bold tracking-wide";
-        break;
-      default:
-        bgColor = "bg-gray-700";
-        textColor = "text-gray-300 text-lg font-bold tracking-wide";
-    }
-    return { bgColor, textColor };
-  };
-
-  const getCountryFlag = (country) => {
-    const flags = {
-      India: "🇮🇳",
-      USA: "🇺🇸",
-      UK: "🇬🇧",
-      Canada: "🇨🇦",
-      Australia: "🇦🇺",
-      Germany: "🇩🇪",
-      France: "🇫🇷",
-      Japan: "🇯🇵",
-      China: "🇨🇳",
-      Russia: "🇷🇺",
-      Pakistan: "🇵🇰",
-    };
-    return flags[country] || "🌍";
-  };
-
-  const getSectionCard = (title, children) => (
-    <div className="rounded-2xl overflow-hidden border border-[#3f2b96]/30 bg-[#0c081e]/80 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] transition-all duration-300 hover:border-[#5d3fd3]/50">
-      <div className="px-6 py-4 border-b border-[#3f2b96]/30 flex items-center gap-3">
-        <div className="w-1 h-5 bg-linear-to-b from-[#5d3fd3] to-[#7c52ff] rounded-full"></div>
-        <h2 className="text-base font-semibold text-white tracking-wide">
-          {title}
-        </h2>
-      </div>
-      <div className="p-6">{children}</div>
-    </div>
-  );
-
-  const renderCourseCard = (course, isCompleted) => (
-    <div
-      key={course.slug}
-      className={`flex items-center p-4 rounded-lg border transition-all duration-300 ${
-        isCompleted
-          ? "bg-green-900/10 border-green-700/30 hover:border-green-500/50"
-          : "bg-zinc-800/50 border-zinc-700/30 hover:border-[#7c52ff]/30"
-      }`}
-    >
-      <div className="w-16 h-16 bg-zinc-700 rounded-lg flex items-center justify-center mr-4 relative">
-        <img
-          src={course.image}
-          alt={course.title}
-          className="w-full h-full object-cover rounded-lg"
-          onError={(e) => {
-            e.target.style.display = "none";
-            e.target.nextSibling.style.display = "flex";
-          }}
-        />
-        <div className="w-full h-full items-center justify-center hidden">
-          <Play className="h-8 w-8 text-[#a890fe]" />
-        </div>
-        {isCompleted && (
-          <div className="absolute -top-2 -right-2 bg-green-500 rounded-full p-1">
-            <Check className="h-4 w-4 text-black" />
-          </div>
-        )}
-      </div>
-      <div className="flex-1">
-        <h3 className="font-medium text-gray-100 mb-1">{course.title}</h3>
-        <p className="text-sm text-gray-400 mb-2">
-          Enrolled: {formatDate(course.enrolledAt)}
-        </p>
-        <div className="flex items-center gap-2">
-          <span
-            className={`px-3 py-1 rounded-full text-xs font-medium ${
-              isCompleted
-                ? "bg-[#3fb950]/20 text-[#3fb950]"
-                : "bg-amber-500/20 text-amber-400"
-            }`}
-          >
-            {isCompleted ? "Completed" : "In Progress"}
-          </span>
-        </div>
-      </div>
-      <div className="flex gap-3 items-center">
-        <button
-          className={`font-semibold py-2 px-4 rounded-2xl transition-all duration-300 flex items-center justify-center text-xs hover:scale-105 ${
-            isCompleted
-              ? "bg-linear-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-black"
-              : "bg-linear-to-r from-lime-500 to-lime-400 hover:from-lime-400 hover:to-lime-300 text-black"
-          }`}
-          onClick={() => router.push(`/learning/${course.slug}`)}
-        >
-          {isCompleted ? "REVIEW" : "CONTINUE"}
-        </button>
-      </div>
-    </div>
-  );
-
-  const getFilteredCourses = () => {
-    if (!profileData?.enrolledCourses) return [];
-
-    switch (courseFilter) {
-      case "completed":
-        return profileData.enrolledCourses.filter(
-          (course) => course.isCompleted,
-        );
-      case "incomplete":
-        return profileData.enrolledCourses.filter(
-          (course) => !course.isCompleted,
-        );
-      default:
-        return profileData.enrolledCourses;
-    }
-  };
-
-  // Update tabs to include activity
-  const tabs = [
-    { id: "personal", label: "Personal Details" },
-    { id: "ctf", label: "CTF Details" },
-    { id: "courses", label: "Course Details" },
-    { id: "activity", label: "Activity" },
-    { id: "socials", label: "Socials" },
-    { id: "myblogs", label: "My Blogs" },
-  ];
-
-  const handleDeleteUserBlog = async (slug) => {
-    if (
-      !window.confirm(
-        "Are you sure you want to delete this article? This cannot be undone.",
-      )
-    )
-      return;
-    setDeletingBlogSlug(slug);
-    try {
-      await API.delete(`/api/v1/resource/${slug}`, {
-        withCredentials: true,
-      });
-      setUserBlogs((prev) => prev.filter((b) => b.slug !== slug));
-      showToast("success", "Article deleted successfully.");
-    } catch (err) {
-      console.error("Failed to delete blog:", err);
-      showToast("error", "Failed to delete article.");
-    } finally {
-      setDeletingBlogSlug(null);
-    }
-  };
-
-  const renderMyBlogs = () => {
-    const userBlogs = profileData?.articles || [];
+  /* ── COURSES ─────────────────────────────────────────────────────────────── */
+  const renderCourseDetails = () => {
+    const all = profileData?.enrolledCourses || [];
+    const completed = all.filter((c) => c.isCompleted);
+    const inProg = all.filter((c) => !c.isCompleted);
+    const filtered =
+      courseFilter === "completed"
+        ? completed
+        : courseFilter === "incomplete"
+          ? inProg
+          : all;
 
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h2 className="text-white font-bold text-lg flex items-center gap-3">
-            <FileText className="w-5 h-5 text-[#a890fe]" />
-            My Articles
-          </h2>
+      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        {/* Stats */}
+        <div className="sg4 card">
+          {[
+            { label: "Total", value: String(all.length) },
+            { label: "Completed", value: String(completed.length) },
+            { label: "In Progress", value: String(inProg.length) },
+            {
+              label: "Completion",
+              value: `${all.length > 0 ? Math.round((completed.length / all.length) * 100) : 0}%`,
+            },
+          ].map((s) => (
+            <div key={s.label} className="sc">
+              <Micro style={{ marginBottom: "8px" }}>{s.label}</Micro>
+              <Display size="2.4rem">{s.value}</Display>
+            </div>
+          ))}
+        </div>
 
-          <button
-            onClick={() => router.push("/creator")}
-            className="flex items-center gap-2 px-4 py-2 bg-linear-to-r from-[#5d3fd3] to-[#7c52ff] text-white text-xs font-bold uppercase tracking-widest rounded-xl"
+        {/* List with filters */}
+        <Section
+          label="Courses"
+          action={
+            <div style={{ display: "flex", gap: "6px" }}>
+              {[
+                ["all", "All"],
+                ["completed", "Done"],
+                ["incomplete", "Active"],
+              ].map(([id, lbl]) => (
+                <button
+                  key={id}
+                  onClick={() => setCourseFilter(id)}
+                  className={`fpill${courseFilter === id ? " on" : ""}`}
+                >
+                  {lbl}
+                </button>
+              ))}
+            </div>
+          }
+          bodyPad="0"
+        >
+          {filtered.length === 0 ? (
+            <div style={{ textAlign: "center", padding: "48px 0" }}>
+              <BookOpen
+                size={26}
+                color={T.muted}
+                style={{ margin: "0 auto 10px", display: "block" }}
+              />
+              <p
+                style={{
+                  fontFamily: "'Outfit', sans-serif",
+                  fontSize: "13px",
+                  color: T.mid,
+                }}
+              >
+                No courses to show
+              </p>
+            </div>
+          ) : (
+            filtered.map((course) => (
+              <div
+                key={course.slug}
+                className="lrow"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "16px",
+                  padding: "14px 24px",
+                }}
+              >
+                <div
+                  style={{
+                    width: "44px",
+                    height: "44px",
+                    flexShrink: 0,
+                    overflow: "hidden",
+                    border: `1px solid ${T.border}`,
+                  }}
+                >
+                  <img
+                    src={course.image}
+                    alt={course.title}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                    onError={(e) => (e.target.style.display = "none")}
+                  />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p
+                    style={{
+                      fontFamily: "'Outfit', sans-serif",
+                      fontSize: "13px",
+                      color: T.cream,
+                      marginBottom: "4px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {course.title}
+                  </p>
+                  <Micro>Enrolled {formatDate(course.enrolledAt)}</Micro>
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    flexShrink: 0,
+                  }}
+                >
+                  <Pill color={course.isCompleted ? T.okText : T.warnText}>
+                    {course.isCompleted ? "Completed" : "Active"}
+                  </Pill>
+                  <button
+                    className="btn-g"
+                    onClick={() => router.push(`/learning/${course.slug}`)}
+                  >
+                    {course.isCompleted ? "Review" : "Continue"}
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </Section>
+      </div>
+    );
+  };
+
+  /* ── ACTIVITY ────────────────────────────────────────────────────────────── */
+  const renderActivityDetails = () => (
+    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+      <ActivityGraph />
+
+      <div className="sg4 card">
+        {[
+          {
+            label: "Total Activity",
+            value: String(totalActivity),
+            Icon: Activity,
+          },
+          { label: "Active Days", value: String(activeDays), Icon: Calendar },
+          {
+            label: "Avg Daily",
+            value: String(
+              activeDays > 0 ? Math.round(totalActivity / activeDays) : 0,
+            ),
+            Icon: Zap,
+          },
+          {
+            label: "Streak",
+            value: String(calculateStreak()),
+            Icon: TrendingUp,
+          },
+        ].map((s) => (
+          <div
+            key={s.label}
+            className="sc"
+            style={{ display: "flex", flexDirection: "column", gap: "8px" }}
           >
-            <PenLine className="w-3.5 h-3.5" />
-            New Article
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <Micro>{s.label}</Micro>
+              <s.Icon size={12} color={T.muted} />
+            </div>
+            <Display size="2.4rem">{s.value}</Display>
+          </div>
+        ))}
+      </div>
+
+      <Section label="Recent Activity" bodyPad="0">
+        {profileData?.recentActivity?.length > 0 ? (
+          profileData.recentActivity.map((a, i) => (
+            <div
+              key={i}
+              className="lrow"
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                padding: "13px 24px",
+              }}
+            >
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "10px" }}
+              >
+                <CheckCircle size={12} color={T.muted} />
+                <div>
+                  <p
+                    style={{
+                      fontFamily: "'Outfit', sans-serif",
+                      fontSize: "13px",
+                      color: T.cream,
+                    }}
+                  >
+                    {a.type}
+                  </p>
+                  <p
+                    style={{
+                      fontFamily: "'Outfit', sans-serif",
+                      fontSize: "11px",
+                      color: T.mid,
+                    }}
+                  >
+                    {a.description}
+                  </p>
+                </div>
+              </div>
+              <p
+                style={{
+                  fontFamily: "'Outfit', sans-serif",
+                  fontSize: "10px",
+                  color: T.mid,
+                }}
+              >
+                {new Date(a.timestamp).toLocaleDateString()}
+              </p>
+            </div>
+          ))
+        ) : (
+          <p
+            style={{
+              fontFamily: "'Outfit', sans-serif",
+              fontSize: "13px",
+              color: T.mid,
+              textAlign: "center",
+              padding: "48px",
+            }}
+          >
+            No recent activity
+          </p>
+        )}
+      </Section>
+    </div>
+  );
+
+  /* ── SOCIALS ─────────────────────────────────────────────────────────────── */
+  const renderSocialsSection = () => {
+    const SOCIALS = [
+      { id: "linkedIn", label: "LinkedIn", Icon: FaLinkedin },
+      { id: "github", label: "GitHub", Icon: FaGithub },
+      { id: "instagram", label: "Instagram", Icon: FaInstagram },
+    ];
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+        <Section label="Share Profile">
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: "12px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                minWidth: 0,
+              }}
+            >
+              <Share2 size={13} color={T.mid} />
+              <p
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: "11px",
+                  color: T.mid,
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {typeof window !== "undefined"
+                  ? `${window.location.origin}/pwn/${profileData?.user?.username}`
+                  : ""}
+              </p>
+            </div>
+            <button className="btn-g" onClick={handleCopyProfileLink}>
+              {isCopied ? (
+                <>
+                  <Check size={11} />
+                  Copied
+                </>
+              ) : (
+                <>
+                  <Copy size={11} />
+                  Copy
+                </>
+              )}
+            </button>
+          </div>
+        </Section>
+
+        <Section
+          label="Social Links"
+          action={
+            !isEditingSocials && (
+              <button
+                className="btn-g"
+                onClick={() => setIsEditingSocials(true)}
+              >
+                <Edit size={11} /> Edit
+              </button>
+            )
+          }
+          bodyPad={isEditingSocials ? "24px" : "0"}
+        >
+          {isEditingSocials ? (
+            <form onSubmit={handleUpdateSocials}>
+              {SOCIALS.map(({ id, label, Icon }) => (
+                <div key={id} style={{ marginBottom: "16px" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "8px",
+                      marginBottom: "7px",
+                    }}
+                  >
+                    <Icon size={12} color={T.mid} />
+                    <Micro>{label}</Micro>
+                  </div>
+                  <input
+                    type="url"
+                    name={id}
+                    value={socialLinks[id]}
+                    onChange={handleSocialLinkChange}
+                    placeholder={`https://${id}.com/...`}
+                    className="up-input"
+                  />
+                </div>
+              ))}
+              <div
+                style={{
+                  display: "flex",
+                  gap: "8px",
+                  justifyContent: "flex-end",
+                  marginTop: "8px",
+                }}
+              >
+                <button
+                  type="button"
+                  className="btn-g"
+                  onClick={() => {
+                    setIsEditingSocials(false);
+                    setSocialLinks({
+                      linkedIn: profileData?.user?.linkedIn || "",
+                      github: profileData?.user?.github || "",
+                      instagram: profileData?.user?.instagram || "",
+                    });
+                  }}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn-p">
+                  Save
+                </button>
+              </div>
+            </form>
+          ) : (
+            SOCIALS.map(({ id, label, Icon }) => (
+              <div key={id} className="social-row">
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: "10px" }}
+                >
+                  <Icon size={13} color={T.mid} />
+                  <p
+                    style={{
+                      fontFamily: "'Outfit', sans-serif",
+                      fontSize: "13px",
+                      color: T.mid,
+                    }}
+                  >
+                    {label}
+                  </p>
+                </div>
+                {profileData?.user?.[id] ? (
+                  <a
+                    href={profileData.user[id]}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="up-a"
+                    style={{
+                      fontFamily: "'Outfit', sans-serif",
+                      fontSize: "11px",
+                      color: T.mid,
+                    }}
+                  >
+                    {profileData.user[id].length > 32
+                      ? profileData.user[id].slice(0, 32) + "…"
+                      : profileData.user[id]}
+                  </a>
+                ) : (
+                  <p
+                    style={{
+                      fontFamily: "'Outfit', sans-serif",
+                      fontSize: "11px",
+                      color: T.muted,
+                    }}
+                  >
+                    Not set
+                  </p>
+                )}
+              </div>
+            ))
+          )}
+        </Section>
+      </div>
+    );
+  };
+
+  /* ── BLOGS ───────────────────────────────────────────────────────────────── */
+  const renderMyBlogs = () => {
+    const blogs = profileData?.articles || [];
+    return (
+      <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+        {/* Top bar */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "space-between",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "baseline", gap: "10px" }}>
+            <Display size="4rem">{blogs.length}</Display>
+            <Micro>{blogs.length === 1 ? "Article" : "Articles"}</Micro>
+          </div>
+          <button
+            className="btn-p"
+            onClick={() => router.push("/dashboard/blogs/creator")}
+          >
+            <PenLine size={11} /> New Article
           </button>
         </div>
 
-        {userBlogs.length === 0 ? (
-          <div className="text-center py-16 text-zinc-500">
-            No articles yet.
+        {blogs.length === 0 ? (
+          <div
+            className="card"
+            style={{ textAlign: "center", padding: "72px 0" }}
+          >
+            <FileText
+              size={26}
+              color={T.muted}
+              style={{ margin: "0 auto 12px", display: "block" }}
+            />
+            <p
+              style={{
+                fontFamily: "'Outfit', sans-serif",
+                fontSize: "13px",
+                color: T.mid,
+              }}
+            >
+              No articles yet
+            </p>
           </div>
         ) : (
-          <div className="grid gap-4">
-            {userBlogs.map((blog) => (
+          <div className="card">
+            {blogs.map((blog, i) => (
               <div
                 key={blog.slug}
-                className="flex items-start gap-5 p-5 rounded-2xl bg-[#0c081e]/80 border border-[#3f2b96]/30"
+                className="lrow"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "16px",
+                  padding: "15px 24px",
+                }}
               >
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-bold text-white text-sm">
-                        {blog.title}
-                      </h3>
-
-                      <p className="text-xs text-zinc-500 mt-1">
-                        {new Date(blog.createdAt).toLocaleDateString()}
-                      </p>
-
-                      <span
-                        className={`mt-2 inline-block text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${
-                          blog.status === "approved"
-                            ? "text-green-400 bg-green-500/10 border-green-500/20"
-                            : blog.status === "rejected"
-                              ? "text-red-400 bg-red-500/10 border-red-500/20"
-                              : "text-amber-400 bg-amber-500/10 border-amber-500/20"
-                        }`}
-                      >
-                        {blog.status}
-                      </span>
-
-                      <p className="text-xs text-zinc-400 mt-2">
-                        {blog.views} views
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <a
-                        href={`/blog/${blog.slug}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="p-2 rounded-lg bg-[#080517] border border-[#3f2b96]/30 text-zinc-400"
-                      >
-                        <ExternalLink className="w-4 h-4" />
-                      </a>
-
-                      <button
-                        onClick={() => router.push(`/creator/${blog.slug}`)}
-                        className="p-2 rounded-lg bg-[#080517] border border-[#3f2b96]/30 text-[#a890fe]"
-                      >
-                        <PenLine className="w-4 h-4" />
-                      </button>
-
-                      <button
-                        onClick={() => handleDeleteUserBlog(blog.slug)}
-                        disabled={deletingBlogSlug === blog.slug}
-                        className="p-2 rounded-lg bg-[#080517] border border-red-500/20 text-red-400"
-                      >
-                        {deletingBlogSlug === blog.slug ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="w-4 h-4" />
-                        )}
-                      </button>
-                    </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p
+                    style={{
+                      fontFamily: "'Outfit', sans-serif",
+                      fontSize: "14px",
+                      color: T.cream,
+                      marginBottom: "6px",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    {blog.title}
+                  </p>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px",
+                    }}
+                  >
+                    <p
+                      style={{
+                        fontFamily: "'Outfit', sans-serif",
+                        fontSize: "10px",
+                        color: T.mid,
+                      }}
+                    >
+                      {new Date(blog.createdAt).toLocaleDateString()}
+                    </p>
+                    <Pill
+                      color={
+                        blog.status === "approved"
+                          ? T.okText
+                          : blog.status === "rejected"
+                            ? T.errText
+                            : T.warnText
+                      }
+                    >
+                      {blog.status}
+                    </Pill>
+                    <p
+                      style={{
+                        fontFamily: "'Outfit', sans-serif",
+                        fontSize: "10px",
+                        color: T.mid,
+                      }}
+                    >
+                      {blog.views} views
+                    </p>
                   </div>
+                </div>
+                <div style={{ display: "flex", gap: "5px", flexShrink: 0 }}>
+                  <a
+                    href={`/blogs/${blog.slug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="ibtn"
+                  >
+                    <ExternalLink size={13} />
+                  </a>
+                  <button
+                    className="ibtn"
+                    onClick={() =>
+                      router.push(`/dashboard/blogs/creator/${blog.slug}`)
+                    }
+                  >
+                    <PenLine size={13} />
+                  </button>
+                  <button
+                    className="ibtn danger"
+                    onClick={() => handleDeleteUserBlog(blog.slug)}
+                    disabled={deletingBlogSlug === blog.slug}
+                  >
+                    {deletingBlogSlug === blog.slug ? (
+                      <Loader2 size={13} className="spin" />
+                    ) : (
+                      <Trash2 size={13} />
+                    )}
+                  </button>
                 </div>
               </div>
             ))}
@@ -954,842 +1863,218 @@ const UserProfile = () => {
     );
   };
 
-  const requiredPhrase = `gopwnit/delete/${profileData?.user?.username || ""}`;
-
-  // Password and username update handlers remain the same...
-  const handleDeleteAccount = async () => {
-    try {
-      const response = await API.delete("/auth/delete", {
-        data: {
-          reason: deleteReason.trim() || null,
-          confirmation: confirmationPhrase,
-        },
-      });
-
-      if (response.status === 200) {
-        alert("Account deleted successfully");
-        window.location.href = "/";
-      } else {
-        alert("Failed to delete account. Please try again.");
-      }
-    } catch (error) {
-      console.error("Error deleting account:", error);
-      alert(
-        error.response?.data?.message ||
-          "An error occurred while deleting the account.",
-      );
-    }
-  };
-
-  const handleEditUsername = async (e) => {
-    e.preventDefault();
-    setIsUpdatingUsername(true);
-    setUsernameError("");
-
-    if (!newUsername.trim()) {
-      setUsernameError("Username cannot be empty");
-      setIsUpdatingUsername(false);
-      return;
-    }
-
-    try {
-      const response = await API.patch(
-        "/auth/update-username",
-        { newUsername: newUsername },
-        { withCredentials: true },
-      );
-
-      showToast(
-        "success",
-        response.data.message || "Username updated successfully!",
-      );
-      setShowEditUsernameModal(false);
-
-      // Refetch profile data
-      const updatedResponse = await API.get("/api/v1/users/unified-profile");
-      if (updatedResponse.data.success) {
-        setProfileData(updatedResponse.data.profile);
-      }
-    } catch (err) {
-      setUsernameError(
-        err.response?.data?.message || "Failed to update username",
-      );
-    } finally {
-      setIsUpdatingUsername(false);
-    }
-  };
-
-  const togglePasswordVisibility = () => setShowPassword(!showPassword);
-
-  const handlePasswordChange = (e) => {
-    const { name, value } = e.target;
-    setPasswordForm({ ...passwordForm, [name]: value });
-    if (errors[name]) setErrors({ ...errors, [name]: "" });
-    if (name === "newPassword") calculatePasswordStrength(value);
-  };
-
-  const calculatePasswordStrength = (password) => {
-    let score = 0;
-    if (!password) {
-      setPasswordStrength({ score: 0, label: "Weak", color: "red-500" });
-      return;
-    }
-    if (password.length >= 8) score += 1;
-    if (password.length >= 12) score += 1;
-    if (/[A-Z]/.test(password)) score += 1;
-    if (/[a-z]/.test(password)) score += 1;
-    if (/[0-9]/.test(password)) score += 1;
-    if (/[^A-Za-z0-9]/.test(password)) score += 1;
-
-    let label, color;
-    if (score <= 2) {
-      label = "Weak";
-      color = "red-500";
-    } else if (score <= 4) {
-      label = "Medium";
-      color = "yellow-500";
-    } else {
-      label = "Strong";
-      color = "green-500";
-    }
-    setPasswordStrength({ score, label, color });
-  };
-
-  const validatePasswordForm = () => {
-    let isValid = true;
-    const newErrors = {
-      currentPassword: "",
-      newPassword: "",
-    };
-
-    if (!passwordForm.currentPassword) {
-      newErrors.currentPassword = "Current password is required";
-      isValid = false;
-    }
-
-    const passwordRegex =
-      /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
-    if (!passwordRegex.test(passwordForm.newPassword)) {
-      newErrors.newPassword =
-        "Must be 8+ chars, include uppercase, number & special character";
-      isValid = false;
-    }
-    setErrors(newErrors);
-    return isValid;
-  };
-
-  const handleSubmitPasswordChange = async (e) => {
-    e.preventDefault();
-    if (validatePasswordForm()) {
-      try {
-        const response = await API.patch(
-          "/auth/update-password",
-          {
-            currentPassword: passwordForm.currentPassword,
-            newPassword: passwordForm.newPassword,
-          },
-          { withCredentials: true },
-        );
-
-        setToastMessage({
-          type: "success",
-          text: response.data.message || "Password updated successfully!",
-        });
-
-        setPasswordForm({
-          currentPassword: "",
-          newPassword: "",
-        });
-
-        setShowChangePasswordModal(false);
-        dispatch(logout());
-        router.push("/");
-      } catch (err) {
-        setToastMessage({
-          type: "error",
-          text: err.response?.data?.message || "Failed to update password",
-        });
-      }
-    }
-  };
-
-  useEffect(() => {
-    if (toastMessage) {
-      const timer = setTimeout(() => setToastMessage(null), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [toastMessage]);
-
-  // Add activity tab render function
-  const renderActivityDetails = () => (
-    <div className="space-y-8">
-      <ActivityGraph />
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          icon={Activity}
-          label="Total Activity"
-          value={totalActivity}
-        />
-        <StatCard icon={Calendar} label="Active Days" value={activeDays} />
-        <StatCard
-          icon={Zap}
-          label="Avg. Daily"
-          value={activeDays > 0 ? Math.round(totalActivity / activeDays) : 0}
-        />
-        <StatCard icon={TrendingUp} label="Streak" value={calculateStreak()} />
-      </div>
-
-      {/* Recent Activity */}
-      <div className="relative backdrop-blur-xl bg-[#0c081e]/80 border border-[#3f2b96]/30 rounded-2xl p-8 shadow-2xl">
-        <div className="absolute inset-0 bg-linear-to-br from-lime-400/5 to-transparent rounded-2xl"></div>
-        <div className="relative">
-          <h3 className="text-2xl font-bold text-white mb-8 flex items-center gap-3">
-            <div className="p-2 bg-[#7c52ff]/10 rounded-xl border border-[#7c52ff]/20">
-              <Activity className="w-6 h-6 text-[#a890fe]" />
-            </div>
-            Recent Activity
-          </h3>
-          <div className="space-y-4">
-            {profileData?.recentActivity?.length > 0 ? (
-              profileData.recentActivity.map((activity, index) => (
-                <div
-                  key={index}
-                  className="group relative backdrop-blur-sm bg-[#080517]/60 border border-[#3f2b96]/20 rounded-xl p-6 hover:border-[#7c52ff]/30 transition-all"
-                >
-                  <div className="absolute inset-0 bg-linear-to-br from-lime-400/5 to-transparent rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  <div className="relative">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <div className="p-2 bg-[#7c52ff]/10 rounded-lg border border-[#7c52ff]/20">
-                          <CheckCircle className="w-5 h-5 text-[#a890fe]" />
-                        </div>
-                        <div>
-                          <h4 className="text-white font-semibold">
-                            {activity.type}
-                          </h4>
-                          <p className="text-zinc-400 text-sm">
-                            {activity.description}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="text-zinc-400 text-sm">
-                        {new Date(activity.timestamp).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-12">
-                <div className="text-zinc-400 text-lg">No recent activity</div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderPersonalDetails = () => (
-    <div className="space-y-6">
-      {getSectionCard(
-        "Account Information",
-        <div className="space-y-4">
-          <div className="flex items-start border-b border-zinc-700 pb-4">
-            <div className="p-2 rounded-full">
-              <User className="h-6 w-6 text-[#a890fe]" />
-            </div>
-            <div className="ml-4 flex-1">
-              <h3 className="text-sm font-medium text-gray-400">USERNAME</h3>
-              <div className="flex items-center mt-1 gap-2">
-                <p className="text-base font-medium text-gray-100">
-                  {profileData?.user?.username || "Unknown"}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-start border-b border-zinc-700 pb-4">
-            <div className="p-2 rounded-full">
-              <Mail className="h-6 w-6 text-[#a890fe]" />
-            </div>
-            <div className="ml-4 flex-1">
-              <h3 className="text-sm font-medium text-gray-400">EMAIL</h3>
-              <div className="flex items-center mt-1">
-                <p className="text-base font-medium text-gray-100">
-                  {profileData?.user?.email || "Unknown"}
-                </p>
-                {profileData?.user?.isVerified && (
-                  <span className="ml-2 text-xs px-3 py-1 bg-green-900/50 text-[#c4afff] rounded-full">
-                    Verified
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-start border-b border-zinc-700 pb-4">
-            <div className="p-2 rounded-full">
-              <User className="h-6 w-6 text-[#a890fe]" />
-            </div>
-            <div className="ml-4 flex-1">
-              <h3 className="text-sm font-medium text-gray-400">FULL NAME</h3>
-              <p className="text-base font-medium text-gray-100 mt-1">
-                {profileData?.user?.fullName || "Not provided"}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-start border-b border-zinc-700 pb-4">
-            <div className="p-2 rounded-full">
-              <Globe className="h-6 w-6 text-[#a890fe]" />
-            </div>
-            <div className="ml-4 flex-1">
-              <h3 className="text-sm font-medium text-gray-400">COUNTRY</h3>
-              <div className="flex items-center mt-1">
-                <p className="text-base font-medium text-gray-100">
-                  {profileData?.user?.country || "Not specified"}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-start">
-            <div className="p-2 rounded-full">
-              <Calendar className="h-6 w-6 text-[#a890fe]" />
-            </div>
-            <div className="ml-4 flex-1">
-              <h3 className="text-sm font-medium text-gray-400">
-                MEMBER SINCE
-              </h3>
-              <p className="text-base font-medium text-gray-100 mt-1">
-                {formatJoinDate(profileData?.user?.createdAt)}
-              </p>
-            </div>
-          </div>
-        </div>,
-      )}
-
-      {getSectionCard(
-        "User Status",
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-3 rounded-lg bg-zinc-800/50">
-            <div className="flex items-center">
-              <Shield className="h-5 w-5 text-[#a890fe] mr-3" />
-              <span className="text-gray-300">Account Status</span>
-            </div>
-            <span
-              className={`px-3 py-1 rounded-full text-xs font-medium ${
-                profileData?.user?.isBanned
-                  ? "bg-red-500/20 text-red-400"
-                  : "bg-[#3fb950]/20 text-[#3fb950]"
-              }`}
-            >
-              {profileData?.user?.isBanned ? "Banned" : "Active"}
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between p-3 rounded-lg bg-zinc-800/50">
-            <div className="flex items-center">
-              <CheckCircle className="h-5 w-5 text-[#a890fe] mr-3" />
-              <span className="text-gray-300">Email Verification</span>
-            </div>
-            <span
-              className={`px-3 py-1 rounded-full text-xs font-medium ${
-                profileData?.user?.isVerified
-                  ? "bg-[#3fb950]/20 text-[#3fb950]"
-                  : "bg-amber-500/20 text-amber-400"
-              }`}
-            >
-              {profileData?.user?.isVerified ? "Verified" : "Pending"}
-            </span>
-          </div>
-
-          <div className="flex items-center justify-between p-3 rounded-lg bg-zinc-800/50">
-            <div className="flex items-center">
-              <Crown className="h-5 w-5 text-[#a890fe] mr-3" />
-              <span className="text-gray-300">Plan</span>
-            </div>
-            <span className="px-3 py-1 rounded-full text-xs font-medium bg-[#04020a] text-zinc-300">
-              FREE
-            </span>
-          </div>
-        </div>,
-      )}
-      {getSectionCard(
-        "Account Settings",
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-3 rounded-lg bg-zinc-800/50">
-            <div className="flex items-center">
-              <span className="pl-3 text-gray-300">
-                Change Your Account Username
-              </span>
-            </div>
-            <button
-              onClick={() => {
-                setNewUsername(profileData?.user?.username || "");
-                setShowEditUsernameModal(true);
-              }}
-              className="flex items-center gap-2 px-4 text-sm py-2 bg-[#5d3fd3] hover:bg-linear-to-r from-[#5d3fd3] to-[#7c52ff] text-white rounded-xl font-semibold transition-colors"
-            >
-              Change Username
-            </button>
-          </div>
-          <div className="flex items-center justify-between p-3 rounded-lg bg-zinc-800/50">
-            <div className="flex items-center">
-              <span className="pl-3 text-gray-300">
-                Change Your Account Password
-              </span>
-            </div>
-            <button
-              onClick={() => setShowChangePasswordModal(true)}
-              className="flex items-center gap-2 px-4 text-sm py-2 bg-[#5d3fd3] hover:bg-linear-to-r from-[#5d3fd3] to-[#7c52ff] text-white rounded-xl font-semibold transition-colors"
-            >
-              Change Password
-            </button>
-          </div>
-          <div className="flex items-center justify-between p-3 rounded-lg bg-zinc-800/50">
-            <div className="flex items-center">
-              <span className="pl-3 text-gray-300">
-                Delete Your GoPwnIt Account
-              </span>
-            </div>
-            <button
-              onClick={() => setShowDeleteAccountModal(true)}
-              className="flex items-center gap-2 px-4 text-sm py-2 bg-[#5d3fd3] hover:bg-linear-to-r from-[#5d3fd3] to-[#7c52ff] text-white rounded-xl font-semibold transition-colors"
-            >
-              Delete Account
-            </button>
-          </div>
-        </div>,
-      )}
-    </div>
-  );
-
-  const renderCTFDetails = () => {
-    const totalCategorySolved = Object.values(
-      profileData?.ctf?.categoriesCompleted || {},
-    ).reduce((sum, count) => sum + count, 0);
-    const totalDifficultySolved = Object.values(
-      profileData?.ctf?.difficultyBreakdown || {},
-    ).reduce((sum, count) => sum + count, 0);
-
+  /* ── LOADING / ERROR ─────────────────────────────────────────────────────── */
+  if (loading)
     return (
-      <div className="space-y-6">
-        {getSectionCard(
-          "CTF Performance",
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="bg-zinc-800/50 border border-zinc-700/30 rounded-lg p-4 text-center">
-                <p className="text-xs text-gray-400 mb-1 uppercase">Rank</p>
-                <p className="text-2xl font-bold text-white">
-                  #
-                  {profileData?.ctf?.rank === "Unranked"
-                    ? "NuB"
-                    : profileData?.ctf?.rank}
-                </p>
-              </div>
-
-              <div className="bg-zinc-800/50 border border-zinc-700/30 rounded-lg p-4 text-center">
-                <p className="text-xs text-gray-400 mb-1 uppercase">Points</p>
-                <p className="text-2xl font-bold text-white">
-                  {profileData?.ctf?.totalPoints?.toLocaleString() || "0"}
-                </p>
-              </div>
-
-              <div className="bg-zinc-800/50 border border-zinc-700/30 rounded-lg p-4 text-center">
-                <p className="text-xs text-gray-400 mb-1 uppercase">Solved</p>
-                <p className="text-2xl font-bold text-white">
-                  {profileData?.ctf?.totalSolved || "0"}
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-4">
-              <h3 className="text-sm font-medium text-zinc-400 mb-3">
-                DIFFICULTY BREAKDOWN
-              </h3>
-              <div className="grid grid-cols-3 gap-3">
-                {Object.entries(
-                  profileData?.ctf?.difficultyBreakdown || {},
-                ).map(([difficulty, count]) => {
-                  const { bgColor, textColor } = getDifficultyBadge(difficulty);
-                  const percentage =
-                    totalDifficultySolved > 0
-                      ? Math.round((count / totalDifficultySolved) * 100)
-                      : 0;
-
-                  return (
-                    <div key={difficulty} className="text-center">
-                      <div
-                        className={`${bgColor} ${textColor} rounded-lg p-3 mb-2`}
-                      >
-                        <div className="text-sm font-medium">{percentage}%</div>
-                        <div className="text-xs opacity-90">{count}</div>
-                      </div>
-                      <div className="text-xs text-gray-400">{difficulty}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>,
-        )}
-
-        {getSectionCard(
-          "Challenge Categories",
-          <div className="space-y-3">
-            {Object.entries(profileData?.ctf?.categoriesCompleted || {})
-              .filter(([category, count]) => count > 0)
-              .map(([category, count]) => (
-                <div key={category}>
-                  <div className="flex justify-between text-xs text-zinc-400 mb-1">
-                    <span>{category.toUpperCase()}</span>
-                    <span>{count} challenges</span>
-                  </div>
-                  <div className="h-2 w-full bg-zinc-800/50 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-[#5d3fd3] rounded-full"
-                      style={{
-                        width: `${
-                          totalCategorySolved > 0
-                            ? (count / totalCategorySolved) * 100
-                            : 0
-                        }%`,
-                      }}
-                    ></div>
-                  </div>
-                </div>
-              ))}
-            {Object.keys(profileData?.ctf?.categoriesCompleted || {}).filter(
-              (category) =>
-                (profileData?.ctf?.categoriesCompleted[category] || 0) > 0,
-            ).length === 0 && (
-              <div className="text-center py-8">
-                <Target className="h-12 w-12 text-gray-500 mx-auto mb-4" />
-                <p className="text-gray-400">No challenges solved yet</p>
-                <p className="text-sm text-gray-500 mt-1">
-                  Start solving challenges to see your progress!
-                </p>
-              </div>
-            )}
-          </div>,
-        )}
-
-        {profileData?.ctf?.solved?.length > 0 &&
-          getSectionCard(
-            "Recent Challenges",
-            <div className="space-y-3">
-              {profileData.ctf.solved.map((challenge, index) => {
-                const { bgColor } = getDifficultyBadge(challenge.difficulty);
-                return (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-3 bg-zinc-700/20 rounded-md"
-                  >
-                    <div className="flex items-center">
-                      <span
-                        className={`inline-block w-3 h-3 rounded-full mr-3 ${bgColor}`}
-                      ></span>
-                      <div>
-                        <p className="text-sm font-medium text-gray-100">
-                          {challenge.name}
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          {challenge.category}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium text-[#a890fe]">
-                        {challenge.points} pts
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        {formatDate(challenge.solvedAt)}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>,
-          )}
-      </div>
-    );
-  };
-
-  const renderCourseDetails = () => {
-    const filteredCourses = getFilteredCourses();
-    const completedCourses =
-      profileData?.enrolledCourses?.filter((course) => course.isCompleted) ||
-      [];
-    const incompleteCourses =
-      profileData?.enrolledCourses?.filter((course) => !course.isCompleted) ||
-      [];
-
-    return (
-      <div className="space-y-6">
-        {getSectionCard(
-          "Course Statistics",
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="bg-zinc-800/50 border border-zinc-700/30 rounded-lg p-4 text-center">
-              <p className="text-2xl font-bold text-white">
-                {profileData?.enrolledCourses?.length || 0}
-              </p>
-              <p className="text-xs text-gray-400">Total Courses</p>
-            </div>
-
-            <div className="bg-zinc-800/50 border border-zinc-700/30 rounded-lg p-4 text-center">
-              <p className="text-2xl font-bold text-[#3fb950]">
-                {completedCourses.length}
-              </p>
-              <p className="text-xs text-gray-400">Completed</p>
-            </div>
-
-            <div className="bg-zinc-800/50 border border-zinc-700/30 rounded-lg p-4 text-center">
-              <p className="text-2xl font-bold text-amber-400">
-                {incompleteCourses.length}
-              </p>
-              <p className="text-xs text-gray-400">In Progress</p>
-            </div>
-
-            <div className="bg-zinc-800/50 border border-zinc-700/30 rounded-lg p-4 text-center">
-              <p className="text-2xl font-bold text-[#a890fe]">
-                {profileData?.enrolledCourses?.length > 0
-                  ? Math.round(
-                      (completedCourses.length /
-                        profileData.enrolledCourses.length) *
-                        100,
-                    )
-                  : 0}
-                %
-              </p>
-              <p className="text-xs text-gray-400">Completion Rate</p>
-            </div>
-          </div>,
-        )}
-
-        {getSectionCard(
-          "Course List",
-          <div className="space-y-4">
-            <div className="flex gap-2 mb-4">
-              <button
-                onClick={() => setCourseFilter("all")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  courseFilter === "all"
-                    ? "bg-linear-to-r from-[#5d3fd3] to-[#7c52ff] text-black"
-                    : "bg-zinc-800/50 text-gray-400 hover:text-gray-300"
-                }`}
-              >
-                All ({profileData?.enrolledCourses?.length || 0})
-              </button>
-              <button
-                onClick={() => setCourseFilter("completed")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  courseFilter === "completed"
-                    ? "bg-green-500 text-white"
-                    : "bg-zinc-800/50 text-gray-400 hover:text-gray-300"
-                }`}
-              >
-                Completed ({completedCourses.length})
-              </button>
-              <button
-                onClick={() => setCourseFilter("incomplete")}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  courseFilter === "incomplete"
-                    ? "bg-yellow-500 text-black"
-                    : "bg-zinc-800/50 text-gray-400 hover:text-gray-300"
-                }`}
-              >
-                In Progress ({incompleteCourses.length})
-              </button>
-            </div>
-
-            {filteredCourses.length === 0 ? (
-              <div className="text-center py-8">
-                <BookOpen className="h-12 w-12 text-gray-500 mx-auto mb-4" />
-                <p className="text-gray-400">
-                  {profileData?.enrolledCourses?.length === 0
-                    ? "No courses enrolled yet"
-                    : `No ${
-                        courseFilter === "completed"
-                          ? "completed"
-                          : "incomplete"
-                      } courses`}
-                </p>
-                <p className="text-sm text-gray-500 mt-1">
-                  {profileData?.enrolledCourses?.length === 0
-                    ? "Start learning by enrolling in your first course!"
-                    : "Keep learning to see courses here!"}
-                </p>
-              </div>
-            ) : (
-              <div className="grid gap-4">
-                {filteredCourses.map((course) =>
-                  renderCourseCard(course, course.isCompleted),
-                )}
-              </div>
-            )}
-          </div>,
-        )}
-      </div>
-    );
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#020202] text-white font-roundo flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-10 h-10 border-2 border-[#7c52ff] border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-zinc-400 text-sm">Loading profile...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-[#020202] text-white font-roundo flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4 text-center">
-          <AlertTriangle className="h-12 w-12 text-red-400 mx-auto" />
-          <p className="text-lg font-semibold">Error loading profile</p>
-          <p className="text-sm text-zinc-400">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="bg-linear-to-r from-[#5d3fd3] to-[#7c52ff] text-white px-5 py-2 rounded-xl text-sm font-semibold hover:shadow-[0_0_15px_rgba(124,82,255,0.4)] transition-all"
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!profileData) {
-    return (
-      <div className="min-h-screen bg-[#020202] text-white font-roundo flex items-center justify-center">
-        <p className="text-zinc-400">No profile data available</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-[#020202] text-white font-roundo">
-      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <div className="absolute inset-0 bg-linear-to-br from-[#1a0f3c] via-[#080517] to-[#04020a]"></div>
-        <div className="absolute -top-[20%] -left-[10%] w-[60vw] h-[60vw] rounded-full bg-[#5d3fd3]/10 blur-[150px]"></div>
-        <div className="absolute -bottom-[20%] -right-[10%] w-[60vw] h-[60vw] rounded-full bg-[#3f2b96]/10 blur-[150px]"></div>
+      <>
+        <style>{CSS}</style>
         <div
-          className="absolute inset-0"
+          className="up"
           style={{
-            backgroundImage: `linear-gradient(rgba(92, 63, 211, 0.07) 1px, transparent 1px),
-                      linear-gradient(90deg, rgba(92, 63, 211, 0.07) 1px, transparent 1px)`,
-            backgroundSize: "40px 40px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
           }}
-        />
-        <div className="absolute inset-0 flex items-center justify-center">
-          <Image
-            src={logo}
-            alt="watermark"
-            height={900}
-            className="opacity-[0.3] select-none"
-          />
+        >
+          <div style={{ textAlign: "center" }}>
+            <div
+              className="spin"
+              style={{
+                width: "22px",
+                height: "22px",
+                border: `1px solid ${T.border}`,
+                borderTopColor: T.cream,
+                borderRadius: "50%",
+                margin: "0 auto 14px",
+              }}
+            />
+            <Micro>Loading profile</Micro>
+          </div>
         </div>
-      </div>
-      <motion.main className="relative z-10 min-h-screen pt-8">
-        <div className="max-w-6xl mx-auto p-6 space-y-6">
-          <div className="bg-[#0c081e]/80 backdrop-blur-xl border border-[#3f2b96]/30 rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] overflow-hidden">
-            <div className="p-6">
-              <div className="flex items-center justify-between flex-wrap gap-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-2xl bg-linear-to-br from-[#5d3fd3] to-[#7c52ff] flex items-center justify-center text-2xl font-bold text-white shadow-[0_0_20px_rgba(124,82,255,0.4)]">
-                    {(profileData?.user?.username || "U")[0].toUpperCase()}
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <h2 className="text-2xl font-bold text-white">
-                        {profileData?.user?.username || "Unknown User"}
-                      </h2>
-                      <span className="text-xl">
-                        {getCountryFlag(profileData?.user?.country)}
-                      </span>
-                      {profileData?.user?.isVerified && (
-                        <Image
-                          src={tick}
-                          alt="Verified"
-                          width={20}
-                          height={20}
-                        />
-                      )}
-                    </div>
-                    <p className="text-sm text-zinc-400">
-                      Member since{" "}
-                      {formatJoinDate(profileData?.user?.createdAt)}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex gap-3 flex-wrap">
-                  {[
-                    {
-                      label: "Rank",
-                      value: `#${profileData?.ctf?.rank === "Unranked" ? "NuB" : profileData?.ctf?.rank}`,
-                    },
-                    {
-                      label: "Score",
-                      value: `${profileData?.ctf?.totalPoints?.toLocaleString() || "0"} pts`,
-                    },
-                    {
-                      label: "Solved",
-                      value: profileData?.ctf?.totalSolved || "0",
-                    },
-                  ].map((s) => (
-                    <div
-                      key={s.label}
-                      className="bg-[#080517] border border-[#3f2b96]/40 rounded-xl p-3 text-center min-w-[90px]"
-                    >
-                      <p className="text-[10px] font-semibold text-[#a890fe] uppercase tracking-widest mb-1">
-                        {s.label}
-                      </p>
-                      <p className="text-base font-bold text-white">
-                        {s.value}
-                      </p>
-                    </div>
-                  ))}
-                  <div className="bg-[#080517] border border-[#3f2b96]/40 rounded-xl p-3 text-center min-w-[90px]">
-                    <p className="text-[10px] font-semibold text-[#a890fe] uppercase tracking-widest mb-1">
-                      Plan
-                    </p>
-                    <p className="text-base font-bold text-white">FREE</p>
-                    <button className="text-[10px] text-[#a890fe] mt-0.5 flex items-center gap-1 mx-auto">
-                      <Crown className="w-3 h-3" />
-                      GO VIP
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+      </>
+    );
 
-          {/* Tabs */}
-          <div className="border-b border-[#3f2b96]/30">
-            <nav className="flex space-x-1">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`py-3 px-4 border-b-2 font-medium text-sm transition-all duration-200 ${
-                    activeTab === tab.id
-                      ? "border-[#7c52ff] text-[#a890fe]"
-                      : "border-transparent text-zinc-500 hover:text-zinc-300"
-                  }`}
+  if (error)
+    return (
+      <>
+        <style>{CSS}</style>
+        <div
+          className="up"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <div style={{ textAlign: "center" }}>
+            <AlertTriangle
+              size={26}
+              color={T.errText}
+              style={{ margin: "0 auto 12px", display: "block" }}
+            />
+            <Display size="1.6rem" style={{ marginBottom: "8px" }}>
+              Error
+            </Display>
+            <p
+              style={{
+                fontFamily: "'Outfit', sans-serif",
+                fontSize: "12px",
+                color: T.mid,
+                marginBottom: "20px",
+              }}
+            >
+              {error}
+            </p>
+            <button className="btn-g" onClick={() => window.location.reload()}>
+              Retry
+            </button>
+          </div>
+        </div>
+      </>
+    );
+
+  /* ── MAIN RENDER ─────────────────────────────────────────────────────────── */
+  return (
+    <>
+      <style>{CSS}</style>
+
+      <motion.div
+        className="up"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.28 }}
+      >
+        <div
+          style={{
+            maxWidth: "1080px",
+            margin: "0 auto",
+            padding: "52px 32px 96px",
+          }}
+        >
+          {/* ── PROFILE HEADER ─────────────────────────────────────────────── */}
+          <header style={{ marginBottom: "52px" }}>
+            {/* Name + quick action */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-end",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: "16px",
+                marginBottom: "10px",
+              }}
+            >
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "14px" }}
+              >
+                <h1
+                  style={{
+                    fontFamily: "'Bebas Neue', sans-serif",
+                    fontSize: "clamp(3.8rem, 9vw, 7rem)",
+                    color: T.cream,
+                    lineHeight: 0.9,
+                    letterSpacing: "-0.02em",
+                  }}
                 >
-                  {tab.label}
-                </button>
+                  {profileData?.user?.username || "Unknown"}
+                </h1>
+                <span style={{ fontSize: "1.3rem", lineHeight: 1 }}>
+                  {getCountryFlag(profileData?.user?.country)}
+                </span>
+                {profileData?.user?.isVerified && (
+                  <Image
+                    src={tick}
+                    alt="Verified"
+                    width={16}
+                    height={16}
+                    style={{ marginBottom: "4px" }}
+                  />
+                )}
+              </div>
+              <button
+                className="btn-g"
+                onClick={() => router.push("/dashboard/blogs/creator")}
+                style={{ marginBottom: "6px" }}
+              >
+                <PenLine size={11} /> New Article
+              </button>
+            </div>
+
+            <p
+              style={{
+                fontFamily: "'Outfit', sans-serif",
+                fontSize: "10px",
+                letterSpacing: "0.2em",
+                color: T.mid,
+                textTransform: "uppercase",
+                marginBottom: "28px",
+              }}
+            >
+              Member since {formatJoinDate(profileData?.user?.createdAt)}
+            </p>
+
+            {/* Horizontal rule */}
+            <Rule />
+
+            {/* Stat strip — connected cells */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(4, auto) 1fr",
+                borderLeft: `1px solid ${T.border}`,
+              }}
+            >
+              {[
+                {
+                  label: "Rank",
+                  value:
+                    profileData?.ctf?.rank === "Unranked"
+                      ? "NuB"
+                      : `#${profileData?.ctf?.rank}`,
+                },
+                {
+                  label: "Score",
+                  value: profileData?.ctf?.totalPoints?.toLocaleString() || "0",
+                },
+                {
+                  label: "Solved",
+                  value: String(profileData?.ctf?.totalSolved || "0"),
+                },
+                { label: "Plan", value: "Free" },
+              ].map((s) => (
+                <div key={s.label} className="hstat">
+                  <Micro style={{ marginBottom: "7px" }}>{s.label}</Micro>
+                  <Display size="1.7rem">{s.value}</Display>
+                </div>
               ))}
-            </nav>
+              {/* Filler cell — keeps left border */}
+              <div style={{ borderRight: `1px solid ${T.border}` }} />
+            </div>
+            <Rule />
+          </header>
+
+          {/* ── TABS ───────────────────────────────────────────────────────── */}
+          <div
+            className="tab-scroll"
+            style={{
+              borderBottom: `1px solid ${T.border}`,
+              marginBottom: "36px",
+              display: "flex",
+            }}
+          >
+            {TABS.map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setActiveTab(t.id)}
+                className={`up-tab${activeTab === t.id ? " active" : ""}`}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
 
-          <div className="tab-content space-y-4">
+          {/* ── TAB CONTENT ────────────────────────────────────────────────── */}
+          <div key={activeTab} className="fade-up">
             {activeTab === "personal" && renderPersonalDetails()}
             {activeTab === "ctf" && renderCTFDetails()}
             {activeTab === "courses" && renderCourseDetails()}
@@ -1798,292 +2083,268 @@ const UserProfile = () => {
             {activeTab === "myblogs" && renderMyBlogs()}
           </div>
         </div>
+
+        {/* ── MODALS ─────────────────────────────────────────────────────────── */}
         {showEditUsernameModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm bg-black/60">
-            <div className="bg-[#0c081e] rounded-2xl shadow-xl max-w-md w-full border border-[#3f2b96]/40">
-              <div className="flex justify-between items-center p-5 border-b border-[#3f2b96]/30">
-                <h3 className="text-base font-semibold text-white">
-                  Edit Username
-                </h3>
+          <Modal
+            title="Change Username"
+            onClose={() => setShowEditUsernameModal(false)}
+          >
+            <form onSubmit={handleEditUsername}>
+              <Field
+                label="New Username"
+                type="text"
+                value={newUsername}
+                onChange={(e) => setNewUsername(e.target.value)}
+                error={usernameError}
+              />
+              <div
+                style={{
+                  display: "flex",
+                  gap: "8px",
+                  justifyContent: "flex-end",
+                }}
+              >
                 <button
+                  type="button"
+                  className="btn-g"
                   onClick={() => setShowEditUsernameModal(false)}
-                  className="text-zinc-400 hover:text-white"
                 >
-                  <X className="h-5 w-5" />
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn-p"
+                  disabled={isUpdatingUsername}
+                >
+                  {isUpdatingUsername ? "Saving…" : "Update"}
                 </button>
               </div>
-              <form onSubmit={handleEditUsername} className="p-6 space-y-6">
-                <div>
-                  <label
-                    htmlFor="newUsername"
-                    className="block text-sm font-medium text-zinc-400 mb-1"
-                  >
-                    New Username
-                  </label>
-                  <input
-                    type="text"
-                    id="newUsername"
-                    name="newUsername"
-                    value={newUsername}
-                    onChange={(e) => setNewUsername(e.target.value)}
-                    className="block w-full border-b border-zinc-700/50 py-2 px-4 text-white focus:outline-none focus:border-[#7c52ff]/80 bg-transparent"
-                  />
-                  {usernameError && (
-                    <p className="mt-1 text-sm text-red-500">{usernameError}</p>
-                  )}
-                </div>
-                <div className="flex justify-end space-x-3">
-                  <button
-                    type="button"
-                    onClick={() => setShowEditUsernameModal(false)}
-                    className="px-4 py-2 bg-[#0c081e] hover:bg-[#3f2b96]/20 border border-[#3f2b96]/40 text-white rounded-md transition-colors duration-200"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isUpdatingUsername}
-                    className="px-4 py-2 bg-[#5d3fd3] hover:bg-linear-to-r from-[#5d3fd3] to-[#7c52ff] text-white rounded-md transition-colors duration-200 flex items-center"
-                  >
-                    {isUpdatingUsername ? "Saving..." : "Update Username"}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+            </form>
+          </Modal>
         )}
 
         {showChangePasswordModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm bg-black/60">
-            <div className="bg-[#0c081e] rounded-2xl shadow-xl max-w-md w-full border border-[#3f2b96]/40">
-              <div className="flex justify-between items-center p-5 border-b border-[#3f2b96]/30">
-                <h3 className="text-base font-semibold text-white">
-                  Change Password
-                </h3>
-                <button
-                  onClick={() => setShowChangePasswordModal(false)}
-                  className="text-zinc-400 hover:text-white"
+          <Modal
+            title="Change Password"
+            onClose={() => setShowChangePasswordModal(false)}
+          >
+            <form onSubmit={handleSubmitPasswordChange}>
+              <Field
+                label="Current Password"
+                type={showPassword ? "text" : "password"}
+                name="currentPassword"
+                value={passwordForm.currentPassword}
+                onChange={handlePasswordChange}
+                error={errors.currentPassword}
+              />
+              <Field
+                label="New Password"
+                type={showPassword ? "text" : "password"}
+                name="newPassword"
+                value={passwordForm.newPassword}
+                onChange={handlePasswordChange}
+                error={errors.newPassword}
+              />
+              {/* Strength bar */}
+              <div style={{ marginBottom: "18px" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    marginBottom: "7px",
+                  }}
                 >
-                  <X className="h-5 w-5" />
+                  <Micro>Strength</Micro>
+                  <p
+                    style={{
+                      fontFamily: "'Outfit', sans-serif",
+                      fontSize: "9px",
+                      letterSpacing: "0.14em",
+                      textTransform: "uppercase",
+                      color: passwordStrength.color,
+                    }}
+                  >
+                    {passwordStrength.label}
+                  </p>
+                </div>
+                <div className="pbar">
+                  <div
+                    className="pfill"
+                    style={{
+                      width: `${(passwordStrength.score / 6) * 100}%`,
+                      background: passwordStrength.color,
+                    }}
+                  />
+                </div>
+              </div>
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  marginBottom: "22px",
+                  cursor: "pointer",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={showPassword}
+                  onChange={() => setShowPassword(!showPassword)}
+                />
+                <p
+                  style={{
+                    fontFamily: "'Outfit', sans-serif",
+                    fontSize: "12px",
+                    color: T.mid,
+                  }}
+                >
+                  Show passwords
+                </p>
+              </label>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "8px",
+                  justifyContent: "flex-end",
+                }}
+              >
+                <button
+                  type="button"
+                  className="btn-g"
+                  onClick={() => setShowChangePasswordModal(false)}
+                >
+                  Cancel
+                </button>
+                <button type="submit" className="btn-p">
+                  <Lock size={11} /> Update
                 </button>
               </div>
-              <form
-                onSubmit={handleSubmitPasswordChange}
-                className="p-6 space-y-6"
-              >
-                <div>
-                  <label
-                    htmlFor="currentPassword"
-                    className="block text-sm font-medium text-zinc-400 mb-1"
-                  >
-                    Current Password
-                  </label>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    name="currentPassword"
-                    id="currentPassword"
-                    value={passwordForm.currentPassword}
-                    onChange={handlePasswordChange}
-                    className="block w-full border-b border-zinc-700/50 py-2 px-4 text-white focus:outline-none focus:border-[#7c52ff]/80 bg-transparent"
-                  />
-                  {errors.currentPassword && (
-                    <p className="mt-1 text-sm text-red-500">
-                      {errors.currentPassword}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label
-                    htmlFor="newPassword"
-                    className="block text-sm font-medium text-zinc-400 mb-1"
-                  >
-                    New Password
-                  </label>
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    name="newPassword"
-                    id="newPassword"
-                    value={passwordForm.newPassword}
-                    onChange={handlePasswordChange}
-                    className="block w-full border-b border-zinc-700/50 py-2 px-4 text-white focus:outline-none focus:border-[#7c52ff]/80 bg-transparent"
-                  />
-                  {errors.newPassword && (
-                    <p className="mt-1 text-sm text-red-500">
-                      {errors.newPassword}
-                    </p>
-                  )}
-                  <div className="mt-2">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-zinc-400">
-                        Password Strength
-                      </span>
-                      <span
-                        className={`text-sm text-${passwordStrength.color}`}
-                      >
-                        {passwordStrength.label}
-                      </span>
-                    </div>
-                    <div className="h-2 w-full bg-zinc-700 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full bg-${passwordStrength.color} rounded-full`}
-                        style={{
-                          width: `${(passwordStrength.score / 6) * 100}%`,
-                        }}
-                      ></div>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    id="showPasswordToggle"
-                    checked={showPassword}
-                    onChange={togglePasswordVisibility}
-                    className="h-4 w-4 text-lime-600 focus:ring-[#7c52ff] rounded bg-zinc-800"
-                  />
-                  <label
-                    htmlFor="showPasswordToggle"
-                    className="ml-2 block text-sm text-zinc-400"
-                  >
-                    Show passwords
-                  </label>
-                </div>
-                <div className="flex justify-end space-x-3">
-                  <button
-                    type="button"
-                    onClick={() => setShowChangePasswordModal(false)}
-                    className="px-4 py-2 bg-[#0c081e] hover:bg-[#3f2b96]/20 border border-[#3f2b96]/40 text-white rounded-md transition-colors duration-200"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-[#5d3fd3] hover:bg-linear-to-r from-[#5d3fd3] to-[#7c52ff] text-white rounded-md transition-colors duration-200 flex items-center"
-                  >
-                    <Lock className="h-4 w-4 mr-2" />
-                    Update Password
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
+            </form>
+          </Modal>
         )}
 
         {showDeleteAccountModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-            <div className="bg-zinc-800 rounded-lg shadow-xl max-w-md w-full border border-zinc-700/50 transform transition-all animate-fade-in">
-              <div className="flex justify-between items-center p-4 border-b border-zinc-700/50">
-                <h3 className="text-xl font-medium text-red-400">
-                  Delete Account
-                </h3>
-                <button
-                  onClick={() => setShowDeleteAccountModal(false)}
-                  className="text-zinc-400 hover:text-white"
-                >
-                  <X className="h-5 w-5" />
-                </button>
-              </div>
-              <div className="p-6 space-y-6">
-                <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
-                  <div className="flex items-center">
-                    <AlertTriangle className="h-5 w-5 text-red-400 mr-2" />
-                    <span className="text-red-400 font-medium">Warning</span>
-                  </div>
-                  <p className="text-red-300 text-sm mt-2">
-                    This action cannot be undone. This will permanently delete
-                    your account and all associated data.
-                  </p>
-                </div>
-
-                <div>
-                  <p className="text-white text-lg mb-2">
-                    Are you sure you want to delete your account?
-                  </p>
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="deleteReason"
-                    className="block text-sm font-medium text-zinc-400 mb-2"
-                  >
-                    Why are you deleting your account? (Optional)
-                  </label>
-                  <textarea
-                    id="deleteReason"
-                    value={deleteReason}
-                    onChange={(e) => setDeleteReason(e.target.value)}
-                    className="block w-full border border-[#3f2b96]/40 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-red-400 bg-[#04020a] resize-none"
-                    rows={3}
-                    placeholder="Help us improve by sharing your feedback..."
-                  />
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="confirmationPhrase"
-                    className="block text-sm font-medium text-zinc-400 mb-2"
-                  >
-                    To confirm deletion, type{" "}
-                    <span className="text-red-400 font-mono">
-                      {requiredPhrase}
-                    </span>{" "}
-                    in the box below
-                  </label>
-                  <input
-                    type="text"
-                    id="confirmationPhrase"
-                    value={confirmationPhrase}
-                    onChange={(e) => setConfirmationPhrase(e.target.value)}
-                    className="block w-full border border-[#3f2b96]/40 rounded-xl py-3 px-4 text-white focus:outline-none focus:border-red-500 bg-[#04020a] font-mono"
-                    placeholder="Enter the given text"
-                  />
-                </div>
-                <div className="flex justify-end space-x-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowDeleteAccountModal(false)}
-                    className="px-4 py-2 bg-[#0c081e] hover:bg-[#3f2b96]/20 border border-[#3f2b96]/40 text-white rounded-md transition-colors duration-200"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleDeleteAccount}
-                    disabled={confirmationPhrase !== requiredPhrase}
-                    className={`px-4 py-2 rounded-md transition-colors duration-200 flex items-center ${
-                      confirmationPhrase === requiredPhrase
-                        ? "bg-red-600 hover:bg-red-500 text-white"
-                        : "bg-zinc-600 text-zinc-400 cursor-not-allowed"
-                    }`}
-                  >
-                    Delete Account
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {toastMessage && (
-          <div className="fixed bottom-6 right-6 z-50 animate-fade-in">
+          <Modal
+            title="Delete Account"
+            onClose={() => setShowDeleteAccountModal(false)}
+          >
             <div
-              className={`p-4 rounded-lg shadow-xl flex items-center ${
-                toastMessage.type === "success"
-                  ? "bg-[#5d3fd3] text-lime-200"
-                  : "bg-red-900 text-red-200"
-              }`}
+              style={{
+                border: `1px solid ${T.err}`,
+                padding: "12px 16px",
+                display: "flex",
+                gap: "10px",
+                marginBottom: "22px",
+              }}
             >
-              {toastMessage.type === "success" ? (
-                <CheckCircle className="h-5 w-5 mr-2" />
-              ) : (
-                <AlertTriangle className="h-5 w-5 mr-2" />
-              )}
-              <span>{toastMessage.text}</span>
+              <AlertTriangle
+                size={13}
+                color={T.errText}
+                style={{ flexShrink: 0, marginTop: "1px" }}
+              />
+              <p
+                style={{
+                  fontFamily: "'Outfit', sans-serif",
+                  fontSize: "12px",
+                  color: T.errText,
+                }}
+              >
+                Permanent. All data will be deleted and cannot be recovered.
+              </p>
             </div>
+            <Field
+              label="Reason (optional)"
+              textarea
+              value={deleteReason}
+              onChange={(e) => setDeleteReason(e.target.value)}
+              placeholder="Help us improve…"
+            />
+            <div style={{ marginBottom: "22px" }}>
+              <Micro style={{ marginBottom: "7px" }}>
+                Type{" "}
+                <span
+                  style={{
+                    fontFamily: "'JetBrains Mono', monospace",
+                    color: T.errText,
+                  }}
+                >
+                  {requiredPhrase}
+                </span>{" "}
+                to confirm
+              </Micro>
+              <input
+                type="text"
+                value={confirmationPhrase}
+                onChange={(e) => setConfirmationPhrase(e.target.value)}
+                className="up-input"
+                style={{
+                  fontFamily: "'JetBrains Mono', monospace",
+                  fontSize: "12px",
+                }}
+              />
+            </div>
+            <div
+              style={{
+                display: "flex",
+                gap: "8px",
+                justifyContent: "flex-end",
+              }}
+            >
+              <button
+                type="button"
+                className="btn-g"
+                onClick={() => setShowDeleteAccountModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn-d"
+                disabled={confirmationPhrase !== requiredPhrase}
+                onClick={handleDeleteAccount}
+              >
+                Delete Account
+              </button>
+            </div>
+          </Modal>
+        )}
+
+        {/* ── TOAST ─────────────────────────────────────────────────────────── */}
+        {toastMessage && (
+          <div
+            className="card fade-up"
+            style={{
+              position: "fixed",
+              bottom: "24px",
+              right: "24px",
+              zIndex: 80,
+              padding: "12px 20px",
+              display: "flex",
+              alignItems: "center",
+              gap: "10px",
+              background: T.bg,
+              borderColor: toastMessage.type === "success" ? T.ok : T.err,
+            }}
+          >
+            {toastMessage.type === "success" ? (
+              <CheckCircle size={13} color={T.okText} />
+            ) : (
+              <AlertTriangle size={13} color={T.errText} />
+            )}
+            <p
+              style={{
+                fontFamily: "'Outfit', sans-serif",
+                fontSize: "13px",
+                color: T.cream,
+              }}
+            >
+              {toastMessage.text}
+            </p>
           </div>
         )}
-      </motion.main>
-    </div>
+      </motion.div>
+    </>
   );
 };
 

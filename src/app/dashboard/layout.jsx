@@ -18,6 +18,8 @@ import {
   IconLogout as IconLogout,
   IconChevronLeft as IconChevronLeft,
   IconUser as IconUser,
+  IconArticle,
+  IconPencilPlus,
 } from "@tabler/icons-react";
 
 import logo from "@/img/white.svg";
@@ -50,6 +52,12 @@ const TOOLS_NAV = [
     external: true,
   },
   { label: "Profile", href: "/profile", icon: IconUser },
+  { label: "Blogs", href: "/dashboard/blogs", icon: IconArticle },
+  {
+    label: "Create Blog",
+    href: "/dashboard/blogs/creator",
+    icon: IconPencilPlus,
+  },
 ];
 
 function NavItem({ label, href, icon: Icon, isActive, collapsed, external }) {
@@ -233,20 +241,20 @@ export default function DashboardLayout({ children }) {
 
           {/* Season Studio */}
           {!seasonsLoading && editableSeasons.length > 0 && (
-  <>
-    <SectionLabel label="Season Studio" collapsed={collapsed} />
-    {editableSeasons.map((season) => (
-      <NavItem
-        key={season.slug}
-        label={season.name}
-        href={`/season-studio/${season.slug}`}
-        icon={IconSparkles}
-        isActive={pathname === `/season-studio/${season.slug}`}
-        collapsed={collapsed}
-      />
-    ))}
-  </>
-)}
+            <>
+              <SectionLabel label="Season Studio" collapsed={collapsed} />
+              {editableSeasons.map((season) => (
+                <NavItem
+                  key={season.slug}
+                  label={season.name}
+                  href={`/season-studio/${season.slug}`}
+                  icon={IconSparkles}
+                  isActive={pathname === `/season-studio/${season.slug}`}
+                  collapsed={collapsed}
+                />
+              ))}
+            </>
+          )}
         </nav>
 
         {/* Sign out */}
