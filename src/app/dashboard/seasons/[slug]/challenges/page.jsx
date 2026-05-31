@@ -178,20 +178,16 @@ export default withAuth(function SeasonCTF() {
         withCredentials: true,
       });
       if (res.data?.success) {
-        const team = res.data.team || {};
-        const stats = res.data.memberStats || {};
+        const stats = res.data.stats || {};
         setMembers(
-          (team.members || []).map((m) => {
-            const perUser = stats[m.username] || { points: 0, solves: 0 };
-            return {
-              id: m.email || m.username,
-              name: m.username,
-              pts: perUser.points || 0,
-              solves: perUser.solves || 0,
-            };
-          }),
+          (stats.members || []).map((m) => ({
+            id: m.userId,
+            name: m.username,
+            pts: m.points || 0,
+            solves: 0,
+          })),
         );
-        setTeamName(team.name || "Squad");
+        setTeamName(stats.teamName || "Squad");
       }
     } catch {
       setMembers([]);
@@ -380,12 +376,14 @@ export default withAuth(function SeasonCTF() {
         />
       )}
 
-      <TeamHUD
-        members={members}
-        maxPts={Math.max(...members.map((m) => m.pts), 1)}
-        position="bottom-right"
-        teamName={teamName}
-      />
+      {members.length > 0 && (
+        <TeamHUD
+          members={members}
+          maxPts={Math.max(...members.map((m) => m.pts), 1)}
+          position="top-left"
+          teamName={teamName}
+        />
+      )}
 
       <div className="relative z-10 border-b" style={{ borderColor: T.border }}>
         {season?.backgroundImage && (
