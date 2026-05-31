@@ -6,25 +6,21 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
 import AnimatedBlurBg from "@/components/home/AnimatedBlurBg";
-import watermark from "@/img/f2.svg";
+import watermark from "@/img/white.svg";
+
+const T = {
+  bg: "#0A0A0A",
+  cream: "#F0EDE6",
+  muted: "#888880",
+  border: "rgba(255,255,255,0.12)",
+  borderFocus: "rgba(232,228,217,0.30)",
+};
 
 const containerVariants = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { duration: 0.8, staggerChildren: 0.2, delayChildren: 0.1 } },
+  visible: { opacity: 1, transition: { duration: 0.6, staggerChildren: 0.12, delayChildren: 0.05 } },
 };
 const itemVariants = {
-  hidden: { y: 30, opacity: 0 },
-  visible: { y: 0, opacity: 1, transition: { duration: 0.6, ease: "easeOut" } },
-};
-const numberVariants = {
-  hidden: { scale: 0.8, opacity: 0 },
-  visible: { scale: 1, opacity: 1, transition: { duration: 0.8, type: "spring", stiffness: 100, damping: 12 } },
-};
-const lineVariants = {
-  hidden: { width: 0, opacity: 0 },
-  visible: { width: "8rem", opacity: 1, transition: { duration: 1.2, ease: "easeInOut" } },
-};
-const buttonVariants = {
   hidden: { y: 20, opacity: 0 },
   visible: { y: 0, opacity: 1, transition: { duration: 0.5, ease: "easeOut" } },
 };
@@ -33,12 +29,16 @@ const NotFound = ({ onOpenSignUp, onOpenLogin }) => {
   const router = useRouter();
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#020205] text-white font-outfit selection:bg-purple-500/30 selection:text-purple-200">
+    <div
+      className="flex flex-col min-h-screen text-white selection:bg-white/10 selection:text-white"
+      style={{ background: T.bg, fontFamily: "'Outfit', sans-serif" }}
+    >
       <Navbar onOpenSignUp={onOpenSignUp} onOpenLogin={onOpenLogin} />
 
+      {/* Background */}
       <div className="fixed inset-0 z-0">
         <AnimatedBlurBg />
-        <div className="absolute inset-0 bg-[url('/noise.png')] opacity-[0.03] mix-blend-overlay pointer-events-none" />
+        <div className="absolute inset-0 opacity-[0.03] mix-blend-overlay pointer-events-none" />
       </div>
 
       <motion.main
@@ -47,81 +47,131 @@ const NotFound = ({ onOpenSignUp, onOpenLogin }) => {
         initial="hidden"
         animate="visible"
       >
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.07]">
+        {/* Watermark */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-[0.04]">
           <Image src={watermark} alt="gopwnit" fill className="object-contain" priority={false} />
         </div>
 
-        <div className="max-w-lg w-full text-center relative z-10">
-          <motion.section className="mb-12" variants={itemVariants}>
-            <motion.h1
-              className="text-9xl font-black text-transparent bg-clip-text bg-linear-to-b from-purple-400 to-purple-800 mb-6 tracking-tight font-roundo"
-              variants={numberVariants}
-              aria-label="404 Error"
+        <div className="max-w-2xl w-full relative z-10">
+
+          {/* Top label */}
+          <motion.div variants={itemVariants} className="mb-8">
+            <span
+              className="text-[10px] font-bold tracking-[0.28em] uppercase"
+              style={{ color: T.muted, fontFamily: "'Outfit', sans-serif" }}
+            >
+              Error — GOPWNIT / NOT FOUND
+            </span>
+          </motion.div>
+
+          {/* Divider */}
+          <motion.div
+            variants={itemVariants}
+            className="mb-8"
+            style={{ height: "1px", background: T.border }}
+          />
+
+          {/* 404 heading */}
+          <motion.div variants={itemVariants} className="mb-2">
+            <h1
+              className="leading-none tracking-tight text-transparent bg-clip-text"
+              style={{
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontSize: "clamp(6rem, 20vw, 14rem)",
+                backgroundImage: `linear-gradient(180deg, ${T.cream} 0%, rgba(240,237,230,0.25) 100%)`,
+              }}
             >
               404
-            </motion.h1>
-            <motion.div
-              className="w-32 h-0.5 bg-linear-to-r from-transparent via-purple-500 to-transparent mx-auto mb-8"
-              variants={lineVariants}
-              role="presentation"
-            />
-          </motion.section>
+            </h1>
+          </motion.div>
 
-          <motion.section className="mb-12" variants={itemVariants}>
-            <motion.h2
-              className="text-4xl md:text-5xl font-black uppercase tracking-tighter text-white mb-6"
-              variants={itemVariants}
+          {/* Subheading */}
+          <motion.div variants={itemVariants} className="mb-6">
+            <h2
+              className="uppercase leading-none"
+              style={{
+                fontFamily: "'Bebas Neue', sans-serif",
+                fontSize: "clamp(1.8rem, 5vw, 3rem)",
+                color: T.muted,
+                letterSpacing: "0.06em",
+              }}
             >
               Page Not Found
-            </motion.h2>
-            <motion.p
-              className="text-zinc-400 text-xl leading-relaxed font-medium max-w-md mx-auto"
-              variants={itemVariants}
+            </h2>
+          </motion.div>
+
+          {/* Body copy */}
+          <motion.div variants={itemVariants} className="mb-12 max-w-sm">
+            <p
+              className="text-[13px] leading-relaxed"
+              style={{ color: T.muted, fontFamily: "'Outfit', sans-serif" }}
             >
               The page you&apos;re looking for has vanished into the digital void.
-            </motion.p>
-          </motion.section>
+              It may have been moved, deleted, or never existed.
+            </p>
+          </motion.div>
 
-          <motion.section className="mb-16" variants={itemVariants}>
-            <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-              <motion.button
-                onClick={() => router.back()}
-                className="w-full sm:w-auto min-w-45 bg-purple-600 hover:bg-purple-500 text-white font-black uppercase tracking-widest text-xs py-5 px-8 rounded-2xl transition-all duration-300"
-                variants={buttonVariants}
-                whileHover={{ scale: 1.02, y: -4, boxShadow: "0 20px 40px rgba(168, 85, 247, 0.25)" }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                aria-label="Go back to previous page"
-              >
-                Go Back
-              </motion.button>
-              <motion.button
-                onClick={() => router.push("/")}
-                className="w-full sm:w-auto min-w-45 border border-white/10 text-white font-black uppercase tracking-widest text-xs py-5 px-8 rounded-2xl transition-all duration-300 backdrop-blur-md bg-white/[0.02] hover:bg-white/[0.05] hover:border-purple-500/30"
-                variants={buttonVariants}
-                whileHover={{ scale: 1.02, y: -4, borderColor: "rgba(168, 85, 247, 0.4)", boxShadow: "0 20px 40px rgba(0,0,0,0.3)" }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                aria-label="Return to homepage"
-              >
-                Return Home
-              </motion.button>
-            </div>
-          </motion.section>
-
-          <motion.footer
-            className="text-[10px] font-black uppercase tracking-[0.3em] text-zinc-600 space-y-4 pt-10 border-t border-white/5"
+          {/* Divider */}
+          <motion.div
             variants={itemVariants}
-            role="contentinfo"
-          >
-            <p>Error Code: Protocol_404</p>
-            <p className="leading-relaxed">
-              Need assistance? <br />
-              <a href="mailto:gopwnit@gmail.com" className="text-purple-500/60 hover:text-purple-500 transition-colors">
-                Contact our support team - gopwnit@gmail.com
+            className="mb-8"
+            style={{ height: "1px", background: T.border }}
+          />
+
+          {/* Buttons */}
+          <motion.div variants={itemVariants} className="flex items-center gap-3">
+            <motion.button
+              onClick={() => router.push("/dashboard")}
+              className="py-3.5 px-8 font-black uppercase tracking-[0.18em] text-[11px] transition-all duration-200"
+              style={{
+                background: T.cream,
+                color: T.bg,
+                fontFamily: "'Outfit', sans-serif",
+                border: `1px solid ${T.cream}`,
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "#FFFFFF"; e.currentTarget.style.borderColor = "#FFFFFF"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = T.cream; e.currentTarget.style.borderColor = T.cream; }}
+              whileTap={{ scale: 0.98 }}
+            >
+              Go Back
+            </motion.button>
+
+            <motion.button
+              onClick={() => router.push("/")}
+              className="py-3.5 px-8 font-bold uppercase tracking-[0.18em] text-[11px] transition-all duration-200"
+              style={{
+                background: "transparent",
+                color: T.muted,
+                fontFamily: "'Outfit', sans-serif",
+                border: `1px solid ${T.border}`,
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = T.borderFocus; e.currentTarget.style.color = T.cream; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = T.border; e.currentTarget.style.color = T.muted; }}
+              whileTap={{ scale: 0.98 }}
+            >
+              Return Home
+            </motion.button>
+          </motion.div>
+
+          {/* Footer note */}
+          <motion.div variants={itemVariants} className="mt-16">
+            <p
+              className="text-[14px] tracking-[0.14em]"
+              style={{ color: "rgba(255,255,255,0.15)", fontFamily: "'Outfit', sans-serif" }}
+            >
+              Need help?{" "}
+              <a
+                href="mailto:gopwnit@gmail.com"
+                className="transition-colors duration-150"
+                style={{ color: T.muted }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = T.cream; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = T.muted; }}
+              >
+                gopwnit@gmail.com
               </a>
             </p>
-          </motion.footer>
+          </motion.div>
+
         </div>
       </motion.main>
 

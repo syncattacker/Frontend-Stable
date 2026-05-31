@@ -33,10 +33,10 @@ const ParticleField = ({ count = 5000 }) => {
                 />
             </bufferGeometry>
             <pointsMaterial
-                size={0.08}
-                color="#8251EE"
+                size={0.06}
+                color="#E8E4D9"
                 transparent
-                opacity={0.6}
+                opacity={0.25}
                 sizeAttenuation
                 blending={THREE.AdditiveBlending}
             />
@@ -47,7 +47,7 @@ const ParticleField = ({ count = 5000 }) => {
 const PerspectiveGrid = () => {
     return (
         <gridHelper
-            args={[100, 50, '#8251EE', '#2A2A2A']}
+            args={[100, 50, '#2a2a2a', '#1a1a1a']}
             position={[0, -10, 0]}
             rotation={[Math.PI / 10, 0, 0]}
         />
@@ -56,11 +56,11 @@ const PerspectiveGrid = () => {
 
 const CyberBackground = () => {
     return (
-        <div className="absolute inset-0 z-0 pointer-events-none" style={{ background: '#050505' }}>
+        <div className="absolute inset-0 z-0 pointer-events-none" style={{ background: '#0A0A0A' }}>
             <Canvas camera={{ position: [0, 5, 20], fov: 60 }}>
-                <fog attach="fog" args={['#050505', 10, 50]} />
-                <ambientLight intensity={0.5} />
-                <pointLight position={[10, 10, 10]} intensity={1} color="#8251EE" />
+                <fog attach="fog" args={['#0A0A0A', 10, 50]} />
+                <ambientLight intensity={0.3} />
+                <pointLight position={[10, 10, 10]} intensity={0.4} color="#E8E4D9" />
                 <ParticleField />
                 <PerspectiveGrid />
             </Canvas>

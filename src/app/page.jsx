@@ -33,7 +33,7 @@ const Home = ({ onOpenSignUp, onOpenLogin }) => {
 
       <Landing
         onOpenSignUp={() => setSignUpOpen(true)}
-        onOpenLogin={() => setLoginOpen(true)} // ← ye sahi hai
+        onOpenLogin={() => setLoginOpen(true)}
       />
 
       <div ref={ref}>
@@ -48,10 +48,10 @@ const Home = ({ onOpenSignUp, onOpenLogin }) => {
 
       <button
         onClick={scrollToTop}
-        className="fixed bottom-6 right-6 z-50 p-3 bg-linear-to-tr from-purple-900 to-[#a855f7] hover:bg-purple-700 text-white rounded-full shadow-lg transition-all duration-300 border border-white/10"
+        className="fixed bottom-6 right-6 z-50 flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] backdrop-blur-xl text-white/80 shadow-[0_8px_30px_rgba(0,0,0,0.25)] transition-all duration-300 hover:bg-white/[0.1] hover:text-white hover:scale-105 active:scale-95"
         aria-label="Scroll to Top"
       >
-        <ArrowUp size={20} />
+        <ArrowUp size={18} strokeWidth={2.2} />
       </button>
       <SignUp
         isOpen={signUpOpen}

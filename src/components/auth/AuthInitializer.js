@@ -9,7 +9,7 @@ export default function AuthInitializer() {
 
   useEffect(() => {
     dispatch(verifyUser());
-  }, []);
+  }, [dispatch]);
 
   return null;
 }
