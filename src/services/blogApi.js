@@ -18,7 +18,7 @@ export const blogApi = {
   createBlog: async (blogData) => {
     const response = await API.post("/api/v1/resource/", blogData, {
       headers: {
-        "Content-Type": "multipart/form-data",
+        "Content-Type": "application/json",
       },
     });
     return response.data;
