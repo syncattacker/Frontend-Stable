@@ -382,14 +382,12 @@ export default withAuth(function SeasonCTF() {
         />
       )}
 
-      {members.length > 0 && (
-        <TeamHUD
-          members={members}
-          maxPts={Math.max(...members.map((m) => m.pts), 1)}
-          position="top-left"
-          teamName={teamName}
-        />
-      )}
+      <TeamHUD
+        members={members}
+        maxPts={Math.max(...members.map((m) => m.pts), 1)}
+        position="bottom-right"
+        teamName={teamName}
+      />
 
       <div className="relative z-10 border-b" style={{ borderColor: T.border }}>
         {season?.backgroundImage && (

@@ -160,7 +160,7 @@ function posStyle(p = "top-left") {
   const base = { position: "fixed", zIndex: 9999 };
   if (p === "top-right")    return { ...base, top: 20, right: 20 };
   if (p === "bottom-left")  return { ...base, bottom: 20, left: 20 };
-  if (p === "bottom-right") return { ...base, bottom: 20, right: 20 };
+  if (p === "bottom-right") return { ...base, bottom: 20, right: 250 };
   return { ...base, top: 20, left: 20 };
 }
 
