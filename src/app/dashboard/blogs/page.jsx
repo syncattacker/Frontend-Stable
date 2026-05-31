@@ -4,10 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import ArticleCard from "@/components/blog/ArticleCard";
 import KnowledgeBaseSidebar from "@/components/blog/KnowledgeBaseSidebar";
 import { blogApi } from "@/services/blogApi";
-import Footer from "@/components/footer/Footer";
-import Navbar from "@/components/navbar/Navbar";
 
-/* ─── design tokens (GoPwnIt system) ─────────────────────────── */
 const T = {
   bg: "#000000",
   cream: "#fefce8",
@@ -18,22 +15,6 @@ const T = {
   inputBg: "#0f0f0f",
 };
 
-/* ─── inline Spinner ──────────────────────────────────────────── */
-const Spinner = ({ size = 28 }) => (
-  <div
-    style={{
-      width: size,
-      height: size,
-      borderRadius: "50%",
-      border: `1.5px solid ${T.border}`,
-      borderTop: `1.5px solid ${T.cream}`,
-      animation: "spin 0.75s linear infinite",
-      flexShrink: 0,
-    }}
-  />
-);
-
-/* ─── inline category tabs (matches GoPwnIt tab style) ────────── */
 const CATEGORIES = ["All", "Guides", "Tutorials", "News", "Updates", "Tools"];
 
 function CategoryTabs({ active, setActive }) {
@@ -186,45 +167,23 @@ export default function KnowledgeBasePage() {
         fontFamily: "Outfit, sans-serif",
       }}
     >
-      {/* ── Navbar ── */}
-      <Navbar />
-
-      <main style={{ paddingTop: "80px" }}>
-        {/* ════════════════════════════════════════
-                    HERO HEADER
-                    Mirrors: Privacy Protocol hero layout
-                ════════════════════════════════════════ */}
+      <main style={{ paddingTop: "40px" }}>
         <section
           style={{
-            padding: "72px 80px 64px",
+            padding: "0px 40px 20px",
             borderBottom: `1px solid ${T.border}`,
           }}
         >
-          <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
-            {/* Breadcrumb eyebrow */}
-            <p
-              style={{
-                fontFamily: "Outfit, sans-serif",
-                fontSize: "9px",
-                letterSpacing: "0.22em",
-                textTransform: "uppercase",
-                color: T.muted,
-                marginBottom: "28px",
-              }}
-            >
-              GoPwnIt / Knowledge Base
-            </p>
-
-            {/* Stacked Bebas Neue title */}
+          <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
             <h1
               style={{
                 fontFamily: "'Bebas Neue', sans-serif",
-                fontSize: "clamp(3.5rem, 8vw, 6.5rem)",
+                fontSize: "clamp(3rem, 7vw, 5.5rem)",
                 letterSpacing: "-0.03em",
                 lineHeight: 0.92,
                 color: T.cream,
                 textTransform: "uppercase",
-                marginBottom: "40px",
+                marginBottom: "10px",
               }}
             >
               Knowledge
@@ -238,18 +197,9 @@ export default function KnowledgeBasePage() {
                 display: "flex",
                 alignItems: "flex-start",
                 gap: "14px",
-                marginBottom: "48px",
+                marginBottom: "38px",
               }}
             >
-              <div
-                style={{
-                  width: "24px",
-                  height: "1px",
-                  background: T.cream,
-                  marginTop: "10px",
-                  flexShrink: 0,
-                }}
-              />
               <p
                 style={{
                   fontFamily: "Outfit, sans-serif",
@@ -265,17 +215,15 @@ export default function KnowledgeBasePage() {
               </p>
             </div>
 
-            {/* Divider */}
             <div
               style={{
                 width: "100%",
                 height: "1px",
                 background: T.border,
-                marginBottom: "40px",
+                marginBottom: "20px",
               }}
             />
 
-            {/* Meta stat row — mirrors EFFECTIVE DATE / VERSION / STATUS */}
             <div
               style={{ display: "flex", gap: "64px", alignItems: "flex-start" }}
             >
@@ -284,7 +232,7 @@ export default function KnowledgeBasePage() {
                   style={{
                     fontFamily: "Outfit, sans-serif",
                     fontSize: "9px",
-                    letterSpacing: "0.22em",
+                    letterSpacing: "0.15em",
                     textTransform: "uppercase",
                     color: T.muted,
                     marginBottom: "8px",
@@ -310,7 +258,7 @@ export default function KnowledgeBasePage() {
                   style={{
                     fontFamily: "Outfit, sans-serif",
                     fontSize: "9px",
-                    letterSpacing: "0.22em",
+                    letterSpacing: "0.15em",
                     textTransform: "uppercase",
                     color: T.muted,
                     marginBottom: "8px",
@@ -336,7 +284,7 @@ export default function KnowledgeBasePage() {
                   style={{
                     fontFamily: "Outfit, sans-serif",
                     fontSize: "9px",
-                    letterSpacing: "0.22em",
+                    letterSpacing: "0.15em",
                     textTransform: "uppercase",
                     color: T.muted,
                     marginBottom: "8px",
@@ -375,7 +323,7 @@ export default function KnowledgeBasePage() {
                   style={{
                     fontFamily: "Outfit, sans-serif",
                     fontSize: "9px",
-                    letterSpacing: "0.22em",
+                    letterSpacing: "0.15em",
                     textTransform: "uppercase",
                     color: T.muted,
                     marginBottom: "8px",
@@ -401,23 +349,17 @@ export default function KnowledgeBasePage() {
           </div>
         </section>
 
-        {/* ════════════════════════════════════════
-                    CATEGORY FILTER RAIL
-                ════════════════════════════════════════ */}
         <section
           style={{ borderBottom: `1px solid ${T.border}`, padding: "0 80px" }}
         >
-          <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
+          <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
             <CategoryTabs
               active={activeCategory}
               setActive={handleCategoryChange}
             />
           </div>
         </section>
-
-        {/* ════════════════════════════════════════
-                    BODY — ARTICLES + SIDEBAR
-                ════════════════════════════════════════ */}
+        
         <section
           style={{
             padding: "0 80px 120px",
@@ -563,7 +505,7 @@ export default function KnowledgeBasePage() {
                         style={{
                           fontFamily: "Outfit, sans-serif",
                           fontSize: "9px",
-                          letterSpacing: "0.22em",
+                          letterSpacing: "0.15em",
                           textTransform: "uppercase",
                           color: T.muted,
                         }}
@@ -631,8 +573,6 @@ export default function KnowledgeBasePage() {
           </div>
         </section>
       </main>
-
-      <Footer />
 
       <style>{`
                 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500&display=swap');

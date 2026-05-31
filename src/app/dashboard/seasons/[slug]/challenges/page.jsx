@@ -28,6 +28,9 @@ import {
   useTransform,
 } from "framer-motion";
 import { withAuth } from "@/utils/withAuth";
+import NotificationPanel from "@/components/tools/NotificationPanel";
+import { TeamHUD } from "@/components/tools/TeamHUD";
+import { useSocket } from "@/sockets/SocketProvider";
 
 // ─── THEME ────────────────────────────────────────────────────────────────────
 const T = {
@@ -140,6 +143,9 @@ export default withAuth(function SeasonCTF() {
   const [showTagsDialog, setShowTagsDialog] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [windowSize, setWindowSize] = useState({ width: 0, height: 0 });
+  const { socket } = useSocket();
+  const [members, setMembers] = useState([]);
+  const [teamName, setTeamName] = useState("Squad");
 
   // window resize
   useEffect(() => {
@@ -184,6 +190,7 @@ export default withAuth(function SeasonCTF() {
             signal: ctrl.signal,
           }),
           fetchSolved(ctrl.signal),
+          fetchMyTeamStats(),
         ]);
         const d = res.data.data || {};
         setSeason(d.season || null);
@@ -228,6 +235,20 @@ export default withAuth(function SeasonCTF() {
     }
   }, [total, solved]);
 
+  useEffect(() => {
+    if (!socket) return;
+    const onSolved = (data) => {
+      if (!data?.challengeSlug) return;
+      setSolvedChallenges((prev) =>
+        prev.includes(data.challengeSlug)
+          ? prev
+          : [...prev, data.challengeSlug],
+      );
+    };
+    socket.on("challengeSolved", onSolved);
+    return () => socket.off("challengeSolved", onSolved);
+  }, [socket]);
+
   // handlers
   const handleSelect = useCallback(
     (ch) => {
@@ -240,6 +261,32 @@ export default withAuth(function SeasonCTF() {
     },
     [solvedChallenges],
   );
+
+  const fetchMyTeamStats = async () => {
+    try {
+      const res = await API.post(
+        `/api/v1/seasons/${slug}/team/myTeam`,
+        {},
+        { withCredentials: true },
+      );
+      if (res.data?.success) {
+        const team = res.data.team || {};
+        const stats = res.data.memberStats || {};
+        setMembers(
+          (team.members || []).map((m) => ({
+            id: m.email || m.username,
+            name: m.username,
+            pts: stats[m.username]?.points || 0,
+            solves: stats[m.username]?.solves || 0,
+          })),
+        );
+        setTeamName(team.name || "Squad");
+      }
+    } catch {
+      setMembers([]);
+      setTeamName("Squad");
+    }
+  };
 
   const submitFlag = useCallback(async () => {
     if (!selectedChallenge || !flagInput.trim() || submitting) return;
@@ -330,6 +377,15 @@ export default withAuth(function SeasonCTF() {
             zIndex: 9999,
             pointerEvents: "none",
           }}
+        />
+      )}
+
+      {members.length > 0 && (
+        <TeamHUD
+          members={members}
+          maxPts={Math.max(...members.map((m) => m.pts), 1)}
+          position="top-left"
+          teamName={teamName}
         />
       )}
 
@@ -1217,6 +1273,7 @@ export default withAuth(function SeasonCTF() {
           </motion.div>
         )}
       </AnimatePresence>
+      <NotificationPanel position="bottom-right" seasonSlug={slug} />
     </div>
   );
 });
