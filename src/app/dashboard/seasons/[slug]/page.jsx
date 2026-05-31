@@ -18,7 +18,7 @@ import {
 import API from "@/utils/axios";
 import Image from "next/image";
 import logo from "@/img/white.svg";
-import BoxLoader from "@/components/loaders/LogoLoader";
+import BoxLoader from "@/components/loaders/BoxLoader";
 import { motion } from "framer-motion";
 import { withAuth } from "@/utils/withAuth";
 
@@ -649,17 +649,19 @@ const SeasonCtfRegis = () => {
                                   className="group-hover:translate-x-1 transition-transform"
                                 />
                               </button>
-                              <button
-                                onClick={() =>
-                                  router.push(
-                                    `/dashboard/seasons/${slug}/team-setup`,
-                                  )
-                                }
-                                className="group w-full border border-[#FEFCE833] hover:border-[#FEFCE838] text-zinc-500 hover:text-[#fefce8] font-bold uppercase tracking-[0.2em] py-3 px-6 text-xs transition-colors flex items-center justify-center gap-2"
-                              >
-                                <IconUsers size={14} stroke={1.5} />
-                                Manage Team
-                              </button>
+                              {ctfData.type !== "solo" && (
+                                <button
+                                  onClick={() =>
+                                    router.push(
+                                      `/dashboard/seasons/${slug}/team-setup`,
+                                    )
+                                  }
+                                  className="group w-full border border-[#FEFCE833] hover:border-[#FEFCE838] text-zinc-500 hover:text-[#fefce8] font-bold uppercase tracking-[0.2em] py-3 px-6 text-xs transition-colors flex items-center justify-center gap-2"
+                                >
+                                  <IconUsers size={14} stroke={1.5} />
+                                  Manage Team
+                                </button>
+                              )}
                             </>
                           )}
                         </div>

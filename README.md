@@ -95,18 +95,5 @@
         └── withAuth.js
 
 
-[X] Labs
-[X] Code of conduct
-[X] Support
-[X] Reviewboard
-[X] Privacy Policy
-[X] Host Your event
-[X] UserStats
-[X] Challenges
-
-[ ] Navbar
-[ ] Loaders
-
-[ ] Leaderboard
-[ ] Profile
-[ ] Season Studio
+[ ] Public Profile
+[ ] API Data Tweeks

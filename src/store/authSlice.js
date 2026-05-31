@@ -39,7 +39,7 @@ const authSlice = createSlice({
     },
     logout: (state) => {
       state.isAuthenticated = false;
-      state.status = "idle";
+      state.status = "unauthenticated";
       state.error = null;
     },
   },

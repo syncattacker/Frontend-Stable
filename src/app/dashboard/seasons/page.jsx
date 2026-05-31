@@ -12,7 +12,7 @@ import Image from "next/image";
 import watermark from "@/img/white.svg";
 import SeasonCard from "@/components/season/SeasonCard";
 import API from "@/utils/axios";
-import BoxLoader from "@/components/loaders/LogoLoader";
+import BoxLoader from "@/components/loaders/BoxLoader";
 import { withAuth } from "@/utils/withAuth";
 
 const T = {
