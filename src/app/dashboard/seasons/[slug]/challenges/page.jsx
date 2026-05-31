@@ -380,7 +380,7 @@ export default withAuth(function SeasonCTF() {
         <TeamHUD
           members={members}
           maxPts={Math.max(...members.map((m) => m.pts), 1)}
-          position="top-left"
+          position="bottom-right"
           teamName={teamName}
         />
       )}
