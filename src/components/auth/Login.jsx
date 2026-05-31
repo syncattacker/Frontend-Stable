@@ -239,7 +239,7 @@ export default function Login({ isOpen, onClose, onSignUpClick }) {
         onClose();
         router.push("/dashboard/seasons");
         setIsLoggingIn(false);
-      }, 800);
+      }, 500);
     } catch (error) {
       hideNotification();
       showError("Authentication Failed", error.response?.data?.message);
