@@ -785,7 +785,7 @@ export default function CreatorDashboard() {
                 {isEditMode && (
                   <button
                     type="button"
-                    onClick={() => router.push(`/blog/${slug}`)}
+                    onClick={() => router.push(`/dashboard/blogs/${slug}`)}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.borderColor = T.borderHover;
                       e.currentTarget.style.color = T.cream;

@@ -32,7 +32,6 @@ import NotificationPanel from "@/components/tools/NotificationPanel";
 import { TeamHUD } from "@/components/tools/TeamHUD";
 import { useSocket } from "@/sockets/SocketProvider";
 
-// ─── THEME ────────────────────────────────────────────────────────────────────
 const T = {
   bg: "#0A0A0A",
   cream: "#fefce8",
@@ -172,6 +171,36 @@ export default withAuth(function SeasonCTF() {
     [slug],
   );
 
+  const fetchMyTeamStats = useCallback(async () => {
+    if (!slug) return;
+    try {
+      const res = await API.post(
+        `/api/v1/seasons/${slug}/team/myTeam`,
+        {},
+        { withCredentials: true },
+      );
+      if (res.data?.success) {
+        const team = res.data.team || {};
+        const stats = res.data.memberStats || {};
+        setMembers(
+          (team.members || []).map((m) => {
+            const perUser = stats[m.username] || { points: 0, solves: 0 };
+            return {
+              id: m.email || m.username,
+              name: m.username,
+              pts: perUser.points || 0,
+              solves: perUser.solves || 0,
+            };
+          }),
+        );
+        setTeamName(team.name || "Squad");
+      }
+    } catch {
+      setMembers([]);
+      setTeamName("Squad");
+    }
+  }, [slug]);
+
   // fetch challenges
   useEffect(() => {
     if (!slug) {
@@ -219,7 +248,6 @@ export default withAuth(function SeasonCTF() {
     return () => ctrl.abort();
   }, [slug, fetchSolved, router]);
 
-  // progress
   const total = groupedChallenges.reduce((t, g) => t + g.challenges.length, 0);
   const solved = groupedChallenges.reduce(
     (t, g) =>
@@ -261,32 +289,6 @@ export default withAuth(function SeasonCTF() {
     },
     [solvedChallenges],
   );
-
-  const fetchMyTeamStats = async () => {
-    try {
-      const res = await API.post(
-        `/api/v1/seasons/${slug}/team/myTeam`,
-        {},
-        { withCredentials: true },
-      );
-      if (res.data?.success) {
-        const team = res.data.team || {};
-        const stats = res.data.memberStats || {};
-        setMembers(
-          (team.members || []).map((m) => ({
-            id: m.email || m.username,
-            name: m.username,
-            pts: stats[m.username]?.points || 0,
-            solves: stats[m.username]?.solves || 0,
-          })),
-        );
-        setTeamName(team.name || "Squad");
-      }
-    } catch {
-      setMembers([]);
-      setTeamName("Squad");
-    }
-  };
 
   const submitFlag = useCallback(async () => {
     if (!selectedChallenge || !flagInput.trim() || submitting) return;

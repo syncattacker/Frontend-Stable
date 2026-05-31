@@ -112,7 +112,7 @@ const ArticleCard = ({ article }) => {
     return (
         <>
             <Link
-                href={`/dashboard/blog/${article.slug}`}
+                href={`/dashboard/blogs/${article.slug}`}
                 style={{
                     display: "flex",
                     flexDirection: "column",

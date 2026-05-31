@@ -81,7 +81,7 @@ const KnowledgeBaseSidebar = () => {
           {recentPosts.map((post, idx) => (
             <div
               key={post._id || post.id || post.slug || idx}
-              onClick={() => router.push(`/dashboard/blog/${post.slug}`)}
+              onClick={() => router.push(`/dashboard/blogs/${post.slug}`)}
               onMouseEnter={() => setHoveredId(post.id)}
               onMouseLeave={() => setHoveredId(null)}
               style={{

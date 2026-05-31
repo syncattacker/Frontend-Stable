@@ -11,7 +11,7 @@ const GuideItem = ({ guide, borderLeft }) => {
 
     return (
         <div
-            onClick={() => router.push(`/dashboard/blog/${guide.id}`)}
+            onClick={() => router.push(`/dashboard/blogs/${guide.id}`)}
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
             style={{
