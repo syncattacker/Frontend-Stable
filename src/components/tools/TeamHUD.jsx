@@ -4,25 +4,33 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, useSpring, useTransform } from "framer-motion";
 
 const T = {
-  bg:      "#0f0f0f",
-  surface: "#141414",
-  cream:   "#f0ebe0",
-  mid:     "#888888",
-  muted:   "rgba(255,255,255,0.06)",
-  border:  "rgba(255,255,255,0.09)",
+  bg:     "rgba(10,10,10,0.92)",
+  cream:  "#f0ebe0",
+  mid:    "#666",
+  dim:    "#444",
+  border: "rgba(255,255,255,0.08)",
+  borderStrong: "rgba(255,255,255,0.13)",
 };
 
-const RANKS = [
-  { name: T.cream,                  pts: T.cream,                  bar: T.cream,                  num: T.cream                  },
-  { name: "rgba(240,235,224,0.65)", pts: "rgba(240,235,224,0.55)", bar: "rgba(240,235,224,0.55)", num: "rgba(240,235,224,0.65)" },
-  { name: "rgba(240,235,224,0.42)", pts: "rgba(240,235,224,0.38)", bar: "rgba(240,235,224,0.35)", num: "rgba(240,235,224,0.42)" },
-  { name: "rgba(240,235,224,0.24)", pts: "rgba(240,235,224,0.22)", bar: "rgba(240,235,224,0.18)", num: "rgba(240,235,224,0.24)" },
+const RANK_COLORS = [
+  T.cream,
+  "rgba(240,235,224,0.62)",
+  "rgba(240,235,224,0.40)",
+  "rgba(240,235,224,0.26)",
 ];
 
-const getR = (i) => RANKS[Math.min(i, 3)];
+const BAR_COLORS = [
+  T.cream,
+  "rgba(240,235,224,0.52)",
+  "rgba(240,235,224,0.34)",
+  "rgba(240,235,224,0.20)",
+];
+
+const getColor  = (i) => RANK_COLORS[Math.min(i, 3)];
+const getBarCol = (i) => BAR_COLORS[Math.min(i, 3)];
 
 function Counter({ value }) {
-  const spring  = useSpring(value, { stiffness: 80, damping: 18 });
+  const spring  = useSpring(value, { stiffness: 90, damping: 20 });
   const display = useTransform(spring, (v) => Math.round(v).toLocaleString());
   const [label, setLabel] = useState(value.toLocaleString());
   useEffect(() => {
@@ -37,15 +45,17 @@ function Delta({ value }) {
   return (
     <motion.span
       initial={{ opacity: 1, y: 0 }}
-      animate={{ opacity: 0, y: -12 }}
-      transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
+      animate={{ opacity: 0, y: -10 }}
+      transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
       style={{
-        position: "absolute", top: -14, right: 0,
-        fontSize: 9, fontWeight: 700,
-        fontFamily: "var(--hud-mono)",
+        position: "absolute", top: -16, left: "50%",
+        transform: "translateX(-50%)",
+        fontSize: 8, fontWeight: 700,
+        fontFamily: "var(--hud-f)",
         color: pos ? "#5db87a" : "#c46060",
         pointerEvents: "none",
         whiteSpace: "nowrap",
+        letterSpacing: "0.04em",
       }}
     >
       {pos ? `+${value.toLocaleString()}` : value.toLocaleString()}
@@ -55,90 +65,92 @@ function Delta({ value }) {
 
 function MemberBlock({ player, rank, delta, maxPts }) {
   const pct = Math.min(Math.max(player.pts / (maxPts || 1), 0), 1);
-  const r   = getR(rank);
+  const col = getColor(rank);
+  const bar = getBarCol(rank);
 
   return (
     <motion.div
       layout
-      layoutId={`block-${player.id}`}
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
+      layoutId={`hud-${player.id}`}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       style={{
         display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        gap: 7,
-        padding: "10px 18px",
-        minWidth: 130,
+        alignItems: "center",
+        gap: 10,
+        padding: "0 16px",
+        height: "100%",
       }}
     >
-      <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-        <span style={{
-          fontFamily: "var(--hud-mono)",
-          fontSize: 8, fontWeight: 700,
-          color: r.num,
-          letterSpacing: "0.06em",
-          flexShrink: 0,
-        }}>
-          {String(rank + 1).padStart(2, "0")}
-        </span>
-        <span style={{
-          fontFamily: "var(--hud-mono)",
-          fontSize: 10, fontWeight: 600,
-          color: r.name,
-          textTransform: "uppercase",
-          letterSpacing: "0.1em",
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          maxWidth: 90,
-        }}>
-          {player.name}
-        </span>
+      <span style={{
+        fontFamily: "var(--hud-f)",
+        fontSize: 8, fontWeight: 500,
+        color: T.dim,
+        letterSpacing: "0.08em",
+        flexShrink: 0,
+      }}>
+        {String(rank + 1).padStart(2, "0")}
+      </span>
+
+      <span style={{
+        fontFamily: "var(--hud-f)",
+        fontSize: 11, fontWeight: 600,
+        color: col,
+        textTransform: "uppercase",
+        letterSpacing: "0.09em",
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+        maxWidth: 88,
+        flexShrink: 0,
+      }}>
+        {player.name}
+      </span>
+
+      <div style={{
+        width: 52, height: 1,
+        background: "rgba(255,255,255,0.06)",
+        flexShrink: 0,
+        overflow: "hidden",
+      }}>
+        <motion.div
+          animate={{ width: `${Math.round(pct * 100)}%` }}
+          transition={{ duration: 0.9, ease: [0.4, 0, 0.2, 1] }}
+          style={{ height: "100%", background: bar }}
+        />
       </div>
 
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <div style={{
-          flex: 1, height: 1,
-          background: "rgba(255,255,255,0.07)",
-          overflow: "hidden",
+      <div style={{ position: "relative", flexShrink: 0 }}>
+        <span style={{
+          fontFamily: "var(--hud-f)",
+          fontSize: 11, fontWeight: 700,
+          color: col,
+          letterSpacing: "0.02em",
         }}>
-          <motion.div
-            animate={{ width: `${Math.round(pct * 100)}%` }}
-            transition={{ duration: 0.85, ease: [0.4, 0, 0.2, 1] }}
-            style={{ height: "100%", background: r.bar }}
-          />
-        </div>
-
-        <div style={{ position: "relative", flexShrink: 0 }}>
+          <Counter value={player.pts} />
           <span style={{
-            fontFamily: "var(--hud-mono)",
-            fontSize: 10, fontWeight: 700,
-            color: r.pts,
-            whiteSpace: "nowrap",
+            fontSize: 8, fontWeight: 400,
+            color: T.mid,
+            marginLeft: 3,
+            letterSpacing: "0.1em",
           }}>
-            <Counter value={player.pts} />
-            <span style={{ fontSize: 7, color: "rgba(255,255,255,0.22)", marginLeft: 2 }}>pts</span>
+            PTS
           </span>
-          <AnimatePresence>
-            {delta !== null && (
-              <Delta key={`${player.id}-${player.pts}`} value={delta} />
-            )}
-          </AnimatePresence>
-        </div>
+        </span>
+        <AnimatePresence>
+          {delta !== null && (
+            <Delta key={`d-${player.id}-${player.pts}`} value={delta} />
+          )}
+        </AnimatePresence>
       </div>
     </motion.div>
   );
 }
 
-export function TeamHUD({
-  members  = [],
-  maxPts   = 6000,
-  teamName = "Squad",
-}) {
+export function TeamHUD({ members = [], maxPts = 6000, teamName = "Squad" }) {
   const [sorted, setSorted] = useState([]);
-  const [deltas, setDeltas]  = useState({});
+  const [deltas, setDeltas] = useState({});
   const prevRef = useRef({});
 
   useEffect(() => {
@@ -159,14 +171,13 @@ export function TeamHUD({
   }, [members, maxPts]);
 
   const totalPts = sorted.reduce((s, p) => s + p.pts, 0);
-
   if (sorted.length === 0) return null;
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&display=swap');
-        :root { --hud-mono: 'JetBrains Mono', ui-monospace, monospace; }
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+        :root { --hud-f: 'JetBrains Mono', ui-monospace, monospace; }
       `}</style>
 
       <div style={{
@@ -174,36 +185,40 @@ export function TeamHUD({
         bottom: 20,
         left: "50%",
         transform: "translateX(-50%)",
-        zIndex: 9999,
+        zIndex: 9998,
+        height: 44,
         display: "flex",
         alignItems: "stretch",
         background: T.bg,
-        border: `1px solid ${T.border}`,
+        border: `1px solid ${T.borderStrong}`,
+        backdropFilter: "blur(12px)",
+        WebkitBackdropFilter: "blur(12px)",
       }}>
 
         <div style={{
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
-          padding: "10px 16px",
+          padding: "0 14px",
           borderRight: `1px solid ${T.border}`,
-          gap: 5,
+          gap: 2,
           flexShrink: 0,
         }}>
           <span style={{
-            fontFamily: "var(--hud-mono)",
-            fontSize: 7, fontWeight: 700,
+            fontFamily: "var(--hud-f)",
+            fontSize: 7, fontWeight: 500,
             color: T.mid,
             textTransform: "uppercase",
-            letterSpacing: "0.22em",
+            letterSpacing: "0.24em",
             whiteSpace: "nowrap",
           }}>
             {teamName}
           </span>
           <span style={{
-            fontFamily: "var(--hud-mono)",
+            fontFamily: "var(--hud-f)",
             fontSize: 11, fontWeight: 700,
-            color: "rgba(240,235,224,0.45)",
+            color: "rgba(240,235,224,0.38)",
+            letterSpacing: "0.02em",
           }}>
             <Counter value={totalPts} />
           </span>
@@ -219,7 +234,11 @@ export function TeamHUD({
                 maxPts={maxPts}
               />
               {i < sorted.length - 1 && (
-                <div style={{ width: 1, background: T.border, alignSelf: "stretch" }} />
+                <div style={{
+                  width: 1,
+                  background: T.border,
+                  alignSelf: "stretch",
+                }} />
               )}
             </div>
           ))}
