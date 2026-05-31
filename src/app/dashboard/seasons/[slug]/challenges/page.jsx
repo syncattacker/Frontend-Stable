@@ -174,11 +174,9 @@ export default withAuth(function SeasonCTF() {
   const fetchMyTeamStats = useCallback(async () => {
     if (!slug) return;
     try {
-      const res = await API.post(
-        `/api/v1/seasons/${slug}/team/myTeam`,
-        {},
-        { withCredentials: true },
-      );
+      const res = await API.get(`/api/v1/seasons/${slug}/team/myTeam`, {
+        withCredentials: true,
+      });
       if (res.data?.success) {
         const team = res.data.team || {};
         const stats = res.data.memberStats || {};
