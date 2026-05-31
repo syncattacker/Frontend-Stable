@@ -13,10 +13,10 @@ const T = {
 };
 
 const RANKS = [
-  { num: T.cream,                   name: T.cream,                    pts: T.cream,                   bar: T.cream,                      border: "rgba(240,235,224,0.22)", bg: "rgba(240,235,224,0.04)", strip: T.cream },
-  { num: "rgba(240,235,224,0.65)",  name: "rgba(240,235,224,0.65)",   pts: "rgba(240,235,224,0.55)",  bar: "rgba(240,235,224,0.55)",      border: T.border,                 bg: "transparent",            strip: "rgba(240,235,224,0.55)" },
-  { num: "rgba(240,235,224,0.42)",  name: "rgba(240,235,224,0.42)",   pts: "rgba(240,235,224,0.38)",  bar: "rgba(240,235,224,0.35)",      border: T.border,                 bg: "transparent",            strip: "rgba(240,235,224,0.35)" },
-  { num: "rgba(240,235,224,0.24)",  name: "rgba(240,235,224,0.28)",   pts: "rgba(240,235,224,0.22)",  bar: "rgba(240,235,224,0.18)",      border: T.border,                 bg: "transparent",            strip: "rgba(240,235,224,0.18)" },
+  { name: T.cream,                  pts: T.cream,                  bar: T.cream,                  num: T.cream                  },
+  { name: "rgba(240,235,224,0.65)", pts: "rgba(240,235,224,0.55)", bar: "rgba(240,235,224,0.55)", num: "rgba(240,235,224,0.65)" },
+  { name: "rgba(240,235,224,0.42)", pts: "rgba(240,235,224,0.38)", bar: "rgba(240,235,224,0.35)", num: "rgba(240,235,224,0.42)" },
+  { name: "rgba(240,235,224,0.24)", pts: "rgba(240,235,224,0.22)", bar: "rgba(240,235,224,0.18)", num: "rgba(240,235,224,0.24)" },
 ];
 
 const getR = (i) => RANKS[Math.min(i, 3)];
@@ -25,12 +25,10 @@ function Counter({ value }) {
   const spring  = useSpring(value, { stiffness: 80, damping: 18 });
   const display = useTransform(spring, (v) => Math.round(v).toLocaleString());
   const [label, setLabel] = useState(value.toLocaleString());
-
   useEffect(() => {
     spring.set(value);
     return display.on("change", setLabel);
   }, [value]);
-
   return <>{label}</>;
 }
 
@@ -39,14 +37,15 @@ function Delta({ value }) {
   return (
     <motion.span
       initial={{ opacity: 1, y: 0 }}
-      animate={{ opacity: 0, y: -18 }}
+      animate={{ opacity: 0, y: -12 }}
       transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
       style={{
-        position: "absolute", right: 10, top: 4,
+        position: "absolute", top: -14, right: 0,
         fontSize: 9, fontWeight: 700,
         fontFamily: "var(--hud-mono)",
         color: pos ? "#5db87a" : "#c46060",
         pointerEvents: "none",
+        whiteSpace: "nowrap",
       }}
     >
       {pos ? `+${value.toLocaleString()}` : value.toLocaleString()}
@@ -54,124 +53,92 @@ function Delta({ value }) {
   );
 }
 
-function Card({ player, rank, delta }) {
-  const pct = Math.min(Math.max(player.pts / (player._max || 6000), 0), 1);
+function MemberBlock({ player, rank, delta, maxPts }) {
+  const pct = Math.min(Math.max(player.pts / (maxPts || 1), 0), 1);
   const r   = getR(rank);
 
   return (
     <motion.div
       layout
-      layoutId={`card-${player.id}`}
-      initial={{ opacity: 0, x: -4 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: 4, transition: { duration: 0.12 } }}
-      transition={{
-        layout:  { type: "spring", stiffness: 400, damping: 40 },
-        opacity: { duration: 0.18 },
-      }}
+      layoutId={`block-${player.id}`}
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0 }}
       style={{
-        position: "relative",
         display: "flex",
-        alignItems: "center",
-        gap: 8,
-        padding: "7px 10px",
-        borderBottom: `1px solid ${T.muted}`,
-        background: r.bg,
-        overflow: "hidden",
+        flexDirection: "column",
+        justifyContent: "center",
+        gap: 7,
+        padding: "10px 18px",
+        minWidth: 130,
       }}
     >
-      <div style={{
-        position: "absolute", left: 0, top: "18%", bottom: "18%",
-        width: 1.5, background: r.strip,
-      }} />
-
-      <span style={{
-        fontFamily: "var(--hud-mono)",
-        fontSize: 9, fontWeight: 700,
-        color: r.num,
-        width: 12, textAlign: "center", flexShrink: 0,
-        letterSpacing: "0.05em",
-      }}>
-        {rank + 1}
-      </span>
-
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{
+      <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+        <span style={{
+          fontFamily: "var(--hud-mono)",
+          fontSize: 8, fontWeight: 700,
+          color: r.num,
+          letterSpacing: "0.06em",
+          flexShrink: 0,
+        }}>
+          {String(rank + 1).padStart(2, "0")}
+        </span>
+        <span style={{
           fontFamily: "var(--hud-mono)",
           fontSize: 10, fontWeight: 600,
           color: r.name,
           textTransform: "uppercase",
           letterSpacing: "0.1em",
-          whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-          marginBottom: 5,
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          maxWidth: 90,
         }}>
           {player.name}
+        </span>
+      </div>
+
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <div style={{
+          flex: 1, height: 1,
+          background: "rgba(255,255,255,0.07)",
+          overflow: "hidden",
+        }}>
+          <motion.div
+            animate={{ width: `${Math.round(pct * 100)}%` }}
+            transition={{ duration: 0.85, ease: [0.4, 0, 0.2, 1] }}
+            style={{ height: "100%", background: r.bar }}
+          />
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
-          <div style={{
-            flex: 1, height: 1, borderRadius: 1,
-            background: "rgba(255,255,255,0.07)", overflow: "hidden",
-          }}>
-            <motion.div
-              animate={{ width: `${Math.round(pct * 100)}%` }}
-              transition={{ duration: 0.85, ease: [0.4, 0, 0.2, 1] }}
-              style={{ height: "100%", background: r.bar }}
-            />
-          </div>
+
+        <div style={{ position: "relative", flexShrink: 0 }}>
           <span style={{
             fontFamily: "var(--hud-mono)",
-            fontSize: 10, fontWeight: 600,
+            fontSize: 10, fontWeight: 700,
             color: r.pts,
-            minWidth: 34, textAlign: "right",
+            whiteSpace: "nowrap",
           }}>
             <Counter value={player.pts} />
+            <span style={{ fontSize: 7, color: "rgba(255,255,255,0.22)", marginLeft: 2 }}>pts</span>
           </span>
+          <AnimatePresence>
+            {delta !== null && (
+              <Delta key={`${player.id}-${player.pts}`} value={delta} />
+            )}
+          </AnimatePresence>
         </div>
       </div>
-
-      <div style={{ flexShrink: 0, textAlign: "right" }}>
-        <div style={{
-          fontFamily: "var(--hud-mono)",
-          fontSize: 12, fontWeight: 700, lineHeight: 1,
-          color: r.pts,
-        }}>
-          {player.solves}
-        </div>
-        <div style={{
-          fontFamily: "var(--hud-mono)",
-          fontSize: 7, letterSpacing: "0.14em",
-          textTransform: "uppercase", marginTop: 2,
-          color: "rgba(255,255,255,0.18)",
-        }}>
-          slv
-        </div>
-      </div>
-
-      <AnimatePresence>
-        {delta !== null && (
-          <Delta key={`${player.id}-${player.pts}`} value={delta} />
-        )}
-      </AnimatePresence>
     </motion.div>
   );
-}
-
-function posStyle(p = "top-left") {
-  const base = { position: "fixed", zIndex: 9999 };
-  if (p === "top-right")    return { ...base, top: 20, right: 20 };
-  if (p === "bottom-left")  return { ...base, bottom: 20, left: 20 };
-  if (p === "bottom-right") return { ...base, bottom: 20, right: 350 };
-  return { ...base, top: 20, left: 20 };
 }
 
 export function TeamHUD({
   members  = [],
   maxPts   = 6000,
-  position = "top-left",
   teamName = "Squad",
 }) {
   const [sorted, setSorted] = useState([]);
-  const [deltas, setDeltas] = useState({});
+  const [deltas, setDeltas]  = useState({});
   const prevRef = useRef({});
 
   useEffect(() => {
@@ -193,6 +160,8 @@ export function TeamHUD({
 
   const totalPts = sorted.reduce((s, p) => s + p.pts, 0);
 
+  if (sorted.length === 0) return null;
+
   return (
     <>
       <style>{`
@@ -200,77 +169,61 @@ export function TeamHUD({
         :root { --hud-mono: 'JetBrains Mono', ui-monospace, monospace; }
       `}</style>
 
-      <div style={{ ...posStyle(position), width: 240 }}>
+      <div style={{
+        position: "fixed",
+        bottom: 20,
+        left: "50%",
+        transform: "translateX(-50%)",
+        zIndex: 9999,
+        display: "flex",
+        alignItems: "stretch",
+        background: T.bg,
+        border: `1px solid ${T.border}`,
+      }}>
 
         <div style={{
-          display: "flex", alignItems: "center", gap: 7,
-          padding: "8px 10px",
-          background: T.bg,
-          border: `1px solid ${T.border}`,
-          borderBottom: `1px solid ${T.muted}`,
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          padding: "10px 16px",
+          borderRight: `1px solid ${T.border}`,
+          gap: 5,
+          flexShrink: 0,
         }}>
           <span style={{
-            flex: 1,
             fontFamily: "var(--hud-mono)",
-            fontSize: 8, fontWeight: 700,
+            fontSize: 7, fontWeight: 700,
             color: T.mid,
             textTransform: "uppercase",
             letterSpacing: "0.22em",
+            whiteSpace: "nowrap",
           }}>
             {teamName}
           </span>
           <span style={{
             fontFamily: "var(--hud-mono)",
-            fontSize: 8, fontWeight: 600,
-            color: "rgba(240,235,224,0.35)",
-            letterSpacing: "0.06em",
+            fontSize: 11, fontWeight: 700,
+            color: "rgba(240,235,224,0.45)",
           }}>
-            {sorted.length} online
+            <Counter value={totalPts} />
           </span>
         </div>
 
-        <div style={{
-          background: T.surface,
-          border: `1px solid ${T.border}`,
-          borderTop: "none",
-          overflow: "hidden",
-        }}>
-          <AnimatePresence initial={false}>
-            {sorted.map((p, i) => (
-              <Card
-                key={p.id}
+        <AnimatePresence initial={false}>
+          {sorted.map((p, i) => (
+            <div key={p.id} style={{ display: "flex", alignItems: "stretch" }}>
+              <MemberBlock
                 player={p}
                 rank={i}
                 delta={deltas[p.id] ?? null}
+                maxPts={maxPts}
               />
-            ))}
-          </AnimatePresence>
-
-          {sorted.length > 0 && (
-            <div style={{
-              display: "flex", alignItems: "center", justifyContent: "space-between",
-              padding: "6px 10px",
-              borderTop: `1px solid ${T.muted}`,
-            }}>
-              <span style={{
-                fontFamily: "var(--hud-mono)",
-                fontSize: 7, fontWeight: 600,
-                color: "rgba(255,255,255,0.18)",
-                textTransform: "uppercase",
-                letterSpacing: "0.18em",
-              }}>
-                team total
-              </span>
-              <span style={{
-                fontFamily: "var(--hud-mono)",
-                fontSize: 10, fontWeight: 700,
-                color: "rgba(240,235,224,0.55)",
-              }}>
-                <Counter value={totalPts} />
-              </span>
+              {i < sorted.length - 1 && (
+                <div style={{ width: 1, background: T.border, alignSelf: "stretch" }} />
+              )}
             </div>
-          )}
-        </div>
+          ))}
+        </AnimatePresence>
 
       </div>
     </>

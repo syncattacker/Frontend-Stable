@@ -294,7 +294,7 @@ export default withAuth(function SeasonCTF() {
         { withCredentials: true },
       );
       if (r.data.success) {
-        showToast("success", "🎉 Flag correct! Challenge solved!");
+        showToast("success", "Flag correct! Challenge solved!");
         const next = [...solvedChallenges, selectedChallenge.slug];
         setSolvedChallenges(next);
         if (next.length === total && total > 0) {
@@ -380,7 +380,6 @@ export default withAuth(function SeasonCTF() {
         <TeamHUD
           members={members}
           maxPts={Math.max(...members.map((m) => m.pts), 1)}
-          position="bottom-right"
           teamName={teamName}
         />
       )}
