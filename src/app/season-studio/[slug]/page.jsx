@@ -528,6 +528,8 @@ export default withAuth(function SeasonStudio() {
   const [adminsData, setAdminsData] = useState({ organizer: null, admins: [] });
   const [showBulkVisibilityModal, setShowBulkVisibilityModal] = useState(false);
   const [showWebhookSuccessModal, setShowWebhookSuccessModal] = useState(false);
+  const [showExportComingSoonModal, setShowExportComingSoonModal] =
+    useState(false);
 
   const [seasonData, setSeasonData] = useState({
     name: "",
@@ -1110,7 +1112,9 @@ export default withAuth(function SeasonStudio() {
     }
   };
 
-  const exportData = async () => {};
+  const exportData = async () => {
+    setShowExportComingSoonModal(true);
+  };
 
   const uploadFileToS3 = async (seasonSlug, file) => {
     const presignResponse = await API.post(
@@ -3693,6 +3697,74 @@ export default withAuth(function SeasonStudio() {
               className="w-full justify-center"
             >
               Close
+            </PrimaryBtn>
+          </ModalFooter>
+        </Modal>
+      )}
+
+      {showExportComingSoonModal && (
+        <Modal
+          title="Export Data"
+          onClose={() => setShowExportComingSoonModal(false)}
+        >
+          <div className="p-10 flex flex-col items-center gap-4 text-center">
+            <div
+              className="w-12 h-12 flex items-center justify-center"
+              style={{
+                border: `1px solid ${T.border}`,
+                borderRadius: "2px",
+                background: T.inputBg,
+              }}
+            >
+              <DocumentArrowUpIcon
+                className="h-5 w-5"
+                style={{ color: T.muted }}
+              />
+            </div>
+            <div>
+              <p
+                className="text-2xl leading-none mb-2"
+                style={{
+                  fontFamily: "Bebas Neue, sans-serif",
+                  color: T.cream,
+                  letterSpacing: "0.05em",
+                }}
+              >
+                Coming Soon
+              </p>
+              <p
+                className="text-xs max-w-xs"
+                style={{ color: T.muted, fontFamily: "Outfit, sans-serif" }}
+              >
+                Data export is currently under development. Check back soon.
+              </p>
+            </div>
+            <div
+              className="w-full mt-2 px-4 py-3 flex items-center gap-3"
+              style={{
+                border: `1px solid ${T.border}`,
+                background: T.inputBg,
+                borderRadius: "2px",
+              }}
+            >
+              <div
+                className="w-1.5 h-1.5 rounded-full shrink-0"
+                style={{ background: T.muted }}
+              />
+              <p
+                className="text-[10px] uppercase tracking-widest text-left"
+                style={{ color: T.muted, fontFamily: "Outfit, sans-serif" }}
+              >
+                Feature in progress — stay tuned for updates
+              </p>
+            </div>
+          </div>
+          <ModalFooter>
+            <PrimaryBtn
+              onClick={() => setShowExportComingSoonModal(false)}
+              className="w-full justify-center"
+            >
+              Got It
             </PrimaryBtn>
           </ModalFooter>
         </Modal>
