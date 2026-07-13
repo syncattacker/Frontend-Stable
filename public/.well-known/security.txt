@@ -1,0 +1,5 @@
+Contact: mailto:support@gopwnit.com
+Expires: 2027-07-12T00:00:00.000Z
+Preferred-Languages: en
+Canonical: https://gopwnit.com/.well-known/security.txt
+Policy: https://gopwnit.com/code-of-conduct

@@ -1,5 +1,8 @@
+"use client";
+
 import React from "react";
 import { IconArrowRight as ArrowRight } from "@tabler/icons-react";
+import { useAuthModal } from "@/providers/AuthModalProvider";
 
 const TOKENS = {
   brand: "#E8E4D9",
@@ -34,7 +37,9 @@ const AuxButton = ({ children, primary = true, onClick }) => (
   </button>
 );
 
-const CTAStrip = ({ onOpenSignUp }) => {
+const CTAStrip = () => {
+  const { openSignUp } = useAuthModal();
+
   return (
     <section
       className="py-32 relative z-10 overflow-hidden"
@@ -58,7 +63,7 @@ const CTAStrip = ({ onOpenSignUp }) => {
         </h2>
 
         <div className="flex justify-center mt-12">
-          <AuxButton primary={true} onClick={onOpenSignUp}>
+          <AuxButton primary={true} onClick={openSignUp}>
             Start Your Journey
           </AuxButton>
         </div>

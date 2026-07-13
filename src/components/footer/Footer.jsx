@@ -17,27 +17,18 @@ const T = {
 };
 
 const footerData = {
-  links: [
-    { id: 1, name: "Home", href: "/", external: false },
-    { id: 2, name: "About Us", href: "/reviewboard", external: false },
-    {
-      id: 3,
-      name: "API Documentation",
-      href: "https://docs.gopwnit.com",
-      external: true,
-    },
-    { id: 4, name: "Tool Documentation", href: "#", external: false },
-    { id: 5, name: "System Status", href: "#", external: false },
+  product: [
+    { id: 1, name: "Platform", href: "/platform", external: false },
+    { id: 2, name: "Host a CTF", href: "/host-a-ctf", external: false },
+    { id: 3, name: "Events", href: "/events", external: false },
+    { id: 4, name: "Blog", href: "/blog", external: false },
+    { id: 5, name: "FAQ", href: "/faq", external: false },
   ],
-  development: [
-    { id: 1, name: "Bug Bounty", href: "#", external: false },
-    { id: 2, name: "Open Source Contributor", href: "#", external: false },
-    {
-      id: 3,
-      name: "GitHub",
-      href: "https://github.com/GoPWNIt",
-      external: true,
-    },
+  company: [
+    { id: 1, name: "About", href: "/about", external: false },
+    { id: 2, name: "Press", href: "/press", external: false },
+    { id: 3, name: "Contact", href: "/contact", external: false },
+    { id: 4, name: "Security", href: "/security", external: false },
   ],
   community: [
     {
@@ -52,20 +43,39 @@ const footerData = {
       href: "https://chat.whatsapp.com/CpS6ajvaWeY1gHkHUutRrw",
       external: true,
     },
-  ],
-  policies: [
-    { id: 1, name: "Cookie Policy", href: "#", external: false },
-    { id: 2, name: "Privacy Policy", href: "/privacy-policy", external: false },
     {
       id: 3,
+      name: "GitHub",
+      href: "https://github.com/GoPWNIt",
+      external: true,
+    },
+    {
+      id: 4,
+      name: "LinkedIn",
+      href: "https://www.linkedin.com/company/gopwnit/",
+      external: true,
+    },
+    {
+      id: 5,
+      name: "Instagram",
+      href: "https://www.instagram.com/gopwnit.india",
+      external: true,
+    },
+  ],
+  legal: [
+    { id: 1, name: "Privacy Policy", href: "/privacy-policy", external: false },
+    {
+      id: 2,
       name: "Code of Conduct",
       href: "/code-of-conduct",
       external: false,
     },
+    { id: 3, name: "Terms of Service", href: "/terms", external: false },
+    { id: 4, name: "Cookie Policy", href: "/cookies", external: false },
   ],
   copyright: {
-    year: "2025",
-    company: "Copyright by gopwnit",
+    year: "2026",
+    company: "GOPWNIT, a partnership firm",
     text: "All rights reserved.",
   },
 };
@@ -180,9 +190,9 @@ const Footer = () => (
             borderBottom: `1px solid ${T.border}`,
           }}
         >
-          <ColHead>Links</ColHead>
+          <ColHead>Product</ColHead>
           <ul className="flex flex-col gap-3.5">
-            {footerData.links.map((item) => (
+            {footerData.product.map((item) => (
               <li key={item.id}>
                 <NavLink href={item.href} external={item.external}>
                   {item.name}
@@ -192,7 +202,7 @@ const Footer = () => (
           </ul>
         </div>
 
-        {/* ── Development ────────────────────────────────── */}
+        {/* ── Company ────────────────────────────────────── */}
         <div
           className="p-8"
           style={{
@@ -200,9 +210,9 @@ const Footer = () => (
             borderBottom: `1px solid ${T.border}`,
           }}
         >
-          <ColHead>Development</ColHead>
+          <ColHead>Company</ColHead>
           <ul className="flex flex-col gap-3.5">
-            {footerData.development.map((item) => (
+            {footerData.company.map((item) => (
               <li key={item.id}>
                 <NavLink href={item.href} external={item.external}>
                   {item.name}
@@ -232,11 +242,11 @@ const Footer = () => (
           </ul>
         </div>
 
-        {/* ── Policies ───────────────────────────────────── */}
+        {/* ── Legal ──────────────────────────────────────── */}
         <div className="p-8" style={{ borderBottom: `1px solid ${T.border}` }}>
-          <ColHead>Policies</ColHead>
+          <ColHead>Legal</ColHead>
           <ul className="flex flex-col gap-3.5">
-            {footerData.policies.map((item) => (
+            {footerData.legal.map((item) => (
               <li key={item.id}>
                 <NavLink href={item.href} external={item.external}>
                   {item.name}

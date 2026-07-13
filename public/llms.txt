@@ -1,0 +1,26 @@
+# gopwnit
+
+> gopwnit is a cybersecurity skills platform where individuals learn offensive security through hands-on labs and CTF competitions, and organizations host their own CTF events — built and hosted in India. gopwnit is operated by GOPWNIT, a partnership firm founded 30 January 2026.
+
+## Core pages
+
+- [About](https://gopwnit.com/about): Company facts, founders, and mission.
+- [Platform](https://gopwnit.com/platform): Full feature set — labs, CTF challenge categories, learning path, ranking system, hosting tools.
+- [Host a CTF](https://gopwnit.com/host-a-ctf): How organizations host their own CTF competitions on gopwnit.
+- [Events](https://gopwnit.com/events): Past and upcoming CTF competitions run on gopwnit.
+- [FAQ](https://gopwnit.com/faq): Direct answers to common questions about the platform, pricing, data handling, and hosting.
+- [Security](https://gopwnit.com/security): How gopwnit secures accounts, sessions, and data.
+- [Blog](https://gopwnit.com/blog): CTF write-ups, learning guides, and hosting guides.
+
+## Policies
+
+- [Privacy Policy](https://gopwnit.com/privacy-policy)
+- [Terms of Service](https://gopwnit.com/terms)
+- [Code of Conduct](https://gopwnit.com/code-of-conduct)
+- [Cookie Policy](https://gopwnit.com/cookies)
+
+## Contact
+
+- [Contact](https://gopwnit.com/contact)
+- [Press](https://gopwnit.com/press)
+- Email: support@gopwnit.com

@@ -25,13 +25,8 @@ const T = {
   borderHover: "rgba(254,252,232,0.18)",
 };
 
+// Fonts (Bebas Neue, Outfit, DM Sans) are loaded once, site-wide, in the root layout.
 if (typeof document !== "undefined" && !document.getElementById("sp-styles")) {
-  const link = document.createElement("link");
-  link.rel = "stylesheet";
-  link.href =
-    "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap";
-  document.head.appendChild(link);
-
   const style = document.createElement("style");
   style.id = "sp-styles";
   style.textContent = `
@@ -287,10 +282,10 @@ function InfoCard({ icon: Icon, title, content, email }) {
 }
 
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────
-export default function SupportPage({ onOpenSignUp }) {
+export default function SupportPage() {
   return (
     <div className="sp-body" style={{ minHeight: "100vh", background: T.bg, color: T.cream, overflowX: "hidden" }}>
-      <Navbar onOpenSignUp={onOpenSignUp} />
+      <Navbar />
 
       <div style={{ maxWidth: 1040, margin: "0 auto", padding: "128px 28px 80px", position: "relative", zIndex: 10 }}>
 

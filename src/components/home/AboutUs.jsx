@@ -170,7 +170,10 @@ const AboutUs = () => {
                 transition={{ duration: 0.8, delay: 0.3 }}
                 className="mt-12 flex flex-wrap justify-center lg:justify-start gap-6"
               >
-                <button
+                <a
+                  href="https://discord.gg/4Mb6xXce8q"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="group flex items-center gap-3 text-xs font-black uppercase tracking-widest px-8 py-4 transition-all duration-300 overflow-hidden relative"
                   style={{
                     background: TOKENS.brand,
@@ -187,7 +190,7 @@ const AboutUs = () => {
                     weight="bold"
                     className="relative z-10 group-hover:translate-x-1 transition-transform"
                   />
-                </button>
+                </a>
               </motion.div>
             </div>
 

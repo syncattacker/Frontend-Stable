@@ -25,7 +25,7 @@ const itemVariants = {
   visible: { y: 0, opacity: 1, transition: { duration: 0.5, ease: "easeOut" } },
 };
 
-const NotFound = ({ onOpenSignUp, onOpenLogin }) => {
+const NotFound = () => {
   const router = useRouter();
 
   return (
@@ -33,7 +33,7 @@ const NotFound = ({ onOpenSignUp, onOpenLogin }) => {
       className="flex flex-col min-h-screen text-white selection:bg-white/10 selection:text-white"
       style={{ background: T.bg, fontFamily: "'Outfit', sans-serif" }}
     >
-      <Navbar onOpenSignUp={onOpenSignUp} onOpenLogin={onOpenLogin} />
+      <Navbar />
 
       {/* Background */}
       <div className="fixed inset-0 z-0">
@@ -161,13 +161,13 @@ const NotFound = ({ onOpenSignUp, onOpenLogin }) => {
             >
               Need help?{" "}
               <a
-                href="mailto:gopwnit@gmail.com"
+                href="mailto:support@gopwnit.com"
                 className="transition-colors duration-150"
                 style={{ color: T.muted }}
                 onMouseEnter={(e) => { e.currentTarget.style.color = T.cream; }}
                 onMouseLeave={(e) => { e.currentTarget.style.color = T.muted; }}
               >
-                gopwnit@gmail.com
+                support@gopwnit.com
               </a>
             </p>
           </motion.div>
