@@ -19,13 +19,8 @@ import Footer from "@/components/footer/Footer";
 import Navbar from "@/components/navbar/Navbar";
 import AnimatedBlurBg from "@/components/home/AnimatedBlurBg";
 
-if (typeof document !== "undefined" && !document.getElementById("pp-fonts")) {
-  const l = document.createElement("link");
-  l.id = "pp-fonts";
-  l.rel = "stylesheet";
-  l.href =
-    "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap";
-  document.head.appendChild(l);
+// Fonts (Bebas Neue, Outfit, DM Sans) are loaded once, site-wide, in the root layout.
+if (typeof document !== "undefined" && !document.getElementById("pp-font-classes")) {
   const s = document.createElement("style");
   s.id = "pp-font-classes";
   s.textContent = `
@@ -316,7 +311,8 @@ function renderModalContent(sectionId) {
         <div className="space-y-6">
           <ModalHeader num="01" title="Introduction" />
           <p className="pp-body text-[14px] text-zinc-400 leading-relaxed max-w-xl">
-            gopwnit is committed to protecting and respecting your privacy. This
+            gopwnit is operated by GOPWNIT, a partnership firm registered in India,
+            and is committed to protecting and respecting your privacy. This
             Privacy Policy outlines our practices regarding the collection, use,
             storage, and protection of personal information when you utilize our
             cybersecurity learning platform and CTF services. By accessing or
@@ -615,11 +611,11 @@ function renderModalContent(sectionId) {
               Exercise Your Rights
             </h4>
             <a
-              href="mailto:gopwnit@gmail.com"
+              href="mailto:support@gopwnit.com"
               className="pp-roundo text-[15px] font-[800] text-yellow-50 opacity-70 hover:opacity-100
                          transition-opacity underline decoration-white/20"
             >
-              gopwnit@gmail.com
+              support@gopwnit.com
             </a>
             <p className="pp-roundo text-[10px] font-[700] uppercase tracking-[0.13em] text-zinc-600 mt-3">
               Include "Privacy Request" in subject line
@@ -696,11 +692,11 @@ function renderModalContent(sectionId) {
               Direct channel for data protection concerns
             </p>
             <a
-              href="mailto:gopwnit@gmail.com"
+              href="mailto:support@gopwnit.com"
               className="pp-roundo text-[20px] font-[800] text-yellow-50 opacity-65 hover:opacity-100
                          transition-opacity underline decoration-white/15"
             >
-              gopwnit@gmail.com
+              support@gopwnit.com
             </a>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -749,7 +745,7 @@ function renderModalContent(sectionId) {
 }
 
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────
-export default function PrivacyPolicy({ onOpenSignUp, onOpenLogin }) {
+export default function PrivacyPolicy() {
   const [activeModal, setActiveModal] = useState(null);
 
   const openModal = (id) => {
@@ -763,7 +759,7 @@ export default function PrivacyPolicy({ onOpenSignUp, onOpenLogin }) {
 
   return (
     <div className="pp-body flex flex-col min-h-screen bg-[#0A0A0A] text-yellow-50">
-      <Navbar onOpenSignUp={onOpenSignUp} onOpenLogin={onOpenLogin} />
+      <Navbar />
 
       {/* Background — untouched */}
       <div className="fixed inset-0 z-0">

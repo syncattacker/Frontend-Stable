@@ -31,14 +31,8 @@ const T = {
   borderHover: "rgba(254,252,232,0.18)",
 };
 
-// ─── GLOBAL CSS ───────────────────────────────────────────────────────────────
+// Fonts (Bebas Neue, Outfit, DM Sans) are loaded once, site-wide, in the root layout.
 if (typeof document !== "undefined" && !document.getElementById("coc-styles")) {
-  const link = document.createElement("link");
-  link.rel = "stylesheet";
-  link.href =
-    "https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500;600;700&family=DM+Sans:wght@400;500;600;700&display=swap";
-  document.head.appendChild(link);
-
   const style = document.createElement("style");
   style.id = "coc-styles";
   style.textContent = `
@@ -548,7 +542,7 @@ function renderModalContent(sectionId) {
               Maintain anonymity while helping secure our community.
             </p>
             <a
-              href="mailto:gopwnit@gmail.com"
+              href="mailto:support@gopwnit.com"
               style={{
                 display: "inline-flex", alignItems: "center", gap: 8,
                 fontFamily: "'DM Sans',sans-serif", fontSize: 16, fontWeight: 800,
@@ -566,7 +560,7 @@ function renderModalContent(sectionId) {
                 e.currentTarget.style.borderColor = "rgba(254,252,232,0.12)";
               }}
             >
-              gopwnit@gmail.com
+              support@gopwnit.com
               <IconArrowUpRight size={14} />
             </a>
           </div>
@@ -670,7 +664,7 @@ function renderModalContent(sectionId) {
 
 // ─── MAIN PAGE ────────────────────────────────────────────────────────────────
 
-export default function CodeOfConduct({ onOpenSignUp, onOpenLogin }) {
+export default function CodeOfConduct() {
   const [activeModal, setActiveModal] = useState(null);
 
   const openModal  = (id) => { setActiveModal(id); document.body.style.overflow = "hidden"; };
@@ -733,7 +727,7 @@ export default function CodeOfConduct({ onOpenSignUp, onOpenLogin }) {
       className="coc-body"
       style={{ display: "flex", flexDirection: "column", minHeight: "100vh", background: T.bg, color: T.cream }}
     >
-      <Navbar onOpenSignUp={onOpenSignUp} onOpenLogin={onOpenLogin} />
+      <Navbar />
 
       {/* Background — untouched */}
       <div style={{ position: "fixed", inset: 0, zIndex: 0 }}>
@@ -778,7 +772,7 @@ export default function CodeOfConduct({ onOpenSignUp, onOpenLogin }) {
                 {[
                   { label: "Last Updated", value: "July 29, 2025"     },
                   { label: "Version",      value: "1.0.0 (Global)"    },
-                  { label: "Contact",      value: "gopwnit@gmail.com" },
+                  { label: "Contact",      value: "support@gopwnit.com" },
                 ].map(({ label, value }) => (
                   <div key={label}>
                     <span className="coc-tag" style={{ display: "block", marginBottom: 4 }}>{label}</span>

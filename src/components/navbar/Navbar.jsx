@@ -8,6 +8,8 @@ import { ArrowRight, X } from "lucide-react";
 import logo from "@/img/white.svg";
 import "./Navbar.css";
 import Image from "next/image";
+import Link from "next/link";
+import { useAuthModal } from "@/providers/AuthModalProvider";
 
 const TOKENS = {
   border: "rgba(255, 255, 255, 0.07)",
@@ -17,10 +19,13 @@ const TOKENS = {
   bgDeep: "#0A0A0A",
 };
 
-const Navbar = ({ onOpenSignUp }) => {
+const MotionLink = motion.create(Link);
+
+const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const router = useRouter();
   const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const { openSignUp } = useAuthModal();
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
@@ -28,7 +33,7 @@ const Navbar = ({ onOpenSignUp }) => {
     if (isAuthenticated) {
       router.push("/dashboard");
     } else {
-      onOpenSignUp();
+      openSignUp();
     }
   };
 
@@ -88,7 +93,7 @@ const Navbar = ({ onOpenSignUp }) => {
     >
       {/* Desktop navbar pill */}
       <motion.div
-        className="navbar-container max-w-3xl mx-auto rounded-full bg-black/60 backdrop-blur-xl border px-6 py-3 flex items-center justify-between transition-all duration-300"
+        className="navbar-container max-w-4xl mx-auto rounded-full bg-black/60 backdrop-blur-xl border px-6 py-3 flex items-center justify-between transition-all duration-300"
         whileHover={navbarHover}
         style={{ borderColor: TOKENS.border }}
       >
@@ -100,41 +105,44 @@ const Navbar = ({ onOpenSignUp }) => {
           whileHover="hover"
           whileTap="tap"
         >
-          <Image src={logo} alt="Logo" className="h-9 w-auto" />
+          <Link href="/" aria-label="gopwnit home">
+            <Image src={logo} alt="gopwnit" className="h-9 w-auto" priority />
+          </Link>
         </motion.div>
 
         {/* Nav links */}
-        <motion.div className="hidden md:flex items-center space-x-6" style={{ color: TOKENS.textMuted }}>
+        <motion.div className="hidden lg:flex items-center space-x-5" style={{ color: TOKENS.textMuted }}>
           {[
-            { label: "Home", path: "/" },
+            { label: "Platform", path: "/platform" },
+            { label: "Host a CTF", path: "/host-a-ctf" },
+            { label: "Events", path: "/events" },
             { label: "Blog", path: "/blog" },
-            { label: "About Us", path: "/reviewboard" },
-            { label: "Support", path: "/support" },
+            { label: "About", path: "/about" },
           ].map(({ label, path }) => (
-            <motion.button
+            <MotionLink
               key={label}
+              href={path}
               className="text-sm tracking-wide transition-colors duration-200 font-outfit"
               variants={itemVariants}
               initial="rest"
               whileHover="hover"
               whileTap="tap"
-              onClick={() => router.push(path)}
             >
               {label}
-            </motion.button>
+            </MotionLink>
           ))}
         </motion.div>
 
         {/* CTA Button — Desktop */}
         {!isAuthenticated && (
           <motion.button
-            className="hidden md:flex cta-button text-xs font-bold uppercase tracking-widest py-2 px-6 items-center gap-2 transition-all duration-300 relative overflow-hidden"
+            className="hidden lg:flex cta-button text-xs font-bold uppercase tracking-widest py-2 px-6 items-center gap-2 transition-all duration-300 relative overflow-hidden"
             style={{ color: TOKENS.textPrimary, background: "transparent" }}
             variants={itemVariants}
             initial="rest"
             whileHover="hover"
             whileTap="tap"
-            onClick={onOpenSignUp}
+            onClick={openSignUp}
           >
             <div className="animated-border" />
             <span className="z-10 relative">Register</span>
@@ -144,7 +152,7 @@ const Navbar = ({ onOpenSignUp }) => {
 
         {isAuthenticated && (
           <motion.button
-            className="hidden md:flex cta-button text-xs font-bold uppercase tracking-widest py-2 px-6 items-center gap-2 transition-all duration-300 relative overflow-hidden"
+            className="hidden lg:flex cta-button text-xs font-bold uppercase tracking-widest py-2 px-6 items-center gap-2 transition-all duration-300 relative overflow-hidden"
             style={{ color: TOKENS.textPrimary, background: "transparent" }}
             variants={itemVariants}
             initial="rest"
@@ -160,7 +168,7 @@ const Navbar = ({ onOpenSignUp }) => {
 
         {/* Hamburger — Mobile */}
         <motion.button
-          className="md:hidden"
+          className="lg:hidden"
           variants={itemVariants}
           initial="rest"
           whileHover="hover"
@@ -197,22 +205,26 @@ const Navbar = ({ onOpenSignUp }) => {
             >
               <motion.nav className="flex flex-col space-y-1">
                 {[
-                  { label: "Home", action: () => { toggleMenu(); router.push("/"); } },
-                  { label: "Blog", action: () => { toggleMenu(); router.push("/blog"); } },
-                  { label: "About Us", action: () => { toggleMenu(); router.push("/reviewboard"); } },
-                  { label: "Support", action: () => { toggleMenu(); router.push("/support"); } },
-                ].map(({ label, action }) => (
-                  <motion.button
+                  { label: "Home", path: "/" },
+                  { label: "Platform", path: "/platform" },
+                  { label: "Host a CTF", path: "/host-a-ctf" },
+                  { label: "Events", path: "/events" },
+                  { label: "Blog", path: "/blog" },
+                  { label: "About", path: "/about" },
+                  { label: "Support", path: "/support" },
+                ].map(({ label, path }) => (
+                  <MotionLink
                     key={label}
+                    href={path}
                     className="py-3 px-4 text-sm text-left transition-colors duration-200 font-outfit"
                     style={{ color: TOKENS.textMuted, borderBottom: `1px solid ${TOKENS.border}` }}
                     variants={menuItemVariants}
-                    onClick={action}
+                    onClick={toggleMenu}
                     onMouseEnter={e => e.currentTarget.style.color = TOKENS.textPrimary}
                     onMouseLeave={e => e.currentTarget.style.color = TOKENS.textMuted}
                   >
                     {label}
-                  </motion.button>
+                  </MotionLink>
                 ))}
 
                 {/* Mobile CTA */}
@@ -221,7 +233,7 @@ const Navbar = ({ onOpenSignUp }) => {
                     className="cta-button text-xs font-bold uppercase tracking-widest py-3 px-6 flex items-center justify-center gap-2 transition-all duration-300 relative overflow-hidden mt-2"
                     style={{ color: TOKENS.textPrimary }}
                     variants={menuItemVariants}
-                    onClick={onOpenSignUp}
+                    onClick={openSignUp}
                   >
                     <div className="animated-border" />
                     <span className="z-10 relative">Register</span>
