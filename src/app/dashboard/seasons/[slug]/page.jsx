@@ -95,12 +95,7 @@ const SeasonCtfRegis = () => {
         setCheckingRegistration(true);
         setError(null);
         const response = await API.get(`/api/v1/seasons/${slug}`);
-
-        let data = null;
-        if (response.success && response.data) data = response.data;
-        else if (response.data?.success) data = response.data.data;
-        else if (response.name || response.slug) data = response;
-        else if (response.data?.name) data = response.data;
+        const data = response.data?.data;
 
         if (data?.name) {
           setCtfData(data);
@@ -240,37 +235,25 @@ const SeasonCtfRegis = () => {
         `/api/v1/seasons/${slug}/register`,
         payload,
       );
-      let success = false;
-      if (response.success) success = true;
-      else if (response.data?.success) success = true;
-      else if (response.status === 200 || response.status === 201)
-        success = true;
 
-      if (success) {
-        if (response.data?.step === "choose-participation") {
-          setCurrentStep("participation-type");
-          setFormErrors({});
-        } else {
-          setIsRegistered(true);
-          setCtfData((prev) => ({
-            ...prev,
-            totalPlayers: (prev.totalPlayers || 0) + 1,
-          }));
-          setTimeout(() => {
-            if (formData.participationType === "team")
-              router.push(`/dashboard/seasons/${slug}/team-setup`);
-            else router.push(`/dashboard/seasons/${slug}/challenges`);
-          }, 1500);
-        }
+      if (response.data?.data?.step === "choose-participation") {
+        setCurrentStep("participation-type");
+        setFormErrors({});
       } else {
-        setFormErrors({
-          general:
-            response.data?.message || "Registration failed. Please try again.",
-        });
+        setIsRegistered(true);
+        setCtfData((prev) => ({
+          ...prev,
+          totalPlayers: (prev.totalPlayers || 0) + 1,
+        }));
+        setTimeout(() => {
+          if (formData.participationType === "team")
+            router.push(`/dashboard/seasons/${slug}/team-setup`);
+          else router.push(`/dashboard/seasons/${slug}/challenges`);
+        }, 1500);
       }
     } catch (error) {
       if (error.response?.status === 400) {
-        const errorMessage = error.response.data?.message;
+        const errorMessage = error.response.data?.detail;
         if (errorMessage === "Already registered") {
           setIsRegistered(true);
           setCtfData((prev) => ({
@@ -289,8 +272,8 @@ const SeasonCtfRegis = () => {
         }
       } else if (error.response?.status === 403) {
         setFormErrors({ general: "Registration is not allowed at this time" });
-      } else if (error.response?.data?.message) {
-        const errorMessage = error.response.data.message;
+      } else if (error.response?.data?.detail) {
+        const errorMessage = error.response.data.detail;
         if (errorMessage.toLowerCase().includes("access code"))
           setFormErrors({ accessCode: errorMessage });
         else setFormErrors({ general: errorMessage });

@@ -233,7 +233,7 @@ export default function Login({ isOpen, onClose, onSignUpClick }) {
 
       dispatch(loginSuccess({ user: { username }, isAuthenticated: true }));
       hideNotification();
-      showSuccess("Success", res.data.message);
+      showSuccess("Success", res.data.data.message);
 
       setTimeout(() => {
         onClose();
@@ -242,7 +242,7 @@ export default function Login({ isOpen, onClose, onSignUpClick }) {
       }, 500);
     } catch (error) {
       hideNotification();
-      showError("Authentication Failed", error.response?.data?.message);
+      showError("Authentication Failed", error.response?.data?.detail);
       setIsLoggingIn(false);
     }
   };

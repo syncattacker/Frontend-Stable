@@ -2,6 +2,7 @@ import "./globals.css";
 import Providers from "@/providers";
 import { SocketProvider } from "@/sockets/SocketProvider";
 import AuthInitializer from "@/components/auth/AuthInitializer";
+import ClientIntelligenceInitializer from "@/components/auth/ClientIntelligenceInitializer";
 import { Toaster } from "sonner";
 
 const SITE_URL = "https://gopwnit.com";
@@ -89,6 +90,7 @@ export default function RootLayout({ children }) {
       <body>
         <Providers>
           <AuthInitializer />
+          <ClientIntelligenceInitializer />
           <SocketProvider>{children}</SocketProvider>
           <Toaster position="bottom-right" duration={3000} theme="dark" />
         </Providers>

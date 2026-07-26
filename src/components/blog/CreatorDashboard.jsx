@@ -306,13 +306,13 @@ function ImageUpload({
 /* ─── Global styles ──────────────────────────────────────────── */
 function GlobalStyles() {
   return (
-    <style>{`
+    <style dangerouslySetInnerHTML={{ __html: `
             @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500&display=swap');
             @keyframes gpw-spin { to { transform: rotate(360deg); } }
             * { box-sizing: border-box; }
             ::selection { background: rgba(254,252,232,0.12); color: #fefce8; }
             .placeholder-zinc-600::placeholder { color: rgba(161,161,170,0.4); }
-        `}</style>
+        ` }} />
   );
 }
 

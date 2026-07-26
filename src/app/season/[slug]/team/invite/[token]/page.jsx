@@ -104,7 +104,7 @@ export default function InviteAccept() {
 
   return (
     <>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500&display=swap');
 
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -329,7 +329,7 @@ export default function InviteAccept() {
           border-radius: 50%;
           background: #3f3f46;
         }
-      `}</style>
+      ` }} />
 
       <div className="page">
         <div className="card">

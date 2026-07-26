@@ -2,32 +2,25 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useSelector, useDispatch } from "react-redux";
-import { verifyUser } from "@/store/authSlice";
+import { useSelector } from "react-redux";
 import { showToast } from "@/utils/toast.jsx";
 import NotAuthenticatedLoader from "@/components/loaders/NotAuthenticatedLoader";
 
+// Auth verification is dispatched once, globally, by <AuthInitializer /> in
+// the root layout — this HOC only reacts to the resulting status instead of
+// dispatching its own verifyUser(), which used to race AuthInitializer's
+// dispatch and fire a duplicate /auth/me request on every protected page.
 export const withAuth = (WrappedComponent) => {
   const AuthenticatedComponent = (props) => {
     const router = useRouter();
-    const dispatch = useDispatch();
 
     const { isAuthenticated, status } = useSelector((state) => state.auth);
 
     useEffect(() => {
-      const checkAuth = async () => {
-        try {
-          if (status === "idle") {
-            await dispatch(verifyUser()).unwrap();
-          }
-        } catch (error) {
-          showToast("error", "Invalid session, please login again");
-          router.replace("/");
-        }
-      };
-
-      checkAuth();
-    }, [dispatch, status, router]);
+      if (status === "failed") {
+        showToast("error", "Invalid session, please login again");
+      }
+    }, [status]);
 
     useEffect(() => {
       if (status !== "loading" && status !== "idle" && !isAuthenticated) {

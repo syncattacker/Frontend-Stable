@@ -253,13 +253,13 @@ function ResetPasswordContent() {
     setIsLoading(true);
     try {
       const res = await API.post("/auth/reset-password", { token, password, confirmPassword });
-      const msg = res.data.message || "Password reset successfully!";
+      const msg = res.data.data.message || "Password reset successfully!";
       showToast("success", msg);
       setResetStatus("success");
       setMessage(msg);
       setTimeout(() => router.push("/"), 2000);
     } catch (err) {
-      const msg = err.response?.data?.message || "Something went wrong.";
+      const msg = err.response?.data?.detail || "Something went wrong.";
       showToast("error", msg);
       setResetStatus("error");
       setMessage(msg);

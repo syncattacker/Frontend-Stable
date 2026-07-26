@@ -175,7 +175,7 @@ export default function SignUp({
       const response = await API.post(
         `${process.env.NEXT_PUBLIC_AUTH_EMAIL_VERIFY}/${token}`,
       );
-      if (response.data.success && response.status === 200) {
+      if (response.status === 200) {
         setVerificationStatus("success");
         setVerificationMessage(
           "You are a verified user of gopwnit. Kindly sign in and start hacking.",
@@ -185,7 +185,7 @@ export default function SignUp({
       setVerificationStatus("error");
       let msg = "Verification failed";
       if (error.response?.data)
-        msg = error.response.data.message || "Invalid or expired token";
+        msg = error.response.data.detail || "Invalid or expired token";
       setVerificationMessage(msg);
     } finally {
       setIsLoading(false);
@@ -199,7 +199,7 @@ export default function SignUp({
         `${process.env.NEXT_PUBLIC_AUTH_USERNAME_CHECK}`,
         { params: { username: uname } },
       );
-      setUsernameAvailable(!!response.data?.isAvailable);
+      setUsernameAvailable(!!response.data?.data?.isAvailable);
     } catch {
       setUsernameAvailable(false);
     } finally {
@@ -381,13 +381,13 @@ export default function SignUp({
         details,
         { withCredentials: true },
       );
-      if (response.data.success && response.status === 201) {
+      if (response.status === 201) {
         setBackendError("");
         goToStep(4);
       }
     } catch (error) {
       let msg = "An error occurred during registration.";
-      if (error.response?.data?.message) msg = error.response.data.message;
+      if (error.response?.data?.detail) msg = error.response.data.detail;
       setBackendError(msg);
       goToStep(4);
     } finally {

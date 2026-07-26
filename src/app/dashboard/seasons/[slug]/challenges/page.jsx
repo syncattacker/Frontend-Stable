@@ -2,7 +2,7 @@
 
 // ─── PART 1: Imports · Theme · Fonts · DIFF · TiltCard ────────────────────────
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import {
   IconX,
   IconCircleCheck,
@@ -132,7 +132,6 @@ export default withAuth(function SeasonCTF() {
 
   const [season, setSeason] = useState(null);
   const [challenges, setChallenges] = useState([]);
-  const [groupedChallenges, setGroupedChallenges] = useState([]);
   const [solvedChallenges, setSolvedChallenges] = useState([]);
   const [selectedChallenge, setSelectedChallenge] = useState(null);
   const [flagInput, setFlagInput] = useState("");
@@ -145,6 +144,18 @@ export default withAuth(function SeasonCTF() {
   const { socket } = useSocket();
   const [members, setMembers] = useState([]);
   const [teamName, setTeamName] = useState("Squad");
+  const hasConnectedOnceRef = useRef(false);
+
+  const groupedChallenges = useMemo(() => {
+    const map = challenges.reduce((acc, c) => {
+      (acc[c.category] = acc[c.category] || []).push(c);
+      return acc;
+    }, {});
+    return Object.entries(map).map(([category, challenges]) => ({
+      category,
+      challenges,
+    }));
+  }, [challenges]);
 
   // window resize
   useEffect(() => {
@@ -163,7 +174,12 @@ export default withAuth(function SeasonCTF() {
           withCredentials: true,
           signal,
         });
-        if (r.data.success) setSolvedChallenges(r.data.data || []);
+        const data = r.data.data;
+        setSolvedChallenges(
+          Array.isArray(data)
+            ? data
+            : data?.solved || data?.solvedChallenges || data?.challenges || [],
+        );
       } catch (err) {
         if (err.name !== "CanceledError");
       }
@@ -177,18 +193,16 @@ export default withAuth(function SeasonCTF() {
       const res = await API.get(`/api/v1/seasons/${slug}/team/myTeam`, {
         withCredentials: true,
       });
-      if (res.data?.success) {
-        const stats = res.data.stats || {};
-        setMembers(
-          (stats.members || []).map((m) => ({
-            id: m.userId,
-            name: m.username,
-            pts: m.points || 0,
-            solves: 0,
-          })),
-        );
-        setTeamName(stats.teamName || "Squad");
-      }
+      const stats = res.data?.data?.stats || {};
+      setMembers(
+        (stats.members || []).map((m) => ({
+          id: m.userId,
+          name: m.username,
+          pts: m.points || 0,
+          solves: 0,
+        })),
+      );
+      setTeamName(stats.teamName || "Squad");
     } catch {
       setMembers([]);
       setTeamName("Squad");
@@ -217,21 +231,10 @@ export default withAuth(function SeasonCTF() {
         ]);
         const d = res.data.data || {};
         setSeason(d.season || null);
-        const list = d.challenges || [];
-        setChallenges(list);
-        const map = list.reduce((acc, c) => {
-          (acc[c.category] = acc[c.category] || []).push(c);
-          return acc;
-        }, {});
-        setGroupedChallenges(
-          Object.entries(map).map(([category, challenges]) => ({
-            category,
-            challenges,
-          })),
-        );
+        setChallenges(d.challenges || []);
       } catch (err) {
         if (err.name === "CanceledError") return;
-        const msg = err.response?.data?.message || "Failed to load challenges.";
+        const msg = err.response?.data?.detail || "Failed to load challenges.";
         setError(msg);
         showToast("error", msg);
         router.push(`/dashboard/seasons/${slug}`);
@@ -271,6 +274,54 @@ export default withAuth(function SeasonCTF() {
     return () => socket.off("challengeSolved", onSolved);
   }, [socket]);
 
+  // join season room + live challenge release/hide updates
+  useEffect(() => {
+    if (!socket || !slug) return;
+
+    const joinSeason = () => socket.emit("joinSeason", slug);
+    joinSeason();
+
+    const onConnect = () => {
+      joinSeason();
+      // rooms aren't preserved across reconnects, so refetch in case
+      // challengeReleased/challengeHidden events were missed while disconnected
+      if (hasConnectedOnceRef.current) {
+        API.get(`/api/v1/seasons/${slug}/challenges`, {
+          withCredentials: true,
+        })
+          .then((r) => setChallenges(r.data.data?.challenges || []))
+          .catch(() => {});
+      }
+      hasConnectedOnceRef.current = true;
+    };
+
+    const onChallengeReleased = (data) => {
+      if (!data || data.seasonSlug !== slug) return;
+      setChallenges((prev) => {
+        const map = new Map(prev.map((c) => [c.slug, c]));
+        (data.challenges || []).forEach((c) => map.set(c.slug, c));
+        return [...map.values()];
+      });
+    };
+
+    const onChallengeHidden = (data) => {
+      if (!data || data.seasonSlug !== slug) return;
+      const hidden = new Set(data.challengeSlugs || []);
+      setChallenges((prev) => prev.filter((c) => !hidden.has(c.slug)));
+    };
+
+    socket.on("connect", onConnect);
+    socket.on("challengeReleased", onChallengeReleased);
+    socket.on("challengeHidden", onChallengeHidden);
+
+    return () => {
+      socket.off("connect", onConnect);
+      socket.off("challengeReleased", onChallengeReleased);
+      socket.off("challengeHidden", onChallengeHidden);
+      socket.emit("leaveSeason", slug);
+    };
+  }, [socket, slug]);
+
   // handlers
   const handleSelect = useCallback(
     (ch) => {
@@ -293,21 +344,17 @@ export default withAuth(function SeasonCTF() {
         { challengeSlug: selectedChallenge.slug, flag: flagInput.trim() },
         { withCredentials: true },
       );
-      if (r.data.success) {
-        showToast("success", "Flag correct! Challenge solved!");
-        const next = [...solvedChallenges, selectedChallenge.slug];
-        setSolvedChallenges(next);
-        if (next.length === total && total > 0) {
-          setShowConfetti(true);
-          setTimeout(() => setShowConfetti(false), 3000);
-        }
-        setFlagInput("");
-        setSelectedChallenge(null);
-      } else {
-        showToast("error", r.data.message || "Wrong flag!");
+      showToast("success", "Flag correct! Challenge solved!");
+      const next = [...solvedChallenges, selectedChallenge.slug];
+      setSolvedChallenges(next);
+      if (next.length === total && total > 0) {
+        setShowConfetti(true);
+        setTimeout(() => setShowConfetti(false), 3000);
       }
+      setFlagInput("");
+      setSelectedChallenge(null);
     } catch (err) {
-      showToast("error", err.response?.data?.message || "Error submitting.");
+      showToast("error", err.response?.data?.detail || "Wrong flag!");
     } finally {
       setSubmitting(false);
     }
@@ -321,7 +368,7 @@ export default withAuth(function SeasonCTF() {
       );
       window.open(r.data.data.downloadUrl, "_blank", "noopener");
     } catch (err) {
-      showToast("error", err.response?.data?.message || "Download failed");
+      showToast("error", err.response?.data?.detail || "Download failed");
     }
   }, [selectedChallenge, slug]);
 

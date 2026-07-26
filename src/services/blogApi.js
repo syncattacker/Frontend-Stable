@@ -13,7 +13,7 @@ export const blogApi = {
   },
   getRecentPosts: async (limit = 3) => {
     const response = await API.get(`/api/v1/resource?page=1&limit=${limit}`);
-    return response.data.data;
+    return response.data.data.resources;
   },
   createBlog: async (blogData) => {
     const response = await API.post("/api/v1/resource/", blogData, {
@@ -36,7 +36,7 @@ export const blogApi = {
     const seenSlugs = new Set();
     try {
       const approvedRes = await API.get(`/api/v1/resource?page=1&limit=100`);
-      const allApproved = approvedRes.data?.data || [];
+      const allApproved = approvedRes.data?.data?.resources || [];
       for (const blog of allApproved) {
         const authorId = blog.author?._id || blog.author;
         const authorMatch =
@@ -54,8 +54,7 @@ export const blogApi = {
     }
     try {
       const pendingRes = await API.get("/api/v1/resource/moderation/pending");
-      const pendingBlogs =
-        pendingRes.data?.data || pendingRes.data?.resources || [];
+      const pendingBlogs = pendingRes.data?.data?.resources || [];
       for (const blog of pendingBlogs) {
         const authorId = blog.author?._id || blog.author;
         const authorMatch =

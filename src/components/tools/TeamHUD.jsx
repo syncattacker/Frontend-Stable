@@ -175,10 +175,10 @@ export function TeamHUD({ members = [], maxPts = 6000, teamName = "Squad" }) {
 
   return (
     <>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&display=swap');
         :root { --hud-f: 'JetBrains Mono', ui-monospace, monospace; }
-      `}</style>
+      ` }} />
 
       <div style={{
         position: "fixed",

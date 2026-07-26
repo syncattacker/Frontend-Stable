@@ -153,10 +153,8 @@ export default function DashboardLayout({ children }) {
     const fetchEditableSeasons = async () => {
       try {
         const res = await API.get("/api/v1/seasons/editable");
-        if (res.data.success) {
-          const all = [...res.data.data.pending, ...res.data.data.approved];
-          setEditableSeasons(all);
-        }
+        const all = [...res.data.data.pending, ...res.data.data.approved];
+        setEditableSeasons(all);
       } catch (err) {
         console.error(err);
       } finally {
@@ -173,13 +171,11 @@ export default function DashboardLayout({ children }) {
         {},
         { withCredentials: true },
       );
-      if (res.data?.success) {
-        dispatch(logout());
-        showToast("success", res.data.message);
-        router.push("/");
-      }
+      dispatch(logout());
+      showToast("success", res.data.data.message);
+      router.push("/");
     } catch (err) {
-      showToast("error", err.response?.data?.message);
+      showToast("error", err.response?.data?.detail);
     }
   };
 

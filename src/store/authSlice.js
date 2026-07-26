@@ -1,25 +1,16 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import API from "@/utils/axios";
 
 export const verifyUser = createAsyncThunk(
   "auth/verifyUser",
   async (_, thunkAPI) => {
     try {
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/me`,
-        {
-          method: "GET",
-          credentials: "include",
-        },
-      );
-
-      if (!res.ok) {
-        throw new Error("Verification failed");
-      }
-
-      const data = await res.json();
-      return data;
+      const res = await API.get("/auth/me");
+      return res.data;
     } catch (error) {
-      return thunkAPI.rejectWithValue(error.message);
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.detail || "Verification failed",
+      );
     }
   },
 );
@@ -49,7 +40,7 @@ const authSlice = createSlice({
         state.status = "loading";
       })
       .addCase(verifyUser.fulfilled, (state, action) => {
-        state.isAuthenticated = action.payload.isAuthenticated;
+        state.isAuthenticated = action.payload.data.isAuthenticated;
         state.status = "succeeded";
         state.error = null;
       })

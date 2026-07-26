@@ -73,7 +73,7 @@ export default function ArticleDetailPage() {
 
                 if (data.author) {
                     const response = await blogApi.getAllBlogs(1, 10);
-                    const related  = response.data
+                    const related  = response.data.resources
                         .filter(a => a.author?._id === data.author?._id && a.slug !== data.slug)
                         .slice(0, 2);
                     setRelatedArticles(related);
@@ -642,7 +642,7 @@ const ContentRenderer = ({ content }) => {
 /* ─── Global styles ──────────────────────────────────────────── */
 function GlobalStyles() {
     return (
-        <style>{`
+        <style dangerouslySetInnerHTML={{ __html: `
             @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500&display=swap');
 
             @keyframes spin {
@@ -735,6 +735,6 @@ function GlobalStyles() {
                 display: block;
                 margin: 24px 0;
             }
-        `}</style>
+        ` }} />
     );
 }

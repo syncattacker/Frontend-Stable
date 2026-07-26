@@ -43,8 +43,8 @@ const SeasonDash = () => {
       try {
         setLoading(true);
         const response = await API.get("/api/v1/seasons");
-        if (response.data?.success && response.data?.season) {
-          const transformedData = response.data.season.map((season, index) => {
+        if (response.data?.data?.season) {
+          const transformedData = response.data.data.season.map((season, index) => {
             const now = new Date();
             const startDate = new Date(season.startDateTime);
             const endDate = new Date(season.endDateTime);

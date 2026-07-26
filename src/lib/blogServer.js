@@ -11,9 +11,9 @@ export async function getPublishedPosts(page = 1, limit = 12) {
     if (!res.ok) return { data: [], total: 0, pages: 0 };
     const json = await res.json();
     return {
-      data: json.data || [],
-      total: json.total || 0,
-      pages: json.pages || 0,
+      data: json.data?.resources || [],
+      total: json.data?.total || 0,
+      pages: json.data?.pages || 0,
     };
   } catch {
     return { data: [], total: 0, pages: 0 };
@@ -44,7 +44,7 @@ export async function getPublicProfile(username) {
     });
     if (!res.ok) return null;
     const json = await res.json();
-    return json.profile || null;
+    return json.data || null;
   } catch {
     return null;
   }

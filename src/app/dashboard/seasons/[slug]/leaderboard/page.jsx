@@ -436,16 +436,12 @@ const SeasonLeaderboard = () => {
     try {
       setLoading(true);
       const r = await API.get(`/api/v1/seasons/${slug}/leaderboard`);
-      if (r.data.success) {
-        setSoloData(r.data.solo || []);
-        setTeamsData(r.data.teams || []);
-        setSeasonStartTime(r.data.seasonStartTime || null);
-        setSeasonEndTime(r.data.seasonEndTime || null);
-      } else {
-        setError("Failed to fetch leaderboard data");
-      }
+      setSoloData(r.data.data.solo || []);
+      setTeamsData(r.data.data.teams || []);
+      setSeasonStartTime(r.data.data.seasonStartTime || null);
+      setSeasonEndTime(r.data.data.seasonEndTime || null);
     } catch (err) {
-      setError("Error fetching data: " + err.message);
+      setError(err.response?.data?.detail || "Error fetching leaderboard data");
     } finally {
       setLoading(false);
     }

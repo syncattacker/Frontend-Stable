@@ -57,14 +57,14 @@ const ForgotPassword = () => {
     setStatus(null);
     try {
       const res = await API.post("/auth/forgot-password", { email });
-      const msg = res.data.message || "Password reset link sent successfully!";
+      const msg = res.data.data.message || "Password reset link sent successfully!";
       showToast("success", msg);
       setStatus("success");
       setStatusMsg(msg);
       setEmail("");
     } catch (err) {
       const msg =
-        err.response?.data?.message || "An error occurred. Please try again.";
+        err.response?.data?.detail || "An error occurred. Please try again.";
       showToast("error", msg);
       setStatus("error");
       setStatusMsg(msg);

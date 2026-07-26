@@ -167,7 +167,7 @@ const NotificationPanel = ({ position = "bottom-right", seasonSlug }) => {
   useEffect(() => {
     if (!seasonSlug) return;
     API.get(`/api/v1/seasons/notifications/${seasonSlug}`, { withCredentials: true })
-      .then(res => setNotifications(res.data.notifications || []))
+      .then(res => setNotifications(res.data.data.notifications || []))
       .catch(err => console.error("Failed to fetch notifications:", err));
   }, [seasonSlug]);
 
@@ -251,7 +251,7 @@ const NotificationPanel = ({ position = "bottom-right", seasonSlug }) => {
   /* ── Render ── */
   return (
     <div className={`np-root ${posClass}`}>
-      <style>{CSS}</style>
+      <style dangerouslySetInnerHTML={{ __html: CSS }} />
 
       {/* ════ INCOMING TOAST ════ */}
       {incomingNotification && (

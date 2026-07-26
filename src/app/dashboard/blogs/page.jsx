@@ -136,10 +136,8 @@ export default function KnowledgeBasePage() {
     blogApi
       .getAllBlogs(1, visibleCount)
       .then((res) => {
-        if (res.success) {
-          setAllArticles(res.data);
-          setPagination({ total: res.total, pages: res.pages });
-        }
+        setAllArticles(res.data.resources);
+        setPagination({ total: res.data.total, pages: res.data.pages });
       })
       .catch((err) => console.error("Failed to fetch articles:", err))
       .finally(() => setIsLoading(false));
@@ -574,7 +572,7 @@ export default function KnowledgeBasePage() {
         </section>
       </main>
 
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
                 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;500&display=swap');
 
                 @keyframes spin {
@@ -589,7 +587,7 @@ export default function KnowledgeBasePage() {
                     background: rgba(254,252,232,0.15);
                     color: #fefce8;
                 }
-            `}</style>
+            ` }} />
     </div>
   );
 }

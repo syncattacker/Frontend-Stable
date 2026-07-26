@@ -139,7 +139,7 @@ export default async function BlogPostPage({ params }) {
 
       <Footer />
 
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         .gopwnit-article-prose {
           font-family: 'Outfit', sans-serif;
           font-size: 15px;
@@ -175,7 +175,7 @@ export default async function BlogPostPage({ params }) {
           border: 1px solid rgba(254,252,232,0.12);
           margin: 24px 0;
         }
-      `}</style>
+      ` }} />
     </div>
   );
 }

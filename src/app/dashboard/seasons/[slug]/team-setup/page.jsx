@@ -226,7 +226,7 @@ const TeamSetup = () => {
     (async () => {
       try {
         const res = await API.get(`/api/v1/seasons/${slug}/team/me`);
-        const data = res?.team || res?.data?.team || null;
+        const data = res?.data?.data?.team || null;
         if (data) {
           setTeam(data);
           setIsOwner(data.isOwner || false);
@@ -250,16 +250,16 @@ const TeamSetup = () => {
     setCreateLoading(true); setCreateError("");
     try {
       const res = await API.post(`/api/v1/seasons/${slug}/team/create`, { name: createName.trim() });
-      const data = res?.team || res?.data?.team;
+      const data = res?.data?.data?.team;
       if (data) {
         setTeam(data); setIsOwner(data.isOwner ?? true); setCurrentUser(data.currentUser || null);
-        showToast("success", res?.data?.message || "Team created!");
+        showToast("success", res?.data?.data?.message || "Team created!");
       } else {
-        const msg = res?.data?.message || "Failed to create team";
+        const msg = "Failed to create team";
         setCreateError(msg); showToast("error", msg);
       }
     } catch (err) {
-      const msg = err?.response?.data?.message || "Something went wrong";
+      const msg = err?.response?.data?.detail || "Something went wrong";
       setCreateError(msg); showToast("error", msg);
     } finally { setCreateLoading(false); }
   };
@@ -270,17 +270,12 @@ const TeamSetup = () => {
     setJoinLoading(true); setJoinError("");
     try {
       const res = await API.post(`/api/v1/seasons/${slug}/team/invite/accept`, { token: inviteToken.trim() });
-      if (res?.success || res?.data?.success) {
-        showToast("success", res?.data?.message || "Joined team!");
-        const teamRes = await API.get(`/api/v1/seasons/${slug}/team/me`);
-        const data = teamRes?.team || teamRes?.data?.team;
-        if (data) { setTeam(data); setIsOwner(data.isOwner || false); setCurrentUser(data.currentUser || null); }
-      } else {
-        const msg = res?.data?.message || "Failed to join team";
-        setJoinError(msg); showToast("error", msg);
-      }
+      showToast("success", res?.data?.data?.message || "Joined team!");
+      const teamRes = await API.get(`/api/v1/seasons/${slug}/team/me`);
+      const data = teamRes?.data?.data?.team;
+      if (data) { setTeam(data); setIsOwner(data.isOwner || false); setCurrentUser(data.currentUser || null); }
     } catch (err) {
-      const msg = err?.response?.data?.message || "Something went wrong";
+      const msg = err?.response?.data?.detail || "Something went wrong";
       setJoinError(msg); showToast("error", msg);
     } finally { setJoinLoading(false); }
   };
@@ -289,17 +284,17 @@ const TeamSetup = () => {
     setInviteLoading(true); setInviteError("");
     try {
       const res = await API.post(`/api/v1/seasons/${slug}/team/invite`, {});
-      const url = res?.inviteUrl || res?.data?.inviteUrl;
-      const expires = res?.expiresIn || res?.data?.expiresIn;
+      const url = res?.data?.data?.inviteUrl;
+      const expires = res?.data?.data?.expiresIn;
       if (url) {
         setInviteUrl(url); setInviteExpiresIn(expires);
-        showToast("success", res?.data?.message || "Invite generated!");
+        showToast("success", res?.data?.data?.message || "Invite generated!");
       } else {
-        const msg = res?.data?.message || "Failed to generate invite";
+        const msg = "Failed to generate invite";
         setInviteError(msg); showToast("error", msg);
       }
     } catch (err) {
-      const msg = err?.response?.data?.message || "Something went wrong";
+      const msg = err?.response?.data?.detail || "Something went wrong";
       setInviteError(msg); showToast("error", msg);
     } finally { setInviteLoading(false); }
   };
@@ -308,15 +303,10 @@ const TeamSetup = () => {
     setKickLoading(username); setKickError("");
     try {
       const res = await API.post(`/api/v1/seasons/${slug}/team/kick`, { username });
-      if (res?.success || res?.data?.success) {
-        setTeam((prev) => ({ ...prev, members: prev.members.filter((m) => (typeof m === "string" ? m : m.username) !== username) }));
-        showToast("success", res?.data?.message || "Member removed");
-      } else {
-        const msg = res?.data?.message || "Failed to kick member";
-        setKickError(msg); showToast("error", msg);
-      }
+      setTeam((prev) => ({ ...prev, members: prev.members.filter((m) => (typeof m === "string" ? m : m.username) !== username) }));
+      showToast("success", res?.data?.data?.message || "Member removed");
     } catch (err) {
-      const msg = err?.response?.data?.message || "Something went wrong";
+      const msg = err?.response?.data?.detail || "Something went wrong";
       setKickError(msg); showToast("error", msg);
     } finally { setKickLoading(""); }
   };
@@ -325,15 +315,10 @@ const TeamSetup = () => {
     setLeaveLoading(true); setLeaveError("");
     try {
       const res = await API.post(`/api/v1/seasons/${slug}/team/leave`, {});
-      if (res?.success || res?.data?.success) {
-        showToast("success", res?.data?.message || "You left the team");
-        setTeam(null); setIsOwner(false); setCurrentUser(null); setConfirmLeave(false);
-      } else {
-        const msg = res?.data?.message || "Failed to leave team";
-        setLeaveError(msg); showToast("error", msg);
-      }
+      showToast("success", res?.data?.data?.message || "You left the team");
+      setTeam(null); setIsOwner(false); setCurrentUser(null); setConfirmLeave(false);
     } catch (err) {
-      const msg = err?.response?.data?.message || "Something went wrong";
+      const msg = err?.response?.data?.detail || "Something went wrong";
       setLeaveError(msg); showToast("error", msg);
     } finally { setLeaveLoading(false); }
   };
@@ -342,16 +327,11 @@ const TeamSetup = () => {
     setLockLoading(true); setLockError("");
     try {
       const res = await API.post(`/api/v1/seasons/${slug}/team/lock`, {});
-      if (res?.success || res?.data?.success) {
-        setTeam((prev) => ({ ...prev, isLocked: true }));
-        showToast("success", res?.data?.message || "Team locked");
-        if (res?.data?.redirect) router.push(res.data.redirect);
-      } else {
-        const msg = res?.data?.message || "Failed to lock team";
-        setLockError(msg); showToast("error", msg);
-      }
+      setTeam((prev) => ({ ...prev, isLocked: true }));
+      showToast("success", res?.data?.data?.message || "Team locked");
+      if (res?.data?.data?.redirect) router.push(res.data.data.redirect);
     } catch (err) {
-      const msg = err?.response?.data?.message || "Something went wrong";
+      const msg = err?.response?.data?.detail || "Something went wrong";
       setLockError(msg); showToast("error", msg);
     } finally { setLockLoading(false); }
   };

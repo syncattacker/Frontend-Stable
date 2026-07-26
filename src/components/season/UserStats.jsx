@@ -134,11 +134,9 @@ export default function UserStats({ seasonSlug }) {
       const response = await API.get(
         `/api/v1/organizer/${seasonSlug}/user/${username}/stats`,
       );
-      if (response.data.success) {
-        setUserData(response.data.userData);
-        setAttempts(response.data.attempts);
-        setCurrentPage(1);
-      }
+      setUserData(response.data.data.userData);
+      setAttempts(response.data.data.attempts);
+      setCurrentPage(1);
     } catch (err) {
       console.error(err);
     } finally {

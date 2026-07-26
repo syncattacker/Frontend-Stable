@@ -55,7 +55,7 @@ export default function NotAuthenticatedLoader() {
         fontFamily: "'Outfit', sans-serif",
       }}
     >
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
         @keyframes cardRise {
@@ -136,7 +136,7 @@ export default function NotAuthenticatedLoader() {
           .na-left  { border-right: none !important; border-bottom: 0.5px solid rgba(255,255,255,0.06) !important; padding: 32px !important; }
           .na-right { padding: 32px !important; }
         }
-      `}</style>
+      ` }} />
 
       <div
         className="na-card"

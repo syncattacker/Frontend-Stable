@@ -588,7 +588,7 @@ export default withAuth(function SeasonStudio() {
       const res = await API.get(
         `/api/v1/seasons/${selectedSeason.slug}/admin-context`,
       );
-      setPermissions(res.data.permissions || []);
+      setPermissions(res.data.data.permissions || []);
     } catch (e) {
       console.error("Error fetching admin context:", e);
       setPermissions([]);
@@ -613,45 +613,38 @@ export default withAuth(function SeasonStudio() {
         },
       );
 
-      if (response.data.success) {
-        if (seasonMode === "solo") {
-          setParticipantsData((prev) =>
-            prev.map((p) =>
-              p.username === participant.username
-                ? { ...p, isBanned: response.data.isBanned }
-                : p,
-            ),
-          );
-        } else {
-          setTeamsData((prev) =>
-            prev.map((team) => ({
-              ...team,
-              members: team.members.map((m) =>
-                m.username === participant.username
-                  ? { ...m, isBanned: response.data.isBanned }
-                  : m,
-              ),
-            })),
-          );
-        }
-        showToast("success", response.data.message);
-        if (
-          selectedParticipant &&
-          selectedParticipant.name === participant.username
-        ) {
-          setSelectedParticipant((prev) => ({
-            ...prev,
-            status: response.data.isBanned ? "banned" : "active",
-          }));
-        }
+      if (seasonMode === "solo") {
+        setParticipantsData((prev) =>
+          prev.map((p) =>
+            p.username === participant.username
+              ? { ...p, isBanned: response.data.data.isBanned }
+              : p,
+          ),
+        );
       } else {
-        showToast(
-          "error",
-          response.data.message || "Failed to update participant status",
+        setTeamsData((prev) =>
+          prev.map((team) => ({
+            ...team,
+            members: team.members.map((m) =>
+              m.username === participant.username
+                ? { ...m, isBanned: response.data.data.isBanned }
+                : m,
+            ),
+          })),
         );
       }
+      showToast("success", response.data.data.message);
+      if (
+        selectedParticipant &&
+        selectedParticipant.name === participant.username
+      ) {
+        setSelectedParticipant((prev) => ({
+          ...prev,
+          status: response.data.data.isBanned ? "banned" : "active",
+        }));
+      }
     } catch (error) {
-      showToast("error", error.response?.data?.message || error.message);
+      showToast("error", error.response?.data?.detail || error.message);
     } finally {
       setBanningUserId("");
     }
@@ -675,23 +668,16 @@ export default withAuth(function SeasonStudio() {
         },
       );
 
-      if (response.data.success) {
-        setTeamsData((prev) =>
-          prev.map((t) =>
-            t.teamId === team.teamId
-              ? { ...t, isBanned: response.data.isBanned }
-              : t,
-          ),
-        );
-        showToast("success", response.data.message);
-      } else {
-        showToast(
-          "error",
-          response.data.message || "Failed to update team status",
-        );
-      }
+      setTeamsData((prev) =>
+        prev.map((t) =>
+          t.teamId === team.teamId
+            ? { ...t, isBanned: response.data.data.isBanned }
+            : t,
+        ),
+      );
+      showToast("success", response.data.data.message);
     } catch (error) {
-      showToast("error", error.response?.data?.message || error.message);
+      showToast("error", error.response?.data?.detail || error.message);
     } finally {
       setBanningTeamId("");
     }
@@ -705,16 +691,12 @@ export default withAuth(function SeasonStudio() {
         `/api/v1/organizer/${selectedSeason.slug}/challenges/${revealFlagChallenge.slug}/reveal-flag`,
         { password: revealFlagPassword },
       );
-      if (response.data.success) {
-        setRevealedFlag(response.data.data.flag);
-        setShowFlagValue(false);
-      } else {
-        showToast("error", response.data.message || "Failed to reveal flag");
-      }
+      setRevealedFlag(response.data.data.flag);
+      setShowFlagValue(false);
     } catch (error) {
       showToast(
         "error",
-        error.response?.data?.message || "Incorrect password or unauthorized",
+        error.response?.data?.detail || "Incorrect password or unauthorized",
       );
     } finally {
       setRevealFlagLoading(false);
@@ -744,11 +726,11 @@ export default withAuth(function SeasonStudio() {
       const response = await API.get(
         `/api/v1/organizer/${selectedSeason.slug}/admins`,
       );
-      if (response.data.success) setAdminsData(response.data.data);
+      setAdminsData(response.data.data);
     } catch (error) {
       showToast(
         "error",
-        error.response?.data?.message || "Failed to fetch admins",
+        error.response?.data?.detail || "Failed to fetch admins",
       );
     } finally {
       setAdminLoading(false);
@@ -769,19 +751,12 @@ export default withAuth(function SeasonStudio() {
           message: notificationForm.message.trim(),
         },
       );
-      if (response.data.success) {
-        showToast("success", "Notification sent successfully!");
-        setNotificationForm({ type: "ANNOUNCEMENT", message: "" });
-      } else {
-        showToast(
-          "error",
-          response.data.message || "Failed to send notification",
-        );
-      }
+      showToast("success", "Notification sent successfully!");
+      setNotificationForm({ type: "ANNOUNCEMENT", message: "" });
     } catch (error) {
       showToast(
         "error",
-        error.response?.data?.message || "Failed to send notification",
+        error.response?.data?.detail || "Failed to send notification",
       );
     } finally {
       setSendingNotification(false);
@@ -798,17 +773,15 @@ export default withAuth(function SeasonStudio() {
         `/api/v1/organizer/${selectedSeason.slug}/admins`,
         { data: { username } },
       );
-      if (response.data.success) {
-        showToast(
-          "success",
-          response.data.message || "Admin removed successfully",
-        );
-        fetchAdmins();
-      }
+      showToast(
+        "success",
+        response.data.data.message || "Admin removed successfully",
+      );
+      fetchAdmins();
     } catch (error) {
       showToast(
         "error",
-        error.response?.data?.message || "Failed to remove admin",
+        error.response?.data?.detail || "Failed to remove admin",
       );
     } finally {
       setDeletingAdminUsername("");
@@ -824,13 +797,11 @@ export default withAuth(function SeasonStudio() {
         `/api/v1/organizer/${selectedSeason.slug}/admins`,
         { username: newMember.username.trim(), role: newMember.role },
       );
-      if (response.data.success) {
-        showToast("success", response.data.message);
-        setNewMember({ username: "", role: "viewer" });
-        fetchAdmins();
-      }
+      showToast("success", response.data.data.message);
+      setNewMember({ username: "", role: "viewer" });
+      fetchAdmins();
     } catch (error) {
-      showToast("error", error.response?.data?.message || error.message);
+      showToast("error", error.response?.data?.detail || error.message);
     } finally {
       setAddingAdmin(false);
     }
@@ -848,22 +819,18 @@ export default withAuth(function SeasonStudio() {
       const response = await API.get(
         `/api/v1/organizer/${selectedSeason.slug}/participants`,
       );
-      if (response.data.success) {
-        if (response.data.mode === "team") {
-          setTeamsData(response.data.teams || []);
-          setParticipantsData([]);
-          setSeasonMode("team");
-        } else {
-          setParticipantsData(response.data.participants || []);
-          setTeamsData([]);
-          setSeasonMode("solo");
-        }
+      if (response.data.data.mode === "team") {
+        setTeamsData(response.data.data.teams || []);
+        setParticipantsData([]);
+        setSeasonMode("team");
       } else {
-        setParticipantsError("Failed to fetch participants");
+        setParticipantsData(response.data.data.participants || []);
+        setTeamsData([]);
+        setSeasonMode("solo");
       }
     } catch (error) {
       setParticipantsError(
-        error.response?.data?.message || "Error loading participants",
+        error.response?.data?.detail || "Error loading participants",
       );
     } finally {
       setParticipantsLoading(false);
@@ -895,19 +862,17 @@ export default withAuth(function SeasonStudio() {
     setLoading(true);
     try {
       const response = await API.get("api/v1/seasons/editable");
-      if (response.data.success) {
-        const allSeasons = [
-          ...response.data.data.pending,
-          ...response.data.data.approved,
-        ];
-        setSeasons(allSeasons);
+      const allSeasons = [
+        ...response.data.data.pending,
+        ...response.data.data.approved,
+      ];
+      setSeasons(allSeasons);
 
-        const target = slugFromUrl
-          ? allSeasons.find((s) => s.slug === slugFromUrl)
-          : response.data.data.approved[0];
+      const target = slugFromUrl
+        ? allSeasons.find((s) => s.slug === slugFromUrl)
+        : response.data.data.approved[0];
 
-        if (target) handleSeasonSelect(target);
-      }
+      if (target) handleSeasonSelect(target);
     } catch (error) {
       console.error("Error fetching seasons:", error);
     } finally {
@@ -922,24 +887,17 @@ export default withAuth(function SeasonStudio() {
       const response = await API.patch(
         `/api/v1/organizer/${selectedSeason.slug}/registration`,
       );
-      if (response.data.success) {
-        setSelectedSeason((prev) => ({ ...prev, isRegistrationOpen: true }));
-        setSeasons((prev) =>
-          prev.map((s) =>
-            s.slug === selectedSeason.slug
-              ? { ...s, isRegistrationOpen: true }
-              : s,
-          ),
-        );
-        showToast("success", response.data.message);
-      } else {
-        showToast(
-          "error",
-          response.data.message || "Failed to open registration",
-        );
-      }
+      setSelectedSeason((prev) => ({ ...prev, isRegistrationOpen: true }));
+      setSeasons((prev) =>
+        prev.map((s) =>
+          s.slug === selectedSeason.slug
+            ? { ...s, isRegistrationOpen: true }
+            : s,
+        ),
+      );
+      showToast("success", response.data.data.message);
     } catch (error) {
-      showToast("error", error.response?.data?.message || error.message);
+      showToast("error", error.response?.data?.detail || error.message);
     } finally {
       setRegistrationLoading(false);
     }
@@ -952,24 +910,17 @@ export default withAuth(function SeasonStudio() {
       const response = await API.patch(
         `/api/v1/organizer/${selectedSeason.slug}/registration`,
       );
-      if (response.data.success) {
-        setSelectedSeason((prev) => ({ ...prev, isRegistrationOpen: false }));
-        setSeasons((prev) =>
-          prev.map((s) =>
-            s.slug === selectedSeason.slug
-              ? { ...s, isRegistrationOpen: false }
-              : s,
-          ),
-        );
-        showToast("success", response.data.message);
-      } else {
-        showToast(
-          "error",
-          response.data.message || "Failed to close registration",
-        );
-      }
+      setSelectedSeason((prev) => ({ ...prev, isRegistrationOpen: false }));
+      setSeasons((prev) =>
+        prev.map((s) =>
+          s.slug === selectedSeason.slug
+            ? { ...s, isRegistrationOpen: false }
+            : s,
+        ),
+      );
+      showToast("success", response.data.data.message);
     } catch (error) {
-      showToast("error", error.response?.data?.message || error.message);
+      showToast("error", error.response?.data?.detail || error.message);
     } finally {
       setRegistrationLoading(false);
     }
@@ -982,7 +933,7 @@ export default withAuth(function SeasonStudio() {
       const response = await API.get(
         `/api/v1/organizer/${seasonSlug}/challenges`,
       );
-      if (response.data.success) setChallenges(response.data.challenges || []);
+      setChallenges(response.data.data.challenges || []);
     } catch (error) {
       setChallenges([]);
     } finally {
@@ -1027,15 +978,11 @@ export default withAuth(function SeasonStudio() {
         `/api/v1/organizer/${selectedSeason.slug}/webhook`,
         { discordWebhookUrl: webhookUrl },
       );
-      if (response.data.success) {
-        showToast("success", response.data.message || "Webhook updated");
-        setShowWebhookSuccessModal(true);
-        setIsDiscordConnected(true);
-      } else {
-        showToast("error", response.data.message || "Failed to update webhook");
-      }
+      showToast("success", response.data.data.message || "Webhook updated");
+      setShowWebhookSuccessModal(true);
+      setIsDiscordConnected(true);
     } catch (error) {
-      showToast("error", error.response?.data?.message || error.message);
+      showToast("error", error.response?.data?.detail || error.message);
     } finally {
       setWebhookLoading(false);
     }
@@ -1066,20 +1013,16 @@ export default withAuth(function SeasonStudio() {
       const response = await API.patch(
         `/api/v1/organizer/${selectedSeason.slug}/publish`,
       );
-      if (response.data.success) {
-        setSeasonData((prev) => ({ ...prev, published: true }));
-        setSelectedSeason((prev) => ({ ...prev, isPublished: true }));
-        setSeasons((prev) =>
-          prev.map((s) =>
-            s.slug === selectedSeason.slug ? { ...s, isPublished: true } : s,
-          ),
-        );
-        showToast("success", response.data.message);
-      } else {
-        showToast("error", response.data.message || "Unknown error");
-      }
+      setSeasonData((prev) => ({ ...prev, published: true }));
+      setSelectedSeason((prev) => ({ ...prev, isPublished: true }));
+      setSeasons((prev) =>
+        prev.map((s) =>
+          s.slug === selectedSeason.slug ? { ...s, isPublished: true } : s,
+        ),
+      );
+      showToast("success", response.data.data.message);
     } catch (error) {
-      showToast("error", error.response?.data?.message || error.message);
+      showToast("error", error.response?.data?.detail || error.message);
     } finally {
       setPublishingSeason(false);
     }
@@ -1092,21 +1035,17 @@ export default withAuth(function SeasonStudio() {
       const response = await API.patch(
         `/api/v1/organizer/${selectedSeason.slug}/pause`,
       );
-      if (response.data.success) {
-        const { isPaused } = response.data;
-        setSeasonData((prev) => ({ ...prev, isPaused }));
-        setSelectedSeason((prev) => ({ ...prev, isPaused }));
-        setSeasons((prev) =>
-          prev.map((s) =>
-            s.slug === selectedSeason.slug ? { ...s, isPaused } : s,
-          ),
-        );
-        showToast("success", response.data.message);
-      } else {
-        showToast("error", response.data.message || "Unknown error");
-      }
+      const { isPaused } = response.data.data;
+      setSeasonData((prev) => ({ ...prev, isPaused }));
+      setSelectedSeason((prev) => ({ ...prev, isPaused }));
+      setSeasons((prev) =>
+        prev.map((s) =>
+          s.slug === selectedSeason.slug ? { ...s, isPaused } : s,
+        ),
+      );
+      showToast("success", response.data.data.message);
     } catch (error) {
-      showToast("error", error.response?.data?.message || error.message);
+      showToast("error", error.response?.data?.detail || error.message);
     } finally {
       setPausingSeason(false);
     }
@@ -1174,19 +1113,17 @@ export default withAuth(function SeasonStudio() {
           { headers: { "Content-Type": "application/json" } },
         );
       }
-      if (response.data.success) {
-        fetchChallenges(selectedSeason.slug);
-        setShowChallengeModal(false);
-        resetChallengeForm();
-        showToast(
-          "success",
-          editingChallenge
-            ? "Challenge updated successfully"
-            : "Challenge created successfully",
-        );
-      }
+      fetchChallenges(selectedSeason.slug);
+      setShowChallengeModal(false);
+      resetChallengeForm();
+      showToast(
+        "success",
+        editingChallenge
+          ? "Challenge updated successfully"
+          : "Challenge created successfully",
+      );
     } catch (error) {
-      showToast("error", error.response?.data?.message || error.message);
+      showToast("error", error.response?.data?.detail || error.message);
     } finally {
       setChallengeLoading(false);
     }
@@ -1258,34 +1195,30 @@ export default withAuth(function SeasonStudio() {
       const response = await API.delete(
         `/api/v1/organizer/${selectedSeason.slug}/delete`,
       );
-      if (response.status === 204 || response.data?.success) {
-        setSeasons((prev) =>
-          prev.filter((s) => s.slug !== selectedSeason.slug),
-        );
-        setSelectedSeason(null);
-        setSeasonData({
-          name: "",
-          description: "",
-          timing: "",
-          startDate: "",
-          endDate: "",
-          startTime: "",
-          endTime: "",
-          published: false,
-          slug: "",
-        });
-        setChallenges([]);
-        setParticipantsData([]);
-        setTeamsData([]);
-        setShowDeleteSeasonModal(false);
-        setDeletingSeasonSlug("");
-        showToast("success", "Season deleted successfully");
-        setActiveTab(0);
-      } else {
-        showToast("error", response.data?.message || "Failed to delete season");
-      }
+      setSeasons((prev) =>
+        prev.filter((s) => s.slug !== selectedSeason.slug),
+      );
+      setSelectedSeason(null);
+      setSeasonData({
+        name: "",
+        description: "",
+        timing: "",
+        startDate: "",
+        endDate: "",
+        startTime: "",
+        endTime: "",
+        published: false,
+        slug: "",
+      });
+      setChallenges([]);
+      setParticipantsData([]);
+      setTeamsData([]);
+      setShowDeleteSeasonModal(false);
+      setDeletingSeasonSlug("");
+      showToast("success", "Season deleted successfully");
+      setActiveTab(0);
     } catch (error) {
-      showToast("error", error.response?.data?.message || error.message);
+      showToast("error", error.response?.data?.detail || error.message);
     } finally {
       setDeleteSeasonLoading(false);
     }
@@ -1314,7 +1247,7 @@ export default withAuth(function SeasonStudio() {
     } catch (error) {
       showToast(
         "error",
-        error.response?.data?.message ||
+        error.response?.data?.detail ||
           error.message ||
           "Failed to delete challenge",
       );
@@ -1336,18 +1269,14 @@ export default withAuth(function SeasonStudio() {
         },
         { headers: { "Content-Type": "application/json" } },
       );
-      if (response.data.success) {
-        setChallenges((prev) =>
-          prev.map((c) =>
-            c.slug === challenge.slug ? { ...c, isVisible: !c.isVisible } : c,
-          ),
-        );
-        showToast("success", response.data.message);
-      } else {
-        showToast("error", response.data.message || "Unknown error");
-      }
+      setChallenges((prev) =>
+        prev.map((c) =>
+          c.slug === challenge.slug ? { ...c, isVisible: !c.isVisible } : c,
+        ),
+      );
+      showToast("success", response.data.data.message);
     } catch (error) {
-      showToast("error", error.response?.data?.message || error.message);
+      showToast("error", error.response?.data?.detail || error.message);
     } finally {
       setChallengeLoading(false);
     }
@@ -1366,23 +1295,19 @@ export default withAuth(function SeasonStudio() {
         },
         { headers: { "Content-Type": "application/json" } },
       );
-      if (response.data.success) {
-        setChallenges((prev) =>
-          prev.map((c) =>
-            c.difficulty.toLowerCase() ===
-            bulkVisibilityForm.difficulty.toLowerCase()
-              ? { ...c, isVisible: bulkVisibilityForm.isVisible }
-              : c,
-          ),
-        );
-        showToast("success", response.data.message);
-        setShowBulkVisibilityModal(false);
-        setBulkVisibilityForm({ difficulty: "", isVisible: true });
-      } else {
-        showToast("error", response.data.message || "Unknown error");
-      }
+      setChallenges((prev) =>
+        prev.map((c) =>
+          c.difficulty.toLowerCase() ===
+          bulkVisibilityForm.difficulty.toLowerCase()
+            ? { ...c, isVisible: bulkVisibilityForm.isVisible }
+            : c,
+        ),
+      );
+      showToast("success", response.data.data.message);
+      setShowBulkVisibilityModal(false);
+      setBulkVisibilityForm({ difficulty: "", isVisible: true });
     } catch (error) {
-      showToast("error", error.response?.data?.message || error.message);
+      showToast("error", error.response?.data?.detail || error.message);
     } finally {
       setBulkVisibilityLoading(false);
     }
