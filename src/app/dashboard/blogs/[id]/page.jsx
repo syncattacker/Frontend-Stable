@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import NextImage from 'next/image';
 import { useParams, useRouter } from 'next/navigation';
 import Navbar from '@/components/navbar/Navbar';
 import Footer from '@/components/footer/Footer';
@@ -381,9 +382,12 @@ export default function ArticleDetailPage() {
                             overflow: "hidden",
                             margin: "48px 0",
                         }}>
-                            <img
+                            <NextImage
                                 src={article.coverImage || article.image}
                                 alt={article.title}
+                                width={1280}
+                                height={560}
+                                unoptimized
                                 style={{ width: "100%", height: "auto", maxHeight: "560px", objectFit: "cover", display: "block" }}
                             />
                         </div>

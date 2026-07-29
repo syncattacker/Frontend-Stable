@@ -309,6 +309,23 @@ export default function RootLayout({ children }) {
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
+        {
+          /*
+            This rule's own warning ("will only load for a single page") is a
+            Pages Router concern (pages/_app.js loading fonts per-route). This
+            is the App Router ROOT layout — it wraps every route by
+            definition, so the font already loads globally, exactly as the
+            rule wants. Migrating to next/font/google isn't safe here without
+            a much larger change: 43+ files reference these exact font
+            names ("Bebas Neue", "Outfit", "DM Sans") as literal CSS strings
+            in inline styles. next/font/google exposes fonts only via a
+            generated scoped className/CSS-variable, not the literal family
+            name, so swapping this out would silently break typography
+            everywhere those literal strings are used unless every one of
+            those references were migrated in lockstep.
+          */
+        }
+        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
         <link
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@200;300;400;500;600;700;900&family=DM+Sans:wght@400;500;600;700&display=swap"

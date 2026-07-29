@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
 import TiptapEditor from "@/components/blog/TiptapEditor";
@@ -261,14 +262,12 @@ function ImageUpload({
       />
 
       {value ? (
-        <img
+        <Image
           src={typeof value === "string" ? value : URL.createObjectURL(value)}
           alt="Preview"
+          fill
+          unoptimized
           style={{
-            position: "absolute",
-            inset: 0,
-            width: "100%",
-            height: "100%",
             objectFit: "cover",
             zIndex: 1,
             opacity: hover ? 1 : 0.8,

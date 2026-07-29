@@ -412,9 +412,12 @@ const AvatarBlock = ({ src, username, onUpload, uploading, size = 88 }) => {
         }}
       >
         {src ? (
-          <img
+          <Image
             src={src}
             alt={username}
+            width={size}
+            height={size}
+            unoptimized
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
         ) : (
@@ -1563,9 +1566,12 @@ const UserProfile = () => {
                     border: `1px solid ${T.border}`,
                   }}
                 >
-                  <img
+                  <Image
                     src={course.image}
                     alt={course.title}
+                    width={44}
+                    height={44}
+                    unoptimized
                     style={{
                       width: "100%",
                       height: "100%",
