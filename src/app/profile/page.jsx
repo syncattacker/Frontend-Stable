@@ -735,9 +735,18 @@ const UserProfile = () => {
       const res = await API.post("/auth/avatar", formData);
       const { publicUrl } = res.data.data;
 
+      // The backend stores avatars at a stable, deterministic S3 key
+      // (avatars/{userId}.{ext}), so publicUrl is identical across
+      // re-uploads — the browser's HTTP cache would otherwise keep
+      // serving the previously-cached image at that exact URL even
+      // though the S3 object was just overwritten. A cache-busting query
+      // param forces a fresh fetch without changing the canonical URL
+      // that's actually persisted server-side.
+      const displayUrl = `${publicUrl}?v=${Date.now()}`;
+
       setProfileData((prev) => ({
         ...prev,
-        user: { ...prev.user, avatar: publicUrl },
+        user: { ...prev.user, avatar: displayUrl },
       }));
       showToast("success", "Avatar updated");
     } catch (err) {
