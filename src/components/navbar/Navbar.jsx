@@ -118,6 +118,7 @@ const Navbar = () => {
             { label: "Events", path: "/events" },
             { label: "Blog", path: "/blog" },
             { label: "About", path: "/about" },
+            { label: "Pricing", path: "/pricing" },
           ].map(({ label, path }) => (
             <MotionLink
               key={label}

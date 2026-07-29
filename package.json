@@ -54,6 +54,8 @@
   },
   "overrides": {
     "postcss": "^8.5.10",
-    "sharp": "^0.35.3"
+    "sharp": "^0.35.3",
+    "@napi-rs/wasm-runtime": "1.1.6",
+    "@eslint/config-array": "^0.23.5"
   }
 }
