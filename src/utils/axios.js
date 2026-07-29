@@ -10,11 +10,11 @@ const API = axios.create({
 });
 
 // Replay protection: every authenticated request needs a fresh nonce and a
-// counter strictly greater than the last one the backend saw for this
-// session. The counter is persisted in localStorage (not just in-memory) so
-// it stays monotonic across page reloads and multiple tabs sharing a session.
-const REPLAY_COUNTER_KEY = "gopwnit.replayCounter";
-
+// counter that never decreases for this session (replayProtection.middleware.js
+// accepts incoming >= last-seen, so equal values are fine — e.g. concurrent
+// tabs). Date.now() (epoch ms) satisfies this on its own: it only moves
+// forward with wall-clock time, so it stays monotonic across page reloads
+// and across multiple tabs sharing a session with no persisted state needed.
 function nextNonce() {
   if (typeof crypto !== "undefined" && crypto.randomUUID) {
     return crypto.randomUUID();
@@ -23,17 +23,7 @@ function nextNonce() {
 }
 
 function nextCounter() {
-  let last = 0;
-  try {
-    last = Number(window.localStorage.getItem(REPLAY_COUNTER_KEY)) || 0;
-  } catch {
-    // localStorage unavailable (SSR, private browsing) — fall back to time-only
-  }
-  const counter = Math.max(Date.now(), last + 1);
-  try {
-    window.localStorage.setItem(REPLAY_COUNTER_KEY, String(counter));
-  } catch {}
-  return counter;
+  return Date.now();
 }
 
 // CSRF double-submit cookie: the backend sets a non-HttpOnly cookie and
@@ -91,10 +81,9 @@ API.interceptors.response.use(
 
 // Coalesce identical concurrent GET requests into a single network call.
 // Two components (or a React Strict Mode double-invoked effect) firing the
-// same read at once used to become two physical requests with two different
-// X-Counter values — and since the server only accepts a strictly-increasing
-// counter per session, whichever request happened to be processed second was
-// rejected as a replay. Never dedupe mutating methods.
+// same read at once would otherwise become two physical requests — wasted,
+// redundant network/backend work for an identical GET. Never dedupe
+// mutating methods.
 //
 // Note: axios binds get/post/request/etc. to its own internal context object
 // when the instance is created, so overriding API.request has no effect on
