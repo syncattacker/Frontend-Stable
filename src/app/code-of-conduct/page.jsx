@@ -667,8 +667,15 @@ function renderModalContent(sectionId) {
 export default function CodeOfConduct() {
   const [activeModal, setActiveModal] = useState(null);
 
-  const openModal  = (id) => { setActiveModal(id); document.body.style.overflow = "hidden"; };
-  const closeModal = ()   => { setActiveModal(null); document.body.style.overflow = ""; };
+  useEffect(() => {
+    document.body.style.overflow = activeModal ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [activeModal]);
+
+  const openModal  = (id) => setActiveModal(id);
+  const closeModal = ()   => setActiveModal(null);
 
   const sections = [
     {

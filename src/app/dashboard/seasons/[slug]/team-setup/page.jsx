@@ -451,7 +451,7 @@ const TeamSetup = () => {
                 fontFamily: "'Outfit', sans-serif",
               }}
             >
-              You'll be the owner. Invite others, manage members, and lock the roster when ready.
+              You&apos;ll be the owner. Invite others, manage members, and lock the roster when ready.
             </p>
 
             <div className="space-y-3 mb-10">

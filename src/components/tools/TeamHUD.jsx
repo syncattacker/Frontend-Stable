@@ -162,9 +162,9 @@ export function TeamHUD({ members = [], maxPts = 6000, teamName = "Squad" }) {
       if (prev !== undefined && prev !== p.pts) nd[p.id] = p.pts - prev;
       prevRef.current[p.id] = p.pts;
     });
-    setSorted(newSorted);
+    queueMicrotask(() => setSorted(newSorted));
     if (Object.keys(nd).length) {
-      setDeltas(nd);
+      queueMicrotask(() => setDeltas(nd));
       const t = setTimeout(() => setDeltas({}), 1800);
       return () => clearTimeout(t);
     }

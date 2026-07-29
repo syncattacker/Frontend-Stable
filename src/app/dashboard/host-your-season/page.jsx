@@ -181,11 +181,12 @@ const CustomClock = ({ value, onChange, onClose }) => {
   const [minutes, setMinutes] = useState(value ? parseInt(value.split(":")[1]) : 0);
 
   useEffect(() => {
-    if (value) {
+    if (!value) return;
+    queueMicrotask(() => {
       const [h, m] = value.split(":");
       setHours(parseInt(h));
       setMinutes(parseInt(m));
-    }
+    });
   }, [value]);
 
   const handleHourChange = (v) => {
@@ -869,7 +870,7 @@ function HostForm() {
                       style={{ background: T.card, border: `1px solid ${T.border}`, borderRadius: "2px" }}
                     >
                       <p className="text-[9px] uppercase tracking-[0.2em] mb-3" style={{ color: T.muted, fontFamily: "Outfit, sans-serif" }}>Description</p>
-                      <p className="text-sm leading-relaxed italic" style={{ color: T.muted, fontFamily: "Outfit, sans-serif" }}>"{formData.eventDescription}"</p>
+                      <p className="text-sm leading-relaxed italic" style={{ color: T.muted, fontFamily: "Outfit, sans-serif" }}>&quot;{formData.eventDescription}&quot;</p>
                     </div>
                   </div>
                 </div>
@@ -941,7 +942,7 @@ function HostForm() {
                 Confirm Submission
               </h3>
               <p className="text-sm leading-relaxed mb-5" style={{ color: T.muted, fontFamily: "Outfit, sans-serif" }}>
-                You'll receive email updates once your event is approved. Ready to submit?
+                You&apos;ll receive email updates once your event is approved. Ready to submit?
               </p>
 
               {/* Warning */}

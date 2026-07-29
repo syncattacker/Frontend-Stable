@@ -550,7 +550,9 @@ const UserProfile = () => {
   const [newUsername, setNewUsername] = useState("");
   const [isUpdatingUsername, setIsUpdatingUsername] = useState(false);
   const [usernameError, setUsernameError] = useState("");
-  const [userTimezone, setUserTimezone] = useState(null);
+  const [userTimezone] = useState(
+    () => Intl.DateTimeFormat().resolvedOptions().timeZone,
+  );
   const [showPassword, setShowPassword] = useState(false);
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
@@ -570,10 +572,6 @@ const UserProfile = () => {
   const [confirmationPhrase, setConfirmationPhrase] = useState("");
 
   /* ── Effects ── */
-  useEffect(() => {
-    setUserTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone);
-  }, []);
-
   useEffect(() => {
     (async () => {
       try {

@@ -145,7 +145,9 @@ export default function UserStats({ seasonSlug }) {
   };
 
   useEffect(() => {
-    fetchUserStats(currentUsername);
+    queueMicrotask(() => {
+      fetchUserStats(currentUsername);
+    });
   }, [currentUsername, seasonSlug]);
 
   const handleUsernameSearch = (e) => {

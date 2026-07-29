@@ -304,7 +304,7 @@ export default function SupportPage() {
             className="sp-bebas"
             style={{ fontSize: "clamp(52px, 9vw, 96px)", color: T.cream, lineHeight: 0.92, margin: "0 0 20px" }}
           >
-            WE'RE HERE<br />TO HELP YOU.
+            WE&apos;RE HERE<br />TO HELP YOU.
           </motion.h1>
 
           <motion.p

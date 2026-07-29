@@ -291,7 +291,7 @@ export default function NotAuthenticatedLoader() {
                 fontFamily: "'Outfit', sans-serif",
               }}
             >
-              Your session has expired or you're not currently authenticated.
+              Your session has expired or you&apos;re not currently authenticated.
               Please sign in to continue.
             </p>
           </div>

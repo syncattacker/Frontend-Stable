@@ -217,7 +217,7 @@ export default function SignUp({
 
   useEffect(() => {
     if (!username.trim()) {
-      setUsernameAvailable(null);
+      queueMicrotask(() => setUsernameAvailable(null));
       return;
     }
     const t = setTimeout(
@@ -229,8 +229,10 @@ export default function SignUp({
 
   useEffect(() => {
     if (verificationToken && isOpen) {
-      goToStep(5);
-      handleTokenVerification(verificationToken);
+      queueMicrotask(() => {
+        goToStep(5);
+        handleTokenVerification(verificationToken);
+      });
     }
   }, [verificationToken, isOpen]);
 

@@ -117,11 +117,14 @@ const SeasonCtfRegis = () => {
       }
     };
 
-    if (slug) fetchCtfDetails();
-    else {
-      setError("No CTF slug provided");
-      setLoading(false);
-      setCheckingRegistration(false);
+    if (slug) {
+      fetchCtfDetails();
+    } else {
+      queueMicrotask(() => {
+        setError("No CTF slug provided");
+        setLoading(false);
+        setCheckingRegistration(false);
+      });
     }
   }, [slug]);
   const formatDateWithTimezone = (dateString) => {

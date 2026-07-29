@@ -448,7 +448,9 @@ const SeasonLeaderboard = () => {
   };
 
   useEffect(() => {
-    fetchLeaderboard();
+    queueMicrotask(() => {
+      fetchLeaderboard();
+    });
   }, [slug]);
 
   useEffect(() => {
@@ -466,8 +468,9 @@ const SeasonLeaderboard = () => {
   }, [socket, slug]);
 
   useEffect(() => {
-    if (!loading && soloData.length === 0 && teamsData.length > 0)
-      setActiveTab("teams");
+    if (!loading && soloData.length === 0 && teamsData.length > 0) {
+      queueMicrotask(() => setActiveTab("teams"));
+    }
   }, [loading, soloData, teamsData]);
 
   const currentData = activeTab === "solo" ? soloData : teamsData;

@@ -1,11 +1,15 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 
 const ParticleField = ({ count = 5000 }) => {
     const points = useRef();
 
-    const particles = useMemo(() => {
+    // Random particle positions must only be generated once per instance,
+    // not recomputed on every render — useState's lazy initializer
+    // guarantees exactly-once execution (unlike useMemo, which React may
+    // re-run and isn't meant to hold impure logic like Math.random()).
+    const [particles] = useState(() => {
         const temp = new Float32Array(count * 3);
         for (let i = 0; i < count; i++) {
             const x = (Math.random() - 0.5) * 40;
@@ -14,7 +18,7 @@ const ParticleField = ({ count = 5000 }) => {
             temp.set([x, y, z], i * 3);
         }
         return temp;
-    }, [count]);
+    });
 
     useFrame((state) => {
         const time = state.clock.getElapsedTime();

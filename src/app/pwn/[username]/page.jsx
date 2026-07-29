@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { Target, AlertTriangle } from "lucide-react";
 import {
   RiInstagramLine as FaInstagram,
@@ -296,11 +297,9 @@ export default function PublicProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("ctf");
-  const [userTimezone, setUserTimezone] = useState(null);
-
-  useEffect(() => {
-    setUserTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone);
-  }, []);
+  const [userTimezone] = useState(
+    () => Intl.DateTimeFormat().resolvedOptions().timeZone,
+  );
 
   useEffect(() => {
     if (!username) return;
@@ -667,9 +666,9 @@ export default function PublicProfilePage() {
             <AlertTriangle size={26} color={T.errText} style={{ margin: "0 auto 12px", display: "block" }} />
             <Display size="1.6rem" style={{ marginBottom: "8px" }}>{error}</Display>
             <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: "12px", color: T.mid, marginBottom: "20px" }}>
-              The profile you're looking for doesn't exist or couldn't be loaded.
+              The profile you&apos;re looking for doesn&apos;t exist or couldn&apos;t be loaded.
             </p>
-            <a href="/" className="btn-g">Return Home</a>
+            <Link href="/" className="btn-g">Return Home</Link>
           </div>
         </div>
       </>

@@ -132,15 +132,23 @@ export default function KnowledgeBasePage() {
   const [loadHover, setLoadHover] = useState(false);
 
   useEffect(() => {
-    setIsLoading(true);
-    blogApi
-      .getAllBlogs(1, visibleCount)
-      .then((res) => {
+    let cancelled = false;
+    (async () => {
+      setIsLoading(true);
+      try {
+        const res = await blogApi.getAllBlogs(1, visibleCount);
+        if (cancelled) return;
         setAllArticles(res.data.resources);
         setPagination({ total: res.data.total, pages: res.data.pages });
-      })
-      .catch((err) => console.error("Failed to fetch articles:", err))
-      .finally(() => setIsLoading(false));
+      } catch (err) {
+        console.error("Failed to fetch articles:", err);
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [visibleCount]);
 
   const filteredArticles =

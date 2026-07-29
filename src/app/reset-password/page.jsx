@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -210,7 +210,8 @@ function ResetPasswordContent() {
   const searchParams = useSearchParams();
   const router       = useRouter();
 
-  const [token,               setToken]               = useState("");
+  const token = searchParams.get("reset-token") || "";
+
   const [password,            setPassword]            = useState("");
   const [confirmPassword,     setConfirmPassword]     = useState("");
   const [showPassword,        setShowPassword]        = useState(false);
@@ -218,18 +219,13 @@ function ResetPasswordContent() {
   const [passwordError,       setPasswordError]       = useState("");
   const [confirmPasswordError,setConfirmPasswordError]= useState("");
   const [isLoading,           setIsLoading]           = useState(false);
-  const [resetStatus,         setResetStatus]         = useState(null);
-  const [message,             setMessage]             = useState("");
+  const [resetStatus,         setResetStatus]         = useState(() => (token ? null : "error"));
+  const [message,             setMessage]             = useState(() =>
+    token ? "" : "Invalid or missing reset token",
+  );
 
   const strength = getStrength(password);
   const meta     = strengthMeta[strength];
-
-  /* ── ALL LOGIC UNCHANGED ─────────────────────────────────────────── */
-  useEffect(() => {
-    const t = searchParams.get("reset-token");
-    if (t) { setToken(t); }
-    else   { setResetStatus("error"); setMessage("Invalid or missing reset token"); }
-  }, [searchParams]);
 
   const validatePassword = () => {
     if (!password.trim())               { setPasswordError("Password is required");            return false; }

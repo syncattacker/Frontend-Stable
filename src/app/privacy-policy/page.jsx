@@ -618,7 +618,7 @@ function renderModalContent(sectionId) {
               support@gopwnit.com
             </a>
             <p className="pp-roundo text-[10px] font-[700] uppercase tracking-[0.13em] text-zinc-600 mt-3">
-              Include "Privacy Request" in subject line
+              Include &quot;Privacy Request&quot; in subject line
             </p>
           </div>
         </div>
@@ -748,14 +748,15 @@ function renderModalContent(sectionId) {
 export default function PrivacyPolicy() {
   const [activeModal, setActiveModal] = useState(null);
 
-  const openModal = (id) => {
-    setActiveModal(id);
-    document.body.style.overflow = "hidden";
-  };
-  const closeModal = () => {
-    setActiveModal(null);
-    document.body.style.overflow = "";
-  };
+  useEffect(() => {
+    document.body.style.overflow = activeModal ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [activeModal]);
+
+  const openModal = (id) => setActiveModal(id);
+  const closeModal = () => setActiveModal(null);
 
   return (
     <div className="pp-body flex flex-col min-h-screen bg-[#0A0A0A] text-yellow-50">

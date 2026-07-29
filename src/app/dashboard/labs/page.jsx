@@ -30,7 +30,7 @@ export default withAuth(function Labs() {
 
           <div className="space-y-8">
             <h3 className="text-xl font-medium text-white">
-              What You'll Experience
+              What You&apos;ll Experience
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
@@ -109,7 +109,7 @@ export default withAuth(function Labs() {
 
           <div className="space-y-8">
             <h3 className="text-xl font-medium text-white">
-              What You'll Experience
+              What You&apos;ll Experience
             </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">

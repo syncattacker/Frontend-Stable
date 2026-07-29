@@ -148,7 +148,7 @@ const AboutUs = () => {
                   <span className="font-bold" style={{ color: TOKENS.textPrimary }}>
                     gopwnit
                   </span>
-                  , we're building the most realistic and hands-on offensive
+                  , we&apos;re building the most realistic and hands-on offensive
                   security platform in the world.
                 </p>
                 <p
