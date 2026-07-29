@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   IconClock,
   IconFlag,
@@ -127,28 +127,31 @@ export default function UserStats({ seasonSlug }) {
 
   const itemsPerPage = 20;
 
-  const fetchUserStats = async (username) => {
-    if (!username || !seasonSlug) return;
-    setLoading(true);
-    try {
-      const response = await API.get(
-        `/api/v1/organizer/${seasonSlug}/user/${username}/stats`,
-      );
-      setUserData(response.data.data.userData);
-      setAttempts(response.data.data.attempts);
-      setCurrentPage(1);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchUserStats = useCallback(
+    async (username) => {
+      if (!username || !seasonSlug) return;
+      setLoading(true);
+      try {
+        const response = await API.get(
+          `/api/v1/organizer/${seasonSlug}/user/${username}/stats`,
+        );
+        setUserData(response.data.data.userData);
+        setAttempts(response.data.data.attempts);
+        setCurrentPage(1);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [seasonSlug],
+  );
 
   useEffect(() => {
     queueMicrotask(() => {
       fetchUserStats(currentUsername);
     });
-  }, [currentUsername, seasonSlug]);
+  }, [currentUsername, fetchUserStats]);
 
   const handleUsernameSearch = (e) => {
     e.preventDefault();

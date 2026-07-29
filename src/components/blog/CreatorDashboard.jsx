@@ -356,7 +356,7 @@ export default function CreatorDashboard() {
       }
     };
     fetchBlog();
-  }, [slug, isEditMode]);
+  }, [slug, isEditMode, router]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;

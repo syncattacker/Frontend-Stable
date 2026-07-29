@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   IconCheck as Check,
@@ -140,6 +140,10 @@ export default function SignUp({
   }, []);
 
   const [step, setStep] = useState(1);
+  const stepRef = useRef(step);
+  useEffect(() => {
+    stepRef.current = step;
+  }, [step]);
   const [direction, setDirection] = useState(1);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -164,10 +168,10 @@ export default function SignUp({
   const countries = countryList().getData();
   const router = useRouter();
 
-  const goToStep = (n) => {
-    setDirection(n > step ? 1 : -1);
+  const goToStep = useCallback((n) => {
+    setDirection(n > stepRef.current ? 1 : -1);
     setStep(n);
-  };
+  }, []);
 
   const handleTokenVerification = async (token) => {
     setIsLoading(true);
@@ -234,7 +238,7 @@ export default function SignUp({
         handleTokenVerification(verificationToken);
       });
     }
-  }, [verificationToken, isOpen]);
+  }, [verificationToken, isOpen, goToStep]);
 
   const validateEmail = () => {
     if (!email.trim()) {

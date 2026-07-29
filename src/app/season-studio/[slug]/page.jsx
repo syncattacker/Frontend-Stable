@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import {
   RiAddLine as PlusIcon,
   RiPencilLine as PencilIcon,
@@ -580,9 +580,12 @@ export default withAuth(function SeasonStudio() {
   const [challengeFilterDiff, setChallengeFilterDiff] = useState("");
   const [challengeFilterCat, setChallengeFilterCat] = useState("");
 
-  const can = (p) => Array.isArray(permissions) && permissions.includes(p);
+  const can = useCallback(
+    (p) => Array.isArray(permissions) && permissions.includes(p),
+    [permissions],
+  );
 
-  const fetchAdminContext = async () => {
+  const fetchAdminContext = useCallback(async () => {
     if (!selectedSeason?.slug) return;
     try {
       const res = await API.get(
@@ -593,7 +596,7 @@ export default withAuth(function SeasonStudio() {
       console.error("Error fetching admin context:", e);
       setPermissions([]);
     }
-  };
+  }, [selectedSeason]);
 
   const toggleParticipantBan = async (participant) => {
     if (!selectedSeason) return;
@@ -719,7 +722,7 @@ export default withAuth(function SeasonStudio() {
     setShowFlagValue(false);
   };
 
-  const fetchAdmins = async () => {
+  const fetchAdmins = useCallback(async () => {
     if (!selectedSeason?.slug) return;
     setAdminLoading(true);
     try {
@@ -735,7 +738,7 @@ export default withAuth(function SeasonStudio() {
     } finally {
       setAdminLoading(false);
     }
-  };
+  }, [selectedSeason]);
 
   const sendNotification = async () => {
     if (!selectedSeason || !notificationForm.message.trim()) {
@@ -809,9 +812,9 @@ export default withAuth(function SeasonStudio() {
 
   useEffect(() => {
     if (selectedSeason && activeTab === 3) fetchAdmins();
-  }, [selectedSeason, activeTab]);
+  }, [selectedSeason, activeTab, fetchAdmins]);
 
-  const fetchParticipants = async () => {
+  const fetchParticipants = useCallback(async () => {
     if (!selectedSeason) return;
     setParticipantsLoading(true);
     setParticipantsError(null);
@@ -835,17 +838,17 @@ export default withAuth(function SeasonStudio() {
     } finally {
       setParticipantsLoading(false);
     }
-  };
+  }, [selectedSeason]);
 
   useEffect(() => {
     if (!selectedSeason) return;
     fetchAdminContext();
-  }, [selectedSeason]);
+  }, [selectedSeason, fetchAdminContext]);
 
   useEffect(() => {
     if (!selectedSeason || permissions.length === 0) return;
     if (can("participant.view")) fetchParticipants();
-  }, [selectedSeason, permissions]);
+  }, [selectedSeason, permissions, can, fetchParticipants]);
 
   const tabs = React.useMemo(() => {
     return [
@@ -856,7 +859,7 @@ export default withAuth(function SeasonStudio() {
       can("notification.send") && { id: 4, name: "Send Notification" },
       can("score.view") && { id: 5, name: "User Stats" },
     ].filter(Boolean);
-  }, [permissions]);
+  }, [can]);
 
   const fetchSeasons = async () => {
     setLoading(true);
@@ -941,8 +944,14 @@ export default withAuth(function SeasonStudio() {
     }
   };
 
+  // Intentionally mount-only: fetchSeasons closes over slugFromUrl and
+  // handleSeasonSelect (itself unmemoized and calling fetchChallenges), so
+  // making it "correct" per exhaustive-deps would require memoizing that
+  // whole chain and would turn this into a re-fetch-on-param-change effect
+  // instead of a load-once-on-mount effect, changing existing behavior.
   useEffect(() => {
     fetchSeasons();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSeasonSelect = (season) => {

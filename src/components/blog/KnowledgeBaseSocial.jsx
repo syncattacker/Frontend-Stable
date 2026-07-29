@@ -66,9 +66,11 @@ const KnowledgeBaseSocial = () => {
                     />
 
                     {/* ← Option 1: public folder use karo */}
-                    <img
+                    <Image
                         src="/f2.svg"
                         alt="logo"
+                        width={64}
+                        height={64}
                         className="w-16 h-16 object-contain z-40 brightness-200"
                         style={{ filter: 'drop-shadow(0 0 10px rgba(255,255,255,0.8))' }}
                     />

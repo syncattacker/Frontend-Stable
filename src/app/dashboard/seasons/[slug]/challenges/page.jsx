@@ -243,7 +243,7 @@ export default withAuth(function SeasonCTF() {
       }
     })();
     return () => ctrl.abort();
-  }, [slug, fetchSolved, router]);
+  }, [slug, fetchSolved, fetchMyTeamStats, router]);
 
   const total = groupedChallenges.reduce((t, g) => t + g.challenges.length, 0);
   const solved = groupedChallenges.reduce(
@@ -258,6 +258,11 @@ export default withAuth(function SeasonCTF() {
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 5000);
     }
+    // showConfetti is intentionally excluded: it's only read as an in-render
+    // guard against double-firing. Including it would re-run this effect
+    // when the timeout resets it to false, immediately re-satisfying the
+    // total/solved condition and re-triggering confetti in an endless loop.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [total, solved]);
 
   useEffect(() => {

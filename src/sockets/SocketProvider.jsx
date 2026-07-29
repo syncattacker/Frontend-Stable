@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { io } from "socket.io-client";
 import { useDispatch, useSelector } from "react-redux";
 import { logout } from "@/store/authSlice";
@@ -17,32 +24,35 @@ export const SocketProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const logoutTriggeredRef = useRef(false);
 
-  const hardLogout = async (reason = "Session expired") => {
-    if (logoutTriggeredRef.current) return;
-    logoutTriggeredRef.current = true;
+  const hardLogout = useCallback(
+    async (reason = "Session expired") => {
+      if (logoutTriggeredRef.current) return;
+      logoutTriggeredRef.current = true;
 
-    console.warn("🔐 Hard logout:", reason);
+      console.warn("🔐 Hard logout:", reason);
 
-    try {
-      await API.post(
-        `${process.env.NEXT_PUBLIC_AUTH_LOGOUT_API}`,
-        {},
-        { withCredentials: true },
-      );
-    } catch (err) {
-      console.warn("Logout API failed (ignored):", err.message);
-    }
+      try {
+        await API.post(
+          `${process.env.NEXT_PUBLIC_AUTH_LOGOUT_API}`,
+          {},
+          { withCredentials: true },
+        );
+      } catch (err) {
+        console.warn("Logout API failed (ignored):", err.message);
+      }
 
-    if (socketRef.current) {
-      socketRef.current.disconnect();
-      socketRef.current = null;
-    }
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
 
-    dispatch(logout());
-    showToast("error", reason);
+      dispatch(logout());
+      showToast("error", reason);
 
-    window.location.href = "/";
-  };
+      window.location.href = "/";
+    },
+    [dispatch],
+  );
 
   useEffect(() => {
     if (isAuthenticated && !socketRef.current) {
@@ -102,7 +112,7 @@ export const SocketProvider = ({ children }) => {
         socketRef.current = null;
       }
     };
-  }, [isAuthenticated, dispatch]);
+  }, [isAuthenticated, dispatch, hardLogout]);
 
   return (
     <SocketContext.Provider

@@ -36,7 +36,7 @@ function Counter({ value }) {
   useEffect(() => {
     spring.set(value);
     return display.on("change", setLabel);
-  }, [value]);
+  }, [value, spring, display]);
   return <>{label}</>;
 }
 

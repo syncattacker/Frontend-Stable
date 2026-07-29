@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   RiTrophyLine,
   RiCalendarLine,
@@ -427,7 +427,7 @@ const SeasonLeaderboard = () => {
   const router = useRouter();
   const { socket } = useSocket();
 
-  const fetchLeaderboard = async () => {
+  const fetchLeaderboard = useCallback(async () => {
     if (!slug) {
       setError("Season slug not found in URL");
       setLoading(false);
@@ -445,13 +445,13 @@ const SeasonLeaderboard = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [slug]);
 
   useEffect(() => {
     queueMicrotask(() => {
       fetchLeaderboard();
     });
-  }, [slug]);
+  }, [slug, fetchLeaderboard]);
 
   useEffect(() => {
     if (!socket) return;
@@ -465,7 +465,7 @@ const SeasonLeaderboard = () => {
       socket.off("leaderboardUpdated", onUpdate);
       socket.emit("leaveSeason", slug);
     };
-  }, [socket, slug]);
+  }, [socket, slug, fetchLeaderboard]);
 
   useEffect(() => {
     if (!loading && soloData.length === 0 && teamsData.length > 0) {
