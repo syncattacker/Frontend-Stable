@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start -p 4000",
     "lint": "eslint",
-    "test": "node --test src/lib/client-intelligence/__tests__"
+    "test": "node --test src/lib/client-intelligence/__tests__/canonical.test.js src/lib/client-intelligence/__tests__/hybridCrypto.test.js src/lib/client-intelligence/__tests__/headers.test.js"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
