@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { ChevronUp, ChevronDown, X, Bell, ArrowLeft } from "lucide-react";
 import { useSocket } from "@/sockets/SocketProvider";
 import API from "@/utils/axios";
@@ -162,14 +162,53 @@ const NotificationPanel = ({ position = "bottom-right", seasonSlug }) => {
   const [isOpen,               setIsOpen]               = useState(false);
   const [selectedPerson,       setSelectedPerson]       = useState(null);
   const [incomingNotification, setIncomingNotification] = useState(null);
+  const [unreadOnly,           setUnreadOnly]           = useState(false);
+  const [page,                 setPage]                 = useState(1);
+  const [hasMore,              setHasMore]              = useState(false);
+  const [loadingMore,          setLoadingMore]          = useState(false);
+  const PAGE_LIMIT = 20;
 
-  /* ── Initial fetch ── */
+  // Broadcasts (season-wide announcements/bans) have no per-user read
+  // state at all — only personal (username-targeted) notifications carry
+  // an isRead field. Distinguishing on that, rather than a separate flag,
+  // matches how the backend actually serializes them.
+  const isPersonal = (n) => typeof n.isRead === "boolean";
+
+  const fetchNotifications = useCallback((pageNum, unread) => {
+    if (!seasonSlug) return Promise.resolve();
+    return API.get(`/api/v1/seasons/notifications/${seasonSlug}`, {
+      withCredentials: true,
+      params: { page: pageNum, limit: PAGE_LIMIT, unreadOnly: unread || undefined },
+    }).then(res => {
+      const list = res.data.data.notifications || [];
+      setHasMore(list.length === PAGE_LIMIT);
+      return list;
+    });
+  }, [seasonSlug]);
+
+  /* ── Initial fetch (also re-runs when the unread-only filter changes) ── */
   useEffect(() => {
     if (!seasonSlug) return;
-    API.get(`/api/v1/seasons/notifications/${seasonSlug}`, { withCredentials: true })
-      .then(res => setNotifications(res.data.data.notifications || []))
-      .catch(err => console.error("Failed to fetch notifications:", err));
-  }, [seasonSlug]);
+    queueMicrotask(() => {
+      setPage(1);
+      fetchNotifications(1, unreadOnly)
+        .then(list => setNotifications(list || []))
+        .catch(err => console.error("Failed to fetch notifications:", err));
+    });
+  }, [seasonSlug, unreadOnly, fetchNotifications]);
+
+  const loadMore = () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    const nextPage = page + 1;
+    fetchNotifications(nextPage, unreadOnly)
+      .then(list => {
+        setNotifications(prev => [...prev, ...(list || [])]);
+        setPage(nextPage);
+      })
+      .catch(err => console.error("Failed to load more notifications:", err))
+      .finally(() => setLoadingMore(false));
+  };
 
   /* ── Socket: join room + live updates ── */
   useEffect(() => {
@@ -206,14 +245,20 @@ const NotificationPanel = ({ position = "bottom-right", seasonSlug }) => {
     const key = n.from || "System";
     if (!acc[key]) acc[key] = { from: key, notifications: [], unreadCount: 0 };
     acc[key].notifications.push(n);
-    if (!n.isRead) acc[key].unreadCount++;
+    if (isPersonal(n) && !n.isRead) acc[key].unreadCount++;
     return acc;
   }, {});
 
-  const totalUnread = notifications.filter(n => !n.isRead).length;
+  const totalUnread = notifications.filter(n => isPersonal(n) && !n.isRead).length;
 
   /* ── Handlers ── */
   const markAsRead = async (notificationId) => {
+    const target = notifications.find(n => n._id === notificationId);
+    // Broadcasts have no per-user read state — the backend now 400s if you
+    // try, since "marking it read" would previously have (incorrectly)
+    // marked the shared announcement read for everyone.
+    if (!target || !isPersonal(target) || target.isRead) return;
+
     setNotifications(prev =>
       prev.map(n => n._id === notificationId ? { ...n, isRead: true } : n)
     );
@@ -305,6 +350,25 @@ const NotificationPanel = ({ position = "bottom-right", seasonSlug }) => {
             {!selectedPerson && <Micro>{totalUnread} unread</Micro>}
           </div>
 
+          {/* ── Unread-only filter (top level only) ── */}
+          {!selectedPerson && (
+            <button
+              onClick={() => setUnreadOnly(u => !u)}
+              className="np-ibtn"
+              style={{
+                justifyContent: "flex-start",
+                padding: "8px 16px",
+                borderBottom: `1px solid ${T.muted}`,
+                borderRadius: 0,
+                color: unreadOnly ? T.blue : T.mid,
+              }}
+            >
+              <Micro style={{ color: "inherit" }}>
+                {unreadOnly ? "✓ Unread only" : "Unread only"}
+              </Micro>
+            </button>
+          )}
+
           {/* ── Body ── */}
           <div className="np-scroll">
             {!selectedPerson ? (
@@ -315,33 +379,53 @@ const NotificationPanel = ({ position = "bottom-right", seasonSlug }) => {
                   <Micro>No notifications yet</Micro>
                 </div>
               ) : (
-                Object.entries(groupedNotifications).map(([personKey, person]) => (
-                  <div key={personKey} className="np-row" onClick={() => handlePersonClick(personKey)}>
-                    {/* Role dot */}
-                    <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: roleColor(person.from), flexShrink: 0, marginTop: "1px" }} />
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: "13px", color: roleColor(person.from), marginBottom: "3px" }}>
-                        {person.from}
-                      </p>
-                      <Micro>
-                        {person.notifications.length} message{person.notifications.length !== 1 ? "s" : ""}
-                        {person.unreadCount > 0 && (
-                          <span style={{ marginLeft: "6px", color: T.blue }}>· {person.unreadCount} new</span>
-                        )}
-                      </Micro>
+                <>
+                  {Object.entries(groupedNotifications).map(([personKey, person]) => (
+                    <div key={personKey} className="np-row" onClick={() => handlePersonClick(personKey)}>
+                      {/* Role dot */}
+                      <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: roleColor(person.from), flexShrink: 0, marginTop: "1px" }} />
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontFamily: "'Outfit',sans-serif", fontSize: "13px", color: roleColor(person.from), marginBottom: "3px" }}>
+                          {person.from}
+                        </p>
+                        <Micro>
+                          {person.notifications.length} message{person.notifications.length !== 1 ? "s" : ""}
+                          {person.unreadCount > 0 && (
+                            <span style={{ marginLeft: "6px", color: T.blue }}>· {person.unreadCount} new</span>
+                          )}
+                        </Micro>
+                      </div>
+                      {person.unreadCount > 0 && (
+                        <div className="np-count">{person.unreadCount}</div>
+                      )}
                     </div>
-                    {person.unreadCount > 0 && (
-                      <div className="np-count">{person.unreadCount}</div>
-                    )}
-                  </div>
-                ))
+                  ))}
+                  {hasMore && (
+                    <button
+                      onClick={loadMore}
+                      disabled={loadingMore}
+                      className="np-ibtn"
+                      style={{
+                        width: "100%",
+                        justifyContent: "center",
+                        padding: "10px",
+                        fontFamily: "'Outfit',sans-serif",
+                        fontSize: "10px",
+                        letterSpacing: "0.15em",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {loadingMore ? "Loading…" : "Load more"}
+                    </button>
+                  )}
+                </>
               )
             ) : (
               /* ── Message detail ── */
               [...(selectedGroup?.notifications || [])]
                 .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
                 .map(notification => (
-                  <div key={notification._id} className={`np-card${notification.isRead ? "" : " np-unread"}`}>
+                  <div key={notification._id} className={`np-card${isPersonal(notification) && !notification.isRead ? " np-unread" : ""}`}>
                     {/* Type badge + timestamp */}
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px", marginBottom: "8px" }}>
                       <span
@@ -360,8 +444,8 @@ const NotificationPanel = ({ position = "bottom-right", seasonSlug }) => {
                       </p>
                     </div>
 
-                    {/* Unread indicator */}
-                    {!notification.isRead && (
+                    {/* Unread indicator — broadcasts have no read state */}
+                    {isPersonal(notification) && !notification.isRead && (
                       <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "8px" }}>
                         <div className="np-dot" />
                       </div>

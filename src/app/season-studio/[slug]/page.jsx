@@ -567,6 +567,8 @@ export default withAuth(function SeasonStudio() {
     description: "",
     tags: [],
     file: null,
+    hints: [],
+    decay: { enabled: false, minPoints: "", decayConstant: 10 },
   });
 
   const [notificationForm, setNotificationForm] = useState({
@@ -1067,11 +1069,12 @@ export default withAuth(function SeasonStudio() {
   const uploadFileToS3 = async (seasonSlug, file) => {
     const presignResponse = await API.post(
       `/api/v1/organizer/${seasonSlug}/challenge/upload-url`,
-      { filename: file.name },
+      { filename: file.name, mime: file.type },
     );
     const { uploadUrl, fileKey } = presignResponse.data.data;
     const uploadResponse = await fetch(uploadUrl, {
       method: "PUT",
+      headers: { "Content-Type": file.type },
       body: file,
     });
     if (!uploadResponse.ok) throw new Error("File upload to S3 failed");
@@ -1083,7 +1086,6 @@ export default withAuth(function SeasonStudio() {
       showToast("error", "Please select a season first");
       return;
     }
-    setChallengeLoading(true);
     if (challengeForm.flag) {
       const formatPattern = challengeForm.flagFormat.replace(/\{[^}]*\}/, "{}");
       const flagPattern = challengeForm.flag.replace(/\{[^}]*\}/, "{}");
@@ -1092,6 +1094,27 @@ export default withAuth(function SeasonStudio() {
         return;
       }
     }
+    const points = Number(challengeForm.points);
+    for (const hint of challengeForm.hints) {
+      if (Number(hint.cost) > points) {
+        showToast(
+          "error",
+          `Hint "${hint.title || "Untitled"}" cost cannot exceed the challenge's points`,
+        );
+        return;
+      }
+    }
+    if (challengeForm.decay.enabled) {
+      const minPoints = Number(challengeForm.decay.minPoints);
+      if (!minPoints || minPoints < 1 || minPoints > points) {
+        showToast(
+          "error",
+          "Min points must be at least 1 and no more than the challenge's points",
+        );
+        return;
+      }
+    }
+    setChallengeLoading(true);
     try {
       let fileKey = null;
       if (challengeForm.file)
@@ -1101,10 +1124,22 @@ export default withAuth(function SeasonStudio() {
         description: challengeForm.description,
         category: challengeForm.category,
         difficulty: challengeForm.difficulty.toLowerCase(),
-        points: Number(challengeForm.points),
+        points,
         flagFormat: challengeForm.flagFormat,
         tags: challengeForm.tags,
         fileKey,
+        hints: challengeForm.hints.map((h) => ({
+          title: h.title,
+          content: h.content,
+          cost: Number(h.cost) || 0,
+        })),
+        decay: challengeForm.decay.enabled
+          ? {
+              enabled: true,
+              minPoints: Number(challengeForm.decay.minPoints),
+              decayConstant: Number(challengeForm.decay.decayConstant) || 10,
+            }
+          : { enabled: false },
       };
       if (challengeForm.flag) payload.flag = challengeForm.flag;
       let response;
@@ -1149,8 +1184,41 @@ export default withAuth(function SeasonStudio() {
       description: "",
       tags: [],
       file: null,
+      hints: [],
+      decay: { enabled: false, minPoints: "", decayConstant: 10 },
     });
     setEditingChallenge(null);
+  };
+
+  const addHintRow = () => {
+    setChallengeForm((p) => {
+      if (p.hints.length >= 10) return p;
+      return {
+        ...p,
+        hints: [...p.hints, { title: "", content: "", cost: 0 }],
+      };
+    });
+  };
+
+  const updateHintField = (idx, field, value) => {
+    setChallengeForm((p) => ({
+      ...p,
+      hints: p.hints.map((h, i) => (i === idx ? { ...h, [field]: value } : h)),
+    }));
+  };
+
+  const removeHintRow = (idx) => {
+    setChallengeForm((p) => ({
+      ...p,
+      hints: p.hints.filter((_, i) => i !== idx),
+    }));
+  };
+
+  const updateDecayField = (field, value) => {
+    setChallengeForm((p) => ({
+      ...p,
+      decay: { ...p.decay, [field]: value },
+    }));
   };
 
   const handleChallengeFormChange = (e) => {
@@ -1173,6 +1241,8 @@ export default withAuth(function SeasonStudio() {
       description: "",
       tags: [],
       file: null,
+      hints: [],
+      decay: { enabled: false, minPoints: "", decayConstant: 10 },
     });
     setEditingChallenge(null);
     setShowChallengeModal(true);
@@ -1192,6 +1262,16 @@ export default withAuth(function SeasonStudio() {
       description: challenge.description || "",
       tags: challenge.tags || [],
       file: null,
+      hints: (challenge.hints || []).map((h) => ({
+        title: h.title || "",
+        content: h.content || "",
+        cost: h.cost ?? 0,
+      })),
+      decay: {
+        enabled: challenge.decay?.enabled || false,
+        minPoints: challenge.decay?.minPoints ?? "",
+        decayConstant: challenge.decay?.decayConstant ?? 10,
+      },
     });
     setEditingChallenge(challenge);
     setShowChallengeModal(true);
@@ -3148,6 +3228,65 @@ export default withAuth(function SeasonStudio() {
                   </div>
                 </div>
                 <div>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={challengeForm.decay.enabled}
+                      onChange={(e) =>
+                        updateDecayField("enabled", e.target.checked)
+                      }
+                      disabled={challengeLoading}
+                    />
+                    <Eyebrow>Dynamic Scoring (Decay)</Eyebrow>
+                  </label>
+                  {challengeForm.decay.enabled && (
+                    <div className="grid grid-cols-2 gap-3 mt-2">
+                      <div>
+                        <Eyebrow>Min Points *</Eyebrow>
+                        <input
+                          type="number"
+                          value={challengeForm.decay.minPoints}
+                          onChange={(e) =>
+                            updateDecayField("minPoints", e.target.value)
+                          }
+                          disabled={challengeLoading}
+                          min="1"
+                          placeholder="e.g. 100"
+                          className="w-full px-4 py-2.5 text-sm mt-1.5 placeholder-zinc-600"
+                          style={inputStyle}
+                          onFocus={(e) =>
+                            (e.target.style.borderColor = T.borderHover)
+                          }
+                          onBlur={(e) =>
+                            (e.target.style.borderColor = T.border)
+                          }
+                        />
+                      </div>
+                      <div>
+                        <Eyebrow>Decay Constant</Eyebrow>
+                        <input
+                          type="number"
+                          value={challengeForm.decay.decayConstant}
+                          onChange={(e) =>
+                            updateDecayField("decayConstant", e.target.value)
+                          }
+                          disabled={challengeLoading}
+                          min="1"
+                          placeholder="10 (smaller = faster decay)"
+                          className="w-full px-4 py-2.5 text-sm mt-1.5 placeholder-zinc-600"
+                          style={inputStyle}
+                          onFocus={(e) =>
+                            (e.target.style.borderColor = T.borderHover)
+                          }
+                          onBlur={(e) =>
+                            (e.target.style.borderColor = T.border)
+                          }
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+                <div>
                   <Eyebrow>Tags</Eyebrow>
                   <div className="flex flex-wrap gap-1 mt-1.5 mb-1.5">
                     {challengeForm.tags.map((tag, idx) => (
@@ -3329,6 +3468,94 @@ export default withAuth(function SeasonStudio() {
                   )}
                 </div>
               </div>
+            </div>
+
+            <div className="mt-6">
+              <div className="flex items-center justify-between mb-2">
+                <Eyebrow>Hints ({challengeForm.hints.length}/10)</Eyebrow>
+                <button
+                  type="button"
+                  onClick={addHintRow}
+                  disabled={challengeLoading || challengeForm.hints.length >= 10}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold transition-all disabled:opacity-40"
+                  style={{
+                    border: `1px solid ${T.border}`,
+                    background: "rgba(255,255,255,0.03)",
+                    color: T.muted,
+                  }}
+                >
+                  <PlusIcon className="h-3 w-3" /> Add Hint
+                </button>
+              </div>
+              {challengeForm.hints.length === 0 ? (
+                <p className="text-[11px]" style={{ color: T.muted }}>
+                  No hints — participants will only see the description.
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {challengeForm.hints.map((hint, idx) => (
+                    <div
+                      key={idx}
+                      className="grid gap-2 items-start p-3"
+                      style={{
+                        gridTemplateColumns: "1fr 2fr 90px 32px",
+                        border: `1px solid ${T.border}`,
+                        borderRadius: "2px",
+                      }}
+                    >
+                      <input
+                        type="text"
+                        value={hint.title}
+                        onChange={(e) =>
+                          updateHintField(idx, "title", e.target.value)
+                        }
+                        disabled={challengeLoading}
+                        placeholder="Title"
+                        className="px-3 py-2 text-sm placeholder-zinc-600"
+                        style={inputStyle}
+                      />
+                      <input
+                        type="text"
+                        value={hint.content}
+                        onChange={(e) =>
+                          updateHintField(idx, "content", e.target.value)
+                        }
+                        disabled={challengeLoading}
+                        placeholder="Hint content"
+                        className="px-3 py-2 text-sm placeholder-zinc-600"
+                        style={inputStyle}
+                      />
+                      <input
+                        type="number"
+                        value={hint.cost}
+                        onChange={(e) =>
+                          updateHintField(idx, "cost", e.target.value)
+                        }
+                        disabled={challengeLoading}
+                        min="0"
+                        placeholder="Cost"
+                        className="px-3 py-2 text-sm placeholder-zinc-600"
+                        style={inputStyle}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeHintRow(idx)}
+                        disabled={challengeLoading}
+                        className="flex items-center justify-center h-full transition-all"
+                        style={{ color: T.muted }}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.color = "#f87171")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.color = T.muted)
+                        }
+                      >
+                        <XMarkIcon className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           <ModalFooter>

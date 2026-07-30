@@ -14,6 +14,9 @@ import {
   IconChevronRight,
   IconTag,
   IconLoader2,
+  IconBulb,
+  IconLock,
+  IconLockOpen,
 } from "@tabler/icons-react";
 import { showToast } from "@/utils/toast.jsx";
 import API from "@/utils/axios";
@@ -145,6 +148,13 @@ export default withAuth(function SeasonCTF() {
   const [members, setMembers] = useState([]);
   const [teamName, setTeamName] = useState("Squad");
   const hasConnectedOnceRef = useRef(false);
+  // Keyed by hintId. `deduction`/`openedAt` come from GET .../hints/mine on
+  // load (cheap, no content). `content` only shows up once the open
+  // endpoint has actually been called this session — it's idempotent
+  // (no re-deduction) so re-opening an already-opened hint is just how we
+  // fetch its content again after a refresh.
+  const [openedHints, setOpenedHints] = useState({});
+  const [openingHintId, setOpeningHintId] = useState(null);
 
   const groupedChallenges = useMemo(() => {
     const map = challenges.reduce((acc, c) => {
@@ -209,6 +219,25 @@ export default withAuth(function SeasonCTF() {
     }
   }, [slug]);
 
+  const fetchOpenedHints = useCallback(async () => {
+    if (!slug) return;
+    try {
+      const res = await API.get(`/api/v1/seasons/${slug}/hints/mine`, {
+        withCredentials: true,
+      });
+      const opened = res.data?.data?.openedHints || [];
+      setOpenedHints((prev) => {
+        const next = { ...prev };
+        opened.forEach((h) => {
+          next[h.hintId] = { ...next[h.hintId], ...h };
+        });
+        return next;
+      });
+    } catch {
+      // non-fatal — hint deductions just won't be reflected until retried
+    }
+  }, [slug]);
+
   // fetch challenges
   useEffect(() => {
     if (!slug) {
@@ -228,6 +257,7 @@ export default withAuth(function SeasonCTF() {
           }),
           fetchSolved(ctrl.signal),
           fetchMyTeamStats(),
+          fetchOpenedHints(),
         ]);
         const d = res.data.data || {};
         setSeason(d.season || null);
@@ -243,7 +273,7 @@ export default withAuth(function SeasonCTF() {
       }
     })();
     return () => ctrl.abort();
-  }, [slug, fetchSolved, fetchMyTeamStats, router]);
+  }, [slug, fetchSolved, fetchMyTeamStats, fetchOpenedHints, router]);
 
   const total = groupedChallenges.reduce((t, g) => t + g.challenges.length, 0);
   const solved = groupedChallenges.reduce(
@@ -349,7 +379,13 @@ export default withAuth(function SeasonCTF() {
         { challengeSlug: selectedChallenge.slug, flag: flagInput.trim() },
         { withCredentials: true },
       );
-      showToast("success", "Flag correct! Challenge solved!");
+      const awardedPoints = r.data?.data?.points;
+      showToast(
+        "success",
+        typeof awardedPoints === "number"
+          ? `Flag correct! +${awardedPoints} pts`
+          : "Flag correct! Challenge solved!",
+      );
       const next = [...solvedChallenges, selectedChallenge.slug];
       setSolvedChallenges(next);
       if (next.length === total && total > 0) {
@@ -376,6 +412,45 @@ export default withAuth(function SeasonCTF() {
       showToast("error", err.response?.data?.detail || "Download failed");
     }
   }, [selectedChallenge, slug]);
+
+  // Opening an already-opened hint is idempotent (no re-deduction) — it's
+  // also how we fetch a hint's content again after a page refresh, since
+  // GET .../hints/mine only ever returns the deduction/openedAt, not content.
+  const handleOpenHint = useCallback(
+    async (hint) => {
+      if (!selectedChallenge || openingHintId) return;
+      setOpeningHintId(hint._id);
+      try {
+        const r = await API.post(
+          `/api/v1/seasons/${slug}/challenges/${selectedChallenge.slug}/hints/${hint._id}/open`,
+          {},
+          { withCredentials: true },
+        );
+        const data = r.data.data;
+        setOpenedHints((prev) => ({
+          ...prev,
+          [hint._id]: { ...prev[hint._id], ...data },
+        }));
+      } catch (err) {
+        showToast("error", err.response?.data?.detail || "Failed to open hint");
+      } finally {
+        setOpeningHintId(null);
+      }
+    },
+    [selectedChallenge, slug, openingHintId],
+  );
+
+  const effectivePoints = useCallback(
+    (challenge) => {
+      if (!challenge?.hints?.length) return challenge?.points ?? 0;
+      const spent = challenge.hints.reduce((sum, h) => {
+        const opened = openedHints[h._id];
+        return sum + (opened ? opened.deduction ?? h.cost ?? 0 : 0);
+      }, 0);
+      return Math.max(0, (challenge.points ?? 0) - spent);
+    },
+    [openedHints],
+  );
 
   if (!slug)
     return (
@@ -1025,7 +1100,19 @@ export default withAuth(function SeasonCTF() {
                               color: `rgba(254,252,232,0.6)`,
                             }}
                           >
-                            {selectedChallenge.points} pts
+                            {effectivePoints(selectedChallenge)} pts
+                            {effectivePoints(selectedChallenge) !==
+                              selectedChallenge.points && (
+                              <span
+                                style={{
+                                  textDecoration: "line-through",
+                                  opacity: 0.5,
+                                  marginLeft: 5,
+                                }}
+                              >
+                                {selectedChallenge.points}
+                              </span>
+                            )}
                           </span>
                           <span
                             className="ctf-roundo px-2.5 py-0.5 text-[10px]"
@@ -1161,6 +1248,95 @@ export default withAuth(function SeasonCTF() {
                                 {t}
                               </span>
                             ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* hints */}
+                      {selectedChallenge.hints?.length > 0 && (
+                        <div>
+                          <p
+                            className="ctf-roundo text-[10px] font-bold uppercase tracking-[0.14em] mb-3"
+                            style={{ color: "rgba(254,252,232,0.25)" }}
+                          >
+                            Hints
+                          </p>
+                          <div className="space-y-2">
+                            {selectedChallenge.hints.map((hint) => {
+                              const opened = openedHints[hint._id];
+                              const isOpening = openingHintId === hint._id;
+                              return (
+                                <div
+                                  key={hint._id}
+                                  className="p-4"
+                                  style={{
+                                    border: `1px solid rgba(254,252,232,0.07)`,
+                                    background: "rgba(254,252,232,0.02)",
+                                  }}
+                                >
+                                  <div className="flex items-center justify-between gap-3">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                      {opened?.content ? (
+                                        <IconLockOpen
+                                          size={13}
+                                          style={{ color: "rgba(52,211,153,0.7)" }}
+                                        />
+                                      ) : (
+                                        <IconLock
+                                          size={13}
+                                          style={{ color: "rgba(254,252,232,0.3)" }}
+                                        />
+                                      )}
+                                      <span
+                                        className="ctf-roundo text-[12px] font-semibold truncate"
+                                        style={{ color: T.cream }}
+                                      >
+                                        {hint.title}
+                                      </span>
+                                    </div>
+                                    {!opened?.content && (
+                                      <button
+                                        onClick={() => handleOpenHint(hint)}
+                                        disabled={isOpening}
+                                        className="ctf-roundo flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold transition-all disabled:opacity-50"
+                                        style={{
+                                          border: `1px solid ${T.border}`,
+                                          background: "rgba(254,252,232,0.04)",
+                                          color: `rgba(254,252,232,0.6)`,
+                                        }}
+                                      >
+                                        {isOpening ? (
+                                          <IconLoader2
+                                            size={12}
+                                            className="animate-spin"
+                                          />
+                                        ) : (
+                                          <IconBulb size={12} />
+                                        )}
+                                        {opened
+                                          ? "View"
+                                          : hint.cost > 0
+                                            ? `-${hint.cost} pts`
+                                            : "Free"}
+                                      </button>
+                                    )}
+                                  </div>
+                                  {opened?.content && (
+                                    <div
+                                      className="ctf-body ctf-prose mt-3 pt-3 text-[12px] leading-relaxed"
+                                      style={{
+                                        borderTop: `1px solid rgba(254,252,232,0.06)`,
+                                        color: `rgba(254,252,232,0.65)`,
+                                      }}
+                                    >
+                                      <ReactMarkdown>
+                                        {opened.content}
+                                      </ReactMarkdown>
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                       )}

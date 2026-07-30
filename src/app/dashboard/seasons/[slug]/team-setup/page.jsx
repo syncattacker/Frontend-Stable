@@ -21,6 +21,7 @@ import {
   RiLink,
   RiTimeLine,
   RiUserLine,
+  RiDeleteBin6Line,
 } from "@remixicon/react";
 import API from "@/utils/axios";
 import { showToast } from "@/utils/toast.jsx";
@@ -219,6 +220,10 @@ const TeamSetup = () => {
   const [leaveError, setLeaveError] = useState("");
   const [confirmLeave, setConfirmLeave] = useState(false);
 
+  const [deleteTeamLoading, setDeleteTeamLoading] = useState(false);
+  const [deleteTeamError, setDeleteTeamError] = useState("");
+  const [confirmDeleteTeam, setConfirmDeleteTeam] = useState(false);
+
   const [lockLoading, setLockLoading] = useState(false);
   const [lockError, setLockError] = useState("");
 
@@ -321,6 +326,18 @@ const TeamSetup = () => {
       const msg = err?.response?.data?.detail || "Something went wrong";
       setLeaveError(msg); showToast("error", msg);
     } finally { setLeaveLoading(false); }
+  };
+
+  const handleDeleteTeam = async () => {
+    setDeleteTeamLoading(true); setDeleteTeamError("");
+    try {
+      const res = await API.post(`/api/v1/seasons/${slug}/team/delete`, {});
+      showToast("success", res?.data?.data?.message || "Team deleted successfully");
+      setTeam(null); setIsOwner(false); setCurrentUser(null); setConfirmDeleteTeam(false);
+    } catch (err) {
+      const msg = err?.response?.data?.detail || "Something went wrong";
+      setDeleteTeamError(msg); showToast("error", msg);
+    } finally { setDeleteTeamLoading(false); }
   };
 
   const handleLock = async () => {
@@ -906,6 +923,67 @@ const TeamSetup = () => {
                   {leaveError && (
                     <p className="text-xs text-red-500" style={{ fontFamily: "'Outfit', sans-serif" }}>
                       {leaveError}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Danger zone — delete team (owner only, pre-season-start) */}
+          {isOwner && (
+            <div className="px-7 py-6">
+              <p
+                style={{
+                  fontSize: 10,
+                  letterSpacing: "0.2em",
+                  textTransform: "uppercase",
+                  color: "rgba(254,252,232,0.13)",
+                  marginBottom: 16,
+                  fontFamily: "'Outfit', sans-serif",
+                }}
+              >
+                Danger Zone
+              </p>
+              {!confirmDeleteTeam ? (
+                <button
+                  onClick={() => setConfirmDeleteTeam(true)}
+                  className="flex items-center gap-2 text-xs text-red-700 hover:text-red-400 transition-all"
+                  style={{ fontFamily: "'Outfit', sans-serif" }}
+                >
+                  <RiDeleteBin6Line style={{ width: 13, height: 13 }} />
+                  Delete Team
+                </button>
+              ) : (
+                <div className="space-y-4">
+                  <p style={{ fontSize: 13, color: "rgba(254,252,232,0.45)", fontFamily: "'Outfit', sans-serif", lineHeight: 1.5 }}>
+                    Delete{" "}
+                    <span style={{ color: T.cream, fontWeight: 700 }}>{team.name}</span>?
+                    This only works before the season starts and cannot be undone.
+                  </p>
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={handleDeleteTeam}
+                      disabled={deleteTeamLoading}
+                      className="flex items-center gap-1.5 text-xs text-red-500 hover:text-red-300 transition-all disabled:opacity-40"
+                      style={{ fontFamily: "'Outfit', sans-serif" }}
+                    >
+                      {deleteTeamLoading ? <Spinner size={12} /> : <RiDeleteBin6Line style={{ width: 13, height: 13 }} />}
+                      Yes, Delete
+                    </button>
+                    <button
+                      onClick={() => setConfirmDeleteTeam(false)}
+                      className="text-xs transition-all"
+                      style={{ color: "rgba(254,252,232,0.22)", fontFamily: "'Outfit', sans-serif" }}
+                      onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(254,252,232,0.5)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(254,252,232,0.22)")}
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                  {deleteTeamError && (
+                    <p className="text-xs text-red-500" style={{ fontFamily: "'Outfit', sans-serif" }}>
+                      {deleteTeamError}
                     </p>
                   )}
                 </div>

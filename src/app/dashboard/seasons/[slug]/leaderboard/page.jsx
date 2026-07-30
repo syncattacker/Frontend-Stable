@@ -416,13 +416,13 @@ const ScoreGraph = ({ currentData, seasonStartTime, seasonEndTime }) => {
 
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 const SeasonLeaderboard = () => {
-  const [soloData, setSoloData] = useState([]);
-  const [teamsData, setTeamsData] = useState([]);
+  const [leaderboardType, setLeaderboardType] = useState("solo");
+  const [leaderboardData, setLeaderboardData] = useState([]);
+  const [serverTime, setServerTime] = useState(null);
   const [seasonStartTime, setSeasonStartTime] = useState(null);
   const [seasonEndTime, setSeasonEndTime] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState("solo");
   const { slug } = useParams();
   const router = useRouter();
   const { socket } = useSocket();
@@ -436,10 +436,12 @@ const SeasonLeaderboard = () => {
     try {
       setLoading(true);
       const r = await API.get(`/api/v1/seasons/${slug}/leaderboard`);
-      setSoloData(r.data.data.solo || []);
-      setTeamsData(r.data.data.teams || []);
-      setSeasonStartTime(r.data.data.seasonStartTime || null);
-      setSeasonEndTime(r.data.data.seasonEndTime || null);
+      const d = r.data.data;
+      setLeaderboardType(d.type || "solo");
+      setLeaderboardData(d.leaderboard || []);
+      setServerTime(d.serverTime || null);
+      setSeasonStartTime(d.seasonStartTime || null);
+      setSeasonEndTime(d.seasonEndTime || null);
     } catch (err) {
       setError(err.response?.data?.detail || "Error fetching leaderboard data");
     } finally {
@@ -467,13 +469,7 @@ const SeasonLeaderboard = () => {
     };
   }, [socket, slug, fetchLeaderboard]);
 
-  useEffect(() => {
-    if (!loading && soloData.length === 0 && teamsData.length > 0) {
-      queueMicrotask(() => setActiveTab("teams"));
-    }
-  }, [loading, soloData, teamsData]);
-
-  const currentData = activeTab === "solo" ? soloData : teamsData;
+  const currentData = leaderboardData;
   const podiumOrder = [currentData[1], currentData[0], currentData[2]];
   const podiumHeights = [120, 168, 96];
 
@@ -613,69 +609,45 @@ const SeasonLeaderboard = () => {
             </p>
           </div>
 
+          {/* Season type badge — server dictates solo vs team, no toggle needed */}
           <div
             style={{
               display: "flex",
-              gap: 1,
-              background: T.card,
-              border: `1px solid ${T.border}`,
+              alignItems: "center",
+              gap: 6,
+              background: T.cream,
               borderRadius: 2,
-              padding: 2,
+              padding: "6px 16px",
               marginTop: 4,
             }}
           >
-            {[
-              {
-                id: "solo",
-                Icon: RiUser3Line,
-                label: "Solo",
-                count: soloData.length,
-              },
-              {
-                id: "teams",
-                Icon: RiGroupLine,
-                label: "Teams",
-                count: teamsData.length,
-              },
-            ].map(({ id, Icon, label, count }) => (
-              <button
-                key={id}
-                onClick={() => setActiveTab(id)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "6px 16px",
-                  fontSize: 11,
-                  fontFamily: "Outfit, sans-serif",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.1em",
-                  borderRadius: 2,
-                  border: "none",
-                  cursor: "pointer",
-                  transition: "all .15s",
-                  background: activeTab === id ? T.cream : "transparent",
-                  color: activeTab === id ? T.bg : T.muted,
-                }}
-              >
-                <Icon style={{ width: 13, height: 13 }} />
-                {label}
-                <span
-                  style={{
-                    fontSize: 9,
-                    padding: "1px 5px",
-                    borderRadius: 2,
-                    background:
-                      activeTab === id
-                        ? "rgba(0,0,0,0.15)"
-                        : "rgba(254,252,232,0.06)",
-                    color: activeTab === id ? T.bg : T.muted,
-                  }}
-                >
-                  {count}
-                </span>
-              </button>
-            ))}
+            {leaderboardType === "team" ? (
+              <RiGroupLine style={{ width: 13, height: 13, color: T.bg }} />
+            ) : (
+              <RiUser3Line style={{ width: 13, height: 13, color: T.bg }} />
+            )}
+            <span
+              style={{
+                fontSize: 11,
+                fontFamily: "Outfit, sans-serif",
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                color: T.bg,
+              }}
+            >
+              {leaderboardType === "team" ? "Teams" : "Solo"}
+            </span>
+            <span
+              style={{
+                fontSize: 9,
+                padding: "1px 5px",
+                borderRadius: 2,
+                background: "rgba(0,0,0,0.15)",
+                color: T.bg,
+              }}
+            >
+              {currentData.length}
+            </span>
           </div>
         </div>
 
@@ -850,7 +822,7 @@ const SeasonLeaderboard = () => {
             >
               {[
                 "#",
-                activeTab === "teams" ? "Team" : "Player",
+                leaderboardType === "team" ? "Team" : "Player",
                 "Score",
                 "First Blood",
               ].map((h, i) => (
@@ -970,7 +942,7 @@ const SeasonLeaderboard = () => {
                           #{entry.rank || index + 1}
                         </span>
                       </div>
-                      {activeTab === "teams" && entry.members?.length > 0 && (
+                      {leaderboardType === "team" && entry.members?.length > 0 && (
                         <div
                           style={{ display: "flex", gap: 6, flexWrap: "wrap" }}
                         >
