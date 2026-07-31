@@ -91,9 +91,27 @@ function SectionHead({ eyebrow, title, sub }) {
   );
 }
 
+const SERVICE_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  name: "CTF Hosting Platform",
+  provider: {
+    "@type": "Organization",
+    name: "GOPWNIT",
+    url: "https://gopwnit.com"
+  },
+  description: "Host your own CTF competition on gopwnit. We provide the infrastructure, live leaderboards, team management, and anti-abuse systems.",
+  serviceType: "Cybersecurity Competition Hosting",
+  areaServed: {
+    "@type": "Country",
+    name: "India"
+  }
+};
+
 export default function HostACtfPage() {
   return (
     <div className="flex flex-col min-h-screen" style={{ background: T.bg, color: T.cream }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(SERVICE_JSON_LD) }} />
       <Navbar />
 
       <div className="fixed inset-0 z-0">
