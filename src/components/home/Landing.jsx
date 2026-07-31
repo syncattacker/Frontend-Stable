@@ -357,12 +357,11 @@ export default function Landing() {
               className="text-base md:text-lg font-medium leading-relaxed max-w-xl mx-auto mb-12"
               style={{ color: TOKENS.textMuted }}
             >
-              Practice real vulnerabilities in hands-on labs, compete in live CTF
-              competitions, and{" "}
+              Whether you need CTF for beginners or advanced challenges, practice real vulnerabilities in hands-on hacking labs, compete in live competitions, and{" "}
               <Link href="/host-a-ctf" className="underline decoration-white/20 hover:text-white transition-colors" style={{ color: TOKENS.textPrimary }}>
                 host your own event
               </Link>
-              {" "}— the platform where offensive security skills are built, not just studied.
+              {" "}- your modern alternative to OverTheWire and HackTheBox where offensive security skills are built, not just studied.
             </motion.p>
 
             <motion.div

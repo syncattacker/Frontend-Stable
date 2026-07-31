@@ -744,7 +744,7 @@ function HostForm() {
                               <input
                                 type="number"
                                 name="numberOfParticipants"
-                                placeholder="—"
+                                placeholder="-"
                                 value={formData.numberOfParticipants}
                                 onChange={handleChange}
                                 onKeyDown={e => ["e","E","+","-"].includes(e.key) && e.preventDefault()}
@@ -951,7 +951,7 @@ function HostForm() {
                 style={{ border: "1px solid rgba(251,146,60,0.25)", borderRadius: "2px", background: "rgba(251,146,60,0.05)" }}
               >
                 <p className="text-xs leading-relaxed" style={{ color: "#fb923c", fontFamily: "Outfit, sans-serif" }}>
-                  Please review carefully — details cannot be modified after submission.
+                  Please review carefully - details cannot be modified after submission.
                 </p>
               </div>
 

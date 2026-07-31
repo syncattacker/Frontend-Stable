@@ -40,7 +40,7 @@ const PHILOSOPHY = [
     n: "01",
     icon: IconClock,
     title: "Duration-Based",
-    desc: "Pick your event length. 8 hours or 48 hours — the price scales with time, not headcount.",
+    desc: "Pick your event length. 8 hours or 48 hours - the price scales with time, not headcount.",
   },
   {
     n: "02",
@@ -113,7 +113,7 @@ const ONSITE_FEATURES = [
 const FINE_PRINT = [
   "Prices are exclusive of applicable taxes (GST, if applicable).",
   "Every package includes remote technical support during the event.",
-  "Pricing is based solely on the selected event duration — not participant count.",
+  "Pricing is based solely on the selected event duration - not participant count.",
   "Events requiring specialized infrastructure (AD labs, cloud labs, VPN, custom VMs, attack-defense) will be quoted separately.",
   "Event duration begins from the official start time.",
   "Extensions beyond the booked duration are billed only after client approval.",
@@ -234,7 +234,7 @@ export default function PricingPage() {
           <div className="max-w-3xl mx-auto">
             <motion.div initial="hidden" animate="visible" variants={stagger}>
               <motion.p variants={fadeUp} className="font-outfit text-[11px] font-bold uppercase tracking-[0.3em] mb-5" style={{ color: T.muted }}>
-                Services &amp; Pricing — 2026
+                Services &amp; Pricing - 2026
               </motion.p>
               <motion.h1
                 variants={fadeUp}
@@ -272,7 +272,7 @@ export default function PricingPage() {
             <SectionHead
               eyebrow="Our Pricing Philosophy"
               title="Your Cost Shouldn't Depend On Headcount"
-              sub="Every other platform charges per user — the more successful your event, the more it costs. We think that's backwards. Our pricing is based on one thing: how long your event runs."
+              sub="Every other platform charges per user - the more successful your event, the more it costs. We think that's backwards. Our pricing is based on one thing: how long your event runs."
             />
             <div className="grid sm:grid-cols-3 gap-3">
               {PHILOSOPHY.map(({ n, icon: Icon, title, desc }) => (
@@ -289,7 +289,7 @@ export default function PricingPage() {
           </div>
         </section>
 
-        {/* Option A — Platform Hosting */}
+        {/* Option A - Platform Hosting */}
         <section id="pricing" className="px-7 py-14 border-t" style={{ borderColor: T.border }}>
           <div className="max-w-5xl mx-auto">
             <SectionHead
@@ -311,11 +311,11 @@ export default function PricingPage() {
           </div>
         </section>
 
-        {/* Option B — Managed CTF */}
+        {/* Option B - Managed CTF */}
         <section className="px-7 py-14 border-t" style={{ borderColor: T.border }}>
           <div className="max-w-5xl mx-auto">
             <SectionHead
-              eyebrow="Option B — Full Service"
+              eyebrow="Option B - Full Service"
               title="Managed CTF"
               sub="We design, build, host, and manage your complete CTF event. End to end."
             />
@@ -333,7 +333,7 @@ export default function PricingPage() {
           </div>
         </section>
 
-        {/* Add-on — On-Site Support */}
+        {/* Add-on - On-Site Support */}
         <section className="px-7 py-14 border-t" style={{ borderColor: T.border }}>
           <div className="max-w-5xl mx-auto">
             <SectionHead eyebrow="Add-On" title="On-Site Support" />
@@ -350,7 +350,7 @@ export default function PricingPage() {
                   <span className="font-outfit text-[12px]" style={{ color: T.muted }}>per event</span>
                 </div>
                 <p className="font-outfit text-[11px] leading-relaxed mt-2" style={{ color: "rgba(161,161,170,0.75)" }}>
-                  + Actual travel &amp; accommodation costs, billed at actuals — no markups.
+                  + Actual travel &amp; accommodation costs, billed at actuals - no markups.
                 </p>
               </div>
               <div className="flex-1">
@@ -367,7 +367,7 @@ export default function PricingPage() {
             <div className="grid sm:grid-cols-2 gap-x-8 gap-y-3">
               {FINE_PRINT.map((line) => (
                 <div key={line} className="flex items-start gap-2.5">
-                  <span className="font-outfit" style={{ color: "rgba(254,252,232,0.3)" }}>—</span>
+                  <span className="font-outfit" style={{ color: "rgba(254,252,232,0.3)" }}>-</span>
                   <span className="font-outfit text-[12.5px] leading-relaxed" style={{ color: T.muted }}>{line}</span>
                 </div>
               ))}
@@ -387,7 +387,7 @@ export default function PricingPage() {
               </h3>
               <p className="font-outfit text-[13.5px] leading-relaxed max-w-lg mb-8" style={{ color: T.muted }}>
                 No pitch deck. No sales funnel. Just a conversation about your event
-                and whether we&rsquo;re the right fit. Drop us a message — we usually
+                and whether we&rsquo;re the right fit. Drop us a message - we usually
                 respond within a few hours.
               </p>
 

@@ -60,7 +60,7 @@ const NotFound = () => {
               className="text-[10px] font-bold tracking-[0.28em] uppercase"
               style={{ color: T.muted, fontFamily: "'Outfit', sans-serif" }}
             >
-              Error — GOPWNIT / NOT FOUND
+              Error - GOPWNIT / NOT FOUND
             </span>
           </motion.div>
 

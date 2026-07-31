@@ -377,7 +377,7 @@ const TeamSetup = () => {
   }
 
   /* ══════════════════════════════════════════════════════════
-     VIEW A — No team yet
+     VIEW A - No team yet
   ══════════════════════════════════════════════════════════ */
   if (!team) {
     return (
@@ -401,7 +401,7 @@ const TeamSetup = () => {
             {slug} / Team Setup
           </p>
 
-          {/* Main heading — Bebas only here */}
+          {/* Main heading - Bebas only here */}
           <h1
             style={{
               fontFamily: "'Bebas Neue', sans-serif",
@@ -433,7 +433,7 @@ const TeamSetup = () => {
         {/* ── Two panels ── */}
         <div className="flex-1 flex flex-col lg:flex-row">
 
-          {/* LEFT — Create */}
+          {/* LEFT - Create */}
           <div className="flex-1 px-10 py-12" style={{ borderRight: `1px solid ${T.border}` }}>
             <p
               style={{
@@ -496,7 +496,7 @@ const TeamSetup = () => {
             </form>
           </div>
 
-          {/* RIGHT — Join */}
+          {/* RIGHT - Join */}
           <div className="flex-1 px-10 py-12">
             <p
               style={{
@@ -538,7 +538,7 @@ const TeamSetup = () => {
               {[
                 { icon: RiTimeLine, text: "Tokens expire after a short time" },
                 { icon: RiShieldLine, text: "Each token is unique and secure" },
-                { icon: RiGroupLine, text: "Join instantly — no approval needed" },
+                { icon: RiGroupLine, text: "Join instantly - no approval needed" },
               ].map((f) => <FeatureLine key={f.text} {...f} />)}
             </div>
 
@@ -566,7 +566,7 @@ const TeamSetup = () => {
           style={{ borderTop: `1px solid rgba(254,252,232,0.07)` }}
         >
           <span style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(254,252,232,0.18)", fontFamily: "'Outfit', sans-serif" }}>
-            {slug} — Team Setup
+            {slug} - Team Setup
           </span>
           <span style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(254,252,232,0.18)", fontFamily: "'Outfit', sans-serif" }}>
             © 2025 gopwnit
@@ -577,7 +577,7 @@ const TeamSetup = () => {
   }
 
   /* ══════════════════════════════════════════════════════════
-     VIEW B — Has a team
+     VIEW B - Has a team
   ══════════════════════════════════════════════════════════ */
   const memberList = team.members || [];
 
@@ -870,7 +870,7 @@ const TeamSetup = () => {
             )}
           </div>
 
-          {/* Danger zone — leave team */}
+          {/* Danger zone - leave team */}
           {!isOwner && (
             <div className="px-7 py-6">
               <p
@@ -930,7 +930,7 @@ const TeamSetup = () => {
             </div>
           )}
 
-          {/* Danger zone — delete team (owner only, pre-season-start) */}
+          {/* Danger zone - delete team (owner only, pre-season-start) */}
           {isOwner && (
             <div className="px-7 py-6">
               <p
@@ -999,7 +999,7 @@ const TeamSetup = () => {
         style={{ borderTop: `1px solid rgba(254,252,232,0.06)` }}
       >
         <span style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(254,252,232,0.13)", fontFamily: "'Outfit', sans-serif" }}>
-          {slug} — Team
+          {slug} - Team
         </span>
         <span style={{ fontSize: 10, letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(254,252,232,0.13)", fontFamily: "'Outfit', sans-serif" }}>
           © 2025 gopwnit

@@ -291,7 +291,7 @@ const ScoreGraph = ({ currentData, seasonStartTime, seasonEndTime }) => {
               color: T.muted,
             }}
           >
-            No solve data yet — graph populates as solves come in
+            No solve data yet - graph populates as solves come in
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
@@ -609,7 +609,7 @@ const SeasonLeaderboard = () => {
             </p>
           </div>
 
-          {/* Season type badge — server dictates solo vs team, no toggle needed */}
+          {/* Season type badge - server dictates solo vs team, no toggle needed */}
           <div
             style={{
               display: "flex",
@@ -1006,7 +1006,7 @@ const SeasonLeaderboard = () => {
                             fontSize: 12,
                           }}
                         >
-                          —
+                          -
                         </span>
                       )}
                     </div>

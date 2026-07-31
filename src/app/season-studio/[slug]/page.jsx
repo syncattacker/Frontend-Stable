@@ -1000,7 +1000,7 @@ export default withAuth(function SeasonStudio() {
   };
 
   const formatDisplayDate = (isoString) => {
-    if (!isoString) return "—";
+    if (!isoString) return "-";
     return new Date(isoString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
@@ -2043,7 +2043,7 @@ export default withAuth(function SeasonStudio() {
                       borderRadius: "2px",
                     }}
                   >
-                    {/* Column headers — sortable */}
+                    {/* Column headers - sortable */}
                     <div
                       className="grid items-center px-5 py-3 gap-6"
                       style={{
@@ -3094,7 +3094,7 @@ export default withAuth(function SeasonStudio() {
                 className="text-[10px] uppercase tracking-widest mb-2"
                 style={{ color: "#f87171" }}
               >
-                Warning — this action cannot be undone
+                Warning - this action cannot be undone
               </p>
               <p className="text-xs leading-relaxed" style={{ color: T.muted }}>
                 Deleting this season will permanently remove all challenges,
@@ -3145,7 +3145,7 @@ export default withAuth(function SeasonStudio() {
         </Modal>
       )}
 
-      {/* Challenge Create / Edit — uses CustomSelect */}
+      {/* Challenge Create / Edit - uses CustomSelect */}
       {showChallengeModal && (
         <Modal
           title={editingChallenge ? "Edit Challenge" : "Create Challenge"}
@@ -3489,7 +3489,7 @@ export default withAuth(function SeasonStudio() {
               </div>
               {challengeForm.hints.length === 0 ? (
                 <p className="text-[11px]" style={{ color: T.muted }}>
-                  No hints — participants will only see the description.
+                  No hints - participants will only see the description.
                 </p>
               ) : (
                 <div className="space-y-2">
@@ -3588,7 +3588,7 @@ export default withAuth(function SeasonStudio() {
         </Modal>
       )}
 
-      {/* Bulk Visibility — uses CustomSelect */}
+      {/* Bulk Visibility - uses CustomSelect */}
       {showBulkVisibilityModal && (
         <Modal
           title="Bulk Visibility"
@@ -3621,8 +3621,8 @@ export default withAuth(function SeasonStudio() {
               <Eyebrow>Visibility Action</Eyebrow>
               <div className="mt-2 space-y-px">
                 {[
-                  { val: true, label: "Make Visible — Show challenges" },
-                  { val: false, label: "Make Hidden — Hide challenges" },
+                  { val: true, label: "Make Visible - Show challenges" },
+                  { val: false, label: "Make Hidden - Hide challenges" },
                 ].map(({ val, label }) => (
                   <label
                     key={String(val)}
@@ -3916,7 +3916,7 @@ export default withAuth(function SeasonStudio() {
                 className="text-[10px] uppercase tracking-widest text-left"
                 style={{ color: T.muted, fontFamily: "Outfit, sans-serif" }}
               >
-                Feature in progress — stay tuned for updates
+                Feature in progress - stay tuned for updates
               </p>
             </div>
           </div>

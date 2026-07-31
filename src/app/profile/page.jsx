@@ -43,7 +43,7 @@ import Image from "next/image";
 import tick from "@/img/tick.svg";
 
 /* ═══════════════════════════════════════════════════════════════
-   DESIGN TOKENS  — lighter, warmer, more readable
+   DESIGN TOKENS  - lighter, warmer, more readable
 ═══════════════════════════════════════════════════════════════ */
 const T = {
   bg: "#0f0f0f",
@@ -388,7 +388,7 @@ const Field = ({ label, error, textarea, rows, ...props }) => (
 );
 
 /* ═══════════════════════════════════════════════════════════════
-   AVATAR BLOCK — click-to-upload, initials fallback
+   AVATAR BLOCK - click-to-upload, initials fallback
 ═══════════════════════════════════════════════════════════════ */
 const AvatarBlock = ({ src, username, onUpload, uploading, size = 88 }) => {
   const fileRef = useRef(null);
@@ -464,7 +464,7 @@ const AvatarBlock = ({ src, username, onUpload, uploading, size = 88 }) => {
 };
 
 /* ═══════════════════════════════════════════════════════════════
-   STATS TICKER — scrolling marquee strip
+   STATS TICKER - scrolling marquee strip
 ═══════════════════════════════════════════════════════════════ */
 const StatsTicker = ({ items }) => {
   const doubled = [...items, ...items]; // duplicate for seamless loop
@@ -521,7 +521,7 @@ const StatsTicker = ({ items }) => {
 };
 
 /* ═══════════════════════════════════════════════════════════════
-   ACTIVITY CELL PALETTE — monochrome with green accent at top
+   ACTIVITY CELL PALETTE - monochrome with green accent at top
 ═══════════════════════════════════════════════════════════════ */
 const CELLS = ["#161616", "#1c2a1e", "#2a4030", "#3d6b4a", T.okText];
 
@@ -626,14 +626,14 @@ const UserProfile = () => {
           month: "long",
           day: "numeric",
         })
-      : "—";
+      : "-";
   const formatJoinDate = (ts) =>
     ts
       ? new Date(ts).toLocaleDateString("en-US", {
           year: "2-digit",
           month: "long",
         })
-      : "—";
+      : "-";
 
   const getCountryFlag = (c) =>
     ({
@@ -737,7 +737,7 @@ const UserProfile = () => {
 
       // The backend stores avatars at a stable, deterministic S3 key
       // (avatars/{userId}.{ext}), so publicUrl is identical across
-      // re-uploads — the browser's HTTP cache would otherwise keep
+      // re-uploads - the browser's HTTP cache would otherwise keep
       // serving the previously-cached image at that exact URL even
       // though the S3 object was just overwritten. A cache-busting query
       // param forces a fresh fetch without changing the canonical URL
@@ -1133,11 +1133,11 @@ const UserProfile = () => {
     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
       <Section label="Account Information">
         <InfoRow icon={User} label="Username">
-          {profileData?.user?.username || "—"}
+          {profileData?.user?.username || "-"}
         </InfoRow>
         <InfoRow icon={Mail} label="Email">
           <span style={{ marginRight: "10px" }}>
-            {profileData?.user?.email || "—"}
+            {profileData?.user?.email || "-"}
           </span>
           {profileData?.user?.isVerified && (
             <Pill color={T.okText}>Verified</Pill>
@@ -2183,7 +2183,7 @@ const UserProfile = () => {
                 gap: "24px",
               }}
             >
-              {/* Left — name, meta, stat pills */}
+              {/* Left - name, meta, stat pills */}
               <div style={{ flex: 1, minWidth: 0 }}>
                 <Micro style={{ marginBottom: "20px" }}>
                   GoPwnIt / Profile
@@ -2268,7 +2268,7 @@ const UserProfile = () => {
                 </div>
               </div>
 
-              {/* Right — avatar + new article button */}
+              {/* Right - avatar + new article button */}
               <div
                 style={{
                   display: "flex",

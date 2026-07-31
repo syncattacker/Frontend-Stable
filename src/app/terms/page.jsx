@@ -225,7 +225,7 @@ function renderModalContent(id) {
           <List
             items={[
               "Hosted seasons are reviewed and must be approved before becoming publicly visible.",
-              "Challenge content must comply with our Code of Conduct's standards for hosts — fair, educational, and free of malicious payloads.",
+              "Challenge content must comply with our Code of Conduct's standards for hosts - fair, educational, and free of malicious payloads.",
               "Organizers are responsible for the accuracy of event details (dates, venue, participant limits) they submit.",
               "gopwnit may pause, unpublish, or remove a hosted season that violates these terms or the Code of Conduct.",
             ]}
@@ -329,7 +329,7 @@ export default function TermsPage() {
                 TERMS OF<br />SERVICE
               </h1>
               <p className="font-outfit text-[15px] leading-relaxed max-w-lg" style={{ color: T.muted }}>
-                The rules that govern your use of gopwnit — for players, organizers, and
+                The rules that govern your use of gopwnit - for players, organizers, and
                 everyone in between.
               </p>
               <div className="flex flex-wrap gap-x-8 gap-y-2 pt-5 border-t" style={{ borderColor: "rgba(254,252,232,0.06)" }}>

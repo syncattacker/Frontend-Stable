@@ -35,14 +35,14 @@ const AUDIENCES = [
 ];
 
 const STEPS = [
-  { icon: IconFileDescription, title: "Submit your event", desc: "Name, venue, format (solo or team), dates, and participant cap — through a short request form." },
-  { icon: IconClipboardCheck, title: "We review it", desc: "Every hosted season is checked by our team before it's approved — quality control on challenge content and event details." },
+  { icon: IconFileDescription, title: "Submit your event", desc: "Name, venue, format (solo or team), dates, and participant cap - through a short request form." },
+  { icon: IconClipboardCheck, title: "We review it", desc: "Every hosted season is checked by our team before it's approved - quality control on challenge content and event details." },
   { icon: IconRocket, title: "You publish and run it", desc: "Once approved, open registration, add co-organizers, and go live. We handle the infrastructure underneath." },
 ];
 
 const INCLUDED = [
   { icon: IconUsersGroup, title: "Team & solo formats", desc: "Configure your season as team-based or individual competition." },
-  { icon: IconTrophy, title: "Live leaderboard", desc: "Scores update in real time as participants solve challenges — no manual grading." },
+  { icon: IconTrophy, title: "Live leaderboard", desc: "Scores update in real time as participants solve challenges - no manual grading." },
   { icon: IconBrandDiscord, title: "Discord integration", desc: "Connect a webhook to push event announcements straight to your community." },
   { icon: IconShieldCheck, title: "Built-in anti-abuse", desc: "Device-bound sessions and rate limiting run under every hosted season, not just ours." },
 ];
@@ -130,11 +130,12 @@ export default function HostACtfPage() {
                 variants={fadeUp}
                 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(48px, 8vw, 84px)", lineHeight: 0.95, color: T.cream }}
               >
-                WE RUN THE<br />INFRASTRUCTURE.
+                HOST A CTF.<br />WE RUN THE INFRASTRUCTURE.
               </motion.h1>
               <motion.p variants={fadeUp} className="font-outfit text-[15px] leading-relaxed max-w-lg mt-5" style={{ color: T.muted }}>
+                Looking for a modern alternative to CTFd, HackTheBox, or TryHackMe for hosting your cybersecurity events?
                 Bring the challenges and the people. Leaderboards, team management,
-                and event hosting are already built — you don&rsquo;t need to write a
+                and event hosting are already built - you don&rsquo;t need to write a
                 line of code to run a real CTF competition.
               </motion.p>
               <motion.div variants={fadeUp} className="mt-8">
@@ -213,7 +214,7 @@ export default function HostACtfPage() {
             <SectionHead
               eyebrow="Already Hosted"
               title="Two Events In, ~1,000 Players Deep"
-              sub="Both were solo-format competitions with 300+ participants each — our first live events, not hypotheticals."
+              sub="Both were solo-format competitions with 300+ participants each - our first live events, not hypotheticals."
             />
             <div className="grid sm:grid-cols-2 gap-3">
               {CASE_STUDIES.map((cs) => (
@@ -241,7 +242,7 @@ export default function HostACtfPage() {
                 Ready to run your own event?
               </h3>
               <p className="font-outfit text-[13px]" style={{ color: T.muted }}>
-                Email us with your event idea — we&rsquo;ll walk you through the rest.
+                Email us with your event idea - we&rsquo;ll walk you through the rest.
               </p>
             </div>
             <a

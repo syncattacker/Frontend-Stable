@@ -390,7 +390,7 @@ export default function InviteAccept() {
 
           {/* footer */}
           <div className="footer">
-            <span className="footer-label">Season / {slug ?? "—"}</span>
+            <span className="footer-label">Season / {slug ?? "-"}</span>
             <span className="footer-tag">
               {isLoading ? "Verifying" : phase === "done" ? "Verified" : "Failed"}
             </span>

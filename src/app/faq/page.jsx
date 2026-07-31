@@ -17,7 +17,7 @@ const T = {
 const FAQS = [
   {
     q: "Is gopwnit free to use?",
-    a: "Yes. Core training content — hacking labs, CTF challenges, and season participation — is free to access.",
+    a: "Yes. Core training content - hacking labs, CTF challenges, and season participation - is free to access.",
   },
   {
     q: "Do I need prior experience to start?",
@@ -41,11 +41,11 @@ const FAQS = [
   },
   {
     q: "What happens if I delete my account?",
-    a: "Account deletion requests are processed within 30 days of verification, subject to a limited set of records we retain for security and compliance — see our Privacy Policy for the full breakdown.",
+    a: "Account deletion requests are processed within 30 days of verification, subject to a limited set of records we retain for security and compliance - see our Privacy Policy for the full breakdown.",
   },
   {
     q: "Can my college, club, or company host a CTF on gopwnit?",
-    a: "Yes — any organization can host its own CTF season on the platform, with team management, live leaderboards, and challenge hosting handled for you.",
+    a: "Yes - any organization can host its own CTF season on the platform, with team management, live leaderboards, and challenge hosting handled for you.",
   },
   {
     q: "Are hosted CTF events reviewed before they go live?",
@@ -57,15 +57,15 @@ const FAQS = [
   },
   {
     q: "How is my password protected?",
-    a: "Your password is encrypted in transit and hashed before storage — we never store or transmit it as plain text.",
+    a: "Your password is encrypted in transit and hashed before storage - we never store or transmit it as plain text.",
   },
   {
     q: "What if I find a security vulnerability?",
-    a: "Please report it responsibly — see our Security page and security.txt for our disclosure process and contact details.",
+    a: "Please report it responsibly - see our Security page and security.txt for our disclosure process and contact details.",
   },
   {
     q: "Can I contribute content or write for gopwnit?",
-    a: "Yes — creators can publish articles and guides through the platform. Submissions go through a moderation review before publishing.",
+    a: "Yes - creators can publish articles and guides through the platform. Submissions go through a moderation review before publishing.",
   },
   {
     q: "How do I report a Code of Conduct violation?",
@@ -73,7 +73,7 @@ const FAQS = [
   },
   {
     q: "What's the difference between labs and CTF seasons?",
-    a: "Labs are ongoing, individual practice environments you can use anytime. Seasons are time-boxed competitive events — hosted by us or by an organization — with a leaderboard and a defined start and end.",
+    a: "Labs are ongoing, individual practice environments you can use anytime. Seasons are time-boxed competitive events - hosted by us or by an organization - with a leaderboard and a defined start and end.",
   },
 ];
 

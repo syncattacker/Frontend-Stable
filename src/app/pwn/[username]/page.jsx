@@ -14,7 +14,7 @@ import API from "@/utils/axios";
 import tick from "@/img/tick.svg";
 
 /* ═══════════════════════════════════════════════════════════════
-   DESIGN TOKENS — matches /profile
+   DESIGN TOKENS - matches /profile
 ═══════════════════════════════════════════════════════════════ */
 const T = {
   bg: "#0f0f0f",
@@ -165,7 +165,7 @@ const Section = ({ label, action, children, bodyPad = "24px" }) => (
   </div>
 );
 
-/* Read-only avatar — public profiles don't expose a stored avatar URL, so
+/* Read-only avatar - public profiles don't expose a stored avatar URL, so
    this always shows initials on the same visual chrome as the private
    AvatarBlock, minus the click-to-upload affordance. */
 const AvatarCircle = ({ username, size = 92 }) => {
@@ -281,7 +281,7 @@ const formatDate = (ts) =>
         month: "long",
         day: "numeric",
       })
-    : "—";
+    : "-";
 
 const formatJoinDate = (ts) =>
   ts
@@ -289,7 +289,7 @@ const formatJoinDate = (ts) =>
         year: "2-digit",
         month: "long",
       })
-    : "—";
+    : "-";
 
 export default function PublicProfilePage() {
   const { username } = useParams();

@@ -27,7 +27,7 @@ const CHANNELS = [
     title: "General & Support",
     value: "support@gopwnit.com",
     href: "mailto:support@gopwnit.com",
-    desc: "Account issues, questions, or anything else — this inbox routes to the whole team.",
+    desc: "Account issues, questions, or anything else - this inbox routes to the whole team.",
   },
   {
     icon: IconShieldLock,
@@ -41,7 +41,7 @@ const CHANNELS = [
     title: "Community",
     value: "Join our Discord",
     href: "https://discord.gg/4Mb6xXce8q",
-    desc: "The fastest way to reach us in real time — also where CTF announcements happen first.",
+    desc: "The fastest way to reach us in real time - also where CTF announcements happen first.",
   },
 ];
 
@@ -91,7 +91,7 @@ export default function ContactPage() {
                 className="font-outfit text-[15px] leading-relaxed max-w-lg mt-5"
                 style={{ color: T.muted }}
               >
-                GOPWNIT is a partnership firm building gopwnit from India. Reach us directly —
+                GOPWNIT is a partnership firm building gopwnit from India. Reach us directly -
                 no ticket queues, no bots.
               </motion.p>
             </motion.div>

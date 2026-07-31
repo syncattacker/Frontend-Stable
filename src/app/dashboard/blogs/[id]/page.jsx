@@ -205,7 +205,7 @@ export default function ArticleDetailPage() {
             <main style={{ paddingTop: "80px" }}>
 
                 {/* ════════════════════════════════════════
-                    HEADER — breadcrumb + nav controls
+                    HEADER - breadcrumb + nav controls
                 ════════════════════════════════════════ */}
                 <div style={{
                     padding: "20px 80px",
@@ -274,7 +274,7 @@ export default function ArticleDetailPage() {
 
 
                 {/* ════════════════════════════════════════
-                    HERO — article title & meta
+                    HERO - article title & meta
                     Mirrors: Privacy Protocol hero pattern
                 ════════════════════════════════════════ */}
                 <section style={{
@@ -330,7 +330,7 @@ export default function ArticleDetailPage() {
                     {/* Divider */}
                     <div style={{ width: "100%", height: "1px", background: T.border, marginBottom: "40px" }} />
 
-                    {/* Meta info row — PUBLISHED / AUTHOR / READING TIME */}
+                    {/* Meta info row - PUBLISHED / AUTHOR / READING TIME */}
                     <div style={{ display: "flex", gap: "64px", alignItems: "flex-start", flexWrap: "wrap" }}>
 
                         <div>
@@ -433,7 +433,7 @@ export default function ArticleDetailPage() {
                             {[
                                 { label: "Author",    value: authorName.toUpperCase(), mono: true },
                                 { label: "Published", value: formatDate(article.createdAt), mono: true },
-                                { label: "Category",  value: article.category || "—",   mono: false },
+                                { label: "Category",  value: article.category || "-",   mono: false },
                             ].map((row, i, arr) => (
                                 <div key={row.label} style={{
                                     padding: "14px 16px",
@@ -454,7 +454,7 @@ export default function ArticleDetailPage() {
                                 </div>
                             ))}
 
-                            {/* Delete — compact danger in sidebar if author */}
+                            {/* Delete - compact danger in sidebar if author */}
                             {isAuthor && (
                                 <div style={{ padding: "14px 16px", borderTop: `1px solid ${T.border}` }}>
                                     <button
@@ -660,7 +660,7 @@ function GlobalStyles() {
                 color: #fefce8;
             }
 
-            /* ── Article prose — GoPwnIt cream/muted palette ── */
+            /* ── Article prose - GoPwnIt cream/muted palette ── */
             .gopwnit-prose {
                 font-family: Outfit, sans-serif;
                 font-size: 15px;

@@ -26,7 +26,7 @@ const PAST_EVENTS = [
     isoDate: "2026-01-22",
     format: "Solo",
     participants: "300+ participants",
-    desc: "Our first live CTF competition — a solo-format event testing web, crypto, and forensics skills.",
+    desc: "Our first live CTF competition - a solo-format event testing web, crypto, and forensics skills.",
   },
   {
     image: "/gallery/pentest.jpg",
@@ -39,7 +39,7 @@ const PAST_EVENTS = [
   },
 ];
 
-// eventAttendanceMode/location deliberately omitted — venue format (online vs.
+// eventAttendanceMode/location deliberately omitted - venue format (online vs.
 // in-person) for these two events isn't confirmed, and schema.org data should
 // only assert what's actually known.
 const EVENTS_JSON_LD = PAST_EVENTS.map((ev) => ({
@@ -80,17 +80,16 @@ export default function EventsPage() {
           <div className="max-w-3xl mx-auto">
             <motion.div initial="hidden" animate="visible" variants={stagger}>
               <motion.p variants={fadeUp} className="font-outfit text-[11px] font-bold uppercase tracking-[0.3em] mb-5" style={{ color: T.muted }}>
-                Events
+                Capture The Flag Schedule
               </motion.p>
               <motion.h1
                 variants={fadeUp}
                 style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(48px, 8vw, 80px)", lineHeight: 0.95, color: T.cream }}
               >
-                CTFS ON<br />GOPWNIT.
+                LIVE CTF<br />COMPETITIONS.
               </motion.h1>
               <motion.p variants={fadeUp} className="font-outfit text-[15px] leading-relaxed max-w-lg mt-5" style={{ color: T.muted }}>
-                Competitions we&rsquo;ve run, and the ones being planned. Join our
-                Discord for first word on what&rsquo;s next.
+                Looking for upcoming CTF events to test your ethical hacking skills? Track the latest competitions we've run, and the ones being planned - your modern alternative to CTFTime. Join our Discord for first word on what's next.
               </motion.p>
             </motion.div>
           </div>
@@ -132,7 +131,7 @@ export default function EventsPage() {
           </div>
         </section>
 
-        {/* Upcoming — honest, no invented dates */}
+        {/* Upcoming - honest, no invented dates */}
         <section className="px-7 py-14 border-t" style={{ borderColor: T.border }}>
           <div className="max-w-5xl mx-auto">
             <span className="font-outfit text-[10px] font-bold uppercase tracking-[0.3em] block mb-8" style={{ color: T.muted }}>
@@ -146,7 +145,7 @@ export default function EventsPage() {
                 <div>
                   <h3 className="font-outfit text-[16px] font-bold mb-2" style={{ color: T.cream }}>More events are being planned</h3>
                   <p className="font-outfit text-[13px] leading-relaxed max-w-md" style={{ color: T.muted }}>
-                    We announce new seasons in our Discord first — join to be first
+                    We announce new seasons in our Discord first - join to be first
                     in line for registration.
                   </p>
                 </div>

@@ -164,7 +164,7 @@ const ForgotPassword = () => {
                 ease: [0.22, 1, 0.36, 1],
               }}
             >
-              {/* Email — underline style */}
+              {/* Email - underline style */}
               <div className="flex flex-col gap-3">
                 <label
                   className="text-[11px] font-bold tracking-[0.22em] uppercase font-outfit"
@@ -291,7 +291,7 @@ const ForgotPassword = () => {
             </motion.form>
           </div>
 
-          {/* ── Bottom links row — matches screenshot ────────────────── */}
+          {/* ── Bottom links row - matches screenshot ────────────────── */}
           <div
             className="flex items-center justify-center gap-4 px-7 py-4"
             style={{ borderTop: `1px solid ${T.border}` }}
