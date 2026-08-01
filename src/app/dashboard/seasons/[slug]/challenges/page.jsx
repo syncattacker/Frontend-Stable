@@ -17,6 +17,12 @@ import {
   IconBulb,
   IconLock,
   IconLockOpen,
+  IconServer,
+  IconPlayerPlay,
+  IconPlayerStop,
+  IconExternalLink,
+  IconClock,
+  IconAlertTriangle,
 } from "@tabler/icons-react";
 import { showToast } from "@/utils/toast.jsx";
 import API from "@/utils/axios";
@@ -127,6 +133,24 @@ const TiltCard = ({ children, className, onClick }) => {
     </motion.div>
   );
 };
+
+// ─── LIVE COUNTDOWN ────────────────────────────────────────────────────────────
+const InstanceCountdown = ({ expiresAt }) => {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const diffMs = new Date(expiresAt).getTime() - now;
+  if (diffMs <= 0) return <span>Expiring…</span>;
+  const mins = Math.floor(diffMs / 60000);
+  const secs = Math.floor((diffMs % 60000) / 1000);
+  return (
+    <span>
+      {mins}m {secs.toString().padStart(2, "0")}s left
+    </span>
+  );
+};
 // ─── PART 2: State · Data fetching · Handlers · Hero ─────────────────────────
 
 export default withAuth(function SeasonCTF() {
@@ -155,6 +179,16 @@ export default withAuth(function SeasonCTF() {
   // fetch its content again after a refresh.
   const [openedHints, setOpenedHints] = useState({});
   const [openingHintId, setOpeningHintId] = useState(null);
+
+  // Ephemeral per-challenge instances. Keyed by challengeSlug so the modal
+  // can look up "does the currently-open challenge have a running instance"
+  // regardless of which challenge's instance socket events arrive for.
+  const [instances, setInstances] = useState({});
+  const [instanceActionSlug, setInstanceActionSlug] = useState(null);
+  const instancesRef = useRef(instances);
+  useEffect(() => {
+    instancesRef.current = instances;
+  }, [instances]);
 
   const groupedChallenges = useMemo(() => {
     const map = challenges.reduce((acc, c) => {
@@ -188,7 +222,11 @@ export default withAuth(function SeasonCTF() {
         setSolvedChallenges(
           Array.isArray(data)
             ? data
-            : data?.solved || data?.solvedChallenges || data?.challenges || [],
+            : data?.solvedChallengeSlugs ||
+                data?.solved ||
+                data?.solvedChallenges ||
+                data?.challenges ||
+                [],
         );
       } catch (err) {
         if (err.name !== "CanceledError");
@@ -451,6 +489,111 @@ export default withAuth(function SeasonCTF() {
     },
     [openedHints],
   );
+
+  const fetchMyInstance = useCallback(
+    async (challengeSlug) => {
+      try {
+        const r = await API.get(
+          `/api/v1/seasons/${slug}/challenges/${challengeSlug}/instance/mine`,
+          { withCredentials: true },
+        );
+        setInstances((prev) => ({
+          ...prev,
+          [challengeSlug]: r.data?.data?.instance || null,
+        }));
+      } catch {
+        // non-fatal — instance panel just won't populate until retried
+      }
+    },
+    [slug],
+  );
+
+  const handleLaunchInstance = useCallback(
+    async (challengeSlug) => {
+      if (instanceActionSlug) return;
+      setInstanceActionSlug(challengeSlug);
+      try {
+        const r = await API.post(
+          `/api/v1/seasons/${slug}/challenges/${challengeSlug}/instance/launch`,
+          {},
+          { withCredentials: true },
+        );
+        setInstances((prev) => ({ ...prev, [challengeSlug]: r.data.data }));
+      } catch (err) {
+        showToast(
+          "error",
+          err.response?.data?.detail || "Failed to launch instance",
+        );
+      } finally {
+        setInstanceActionSlug(null);
+      }
+    },
+    [slug, instanceActionSlug],
+  );
+
+  const handleDestroyInstance = useCallback(
+    async (challengeSlug) => {
+      if (instanceActionSlug) return;
+      setInstanceActionSlug(challengeSlug);
+      try {
+        await API.post(
+          `/api/v1/seasons/${slug}/challenges/${challengeSlug}/instance/destroy`,
+          {},
+          { withCredentials: true },
+        );
+        // Teardown is queued/async — reflect that immediately rather than
+        // leaving the old "running" state showing; the instanceExpired
+        // socket event (or a manual re-check) will confirm it's fully gone.
+        setInstances((prev) => ({
+          ...prev,
+          [challengeSlug]: prev[challengeSlug]
+            ? { ...prev[challengeSlug], status: "destroyed" }
+            : null,
+        }));
+      } catch (err) {
+        showToast(
+          "error",
+          err.response?.data?.detail || "Failed to destroy instance",
+        );
+      } finally {
+        setInstanceActionSlug(null);
+      }
+    },
+    [slug, instanceActionSlug],
+  );
+
+  // Fetch the current instance state when a challenge that supports
+  // instancing is opened, so state persists across modal open/close and
+  // page reloads rather than only reflecting the last launch/destroy call.
+  useEffect(() => {
+    if (!selectedChallenge?.instancingEnabled) return;
+    fetchMyInstance(selectedChallenge.slug);
+  }, [selectedChallenge, fetchMyInstance]);
+
+  // Instance lifecycle events arrive on a per-owner room (user:<username> or
+  // team:<teamId>, both already auto-joined — see SocketProvider/joinSeason)
+  // rather than the season-wide room, and never carry the full instance
+  // object (no `url`, since that's only computed server-side once running)
+  // — so every event just triggers a fresh GET .../instance/mine for
+  // whichever challenge the event's instanceId belongs to.
+  useEffect(() => {
+    if (!socket) return;
+    const handleInstanceEvent = (payload) => {
+      const entry = Object.entries(instancesRef.current).find(
+        ([, inst]) => inst?.instanceId === payload?.instanceId,
+      );
+      if (!entry) return;
+      fetchMyInstance(entry[0]);
+    };
+    socket.on("instanceReady", handleInstanceEvent);
+    socket.on("instanceExpiring", handleInstanceEvent);
+    socket.on("instanceExpired", handleInstanceEvent);
+    return () => {
+      socket.off("instanceReady", handleInstanceEvent);
+      socket.off("instanceExpiring", handleInstanceEvent);
+      socket.off("instanceExpired", handleInstanceEvent);
+    };
+  }, [socket, fetchMyInstance]);
 
   if (!slug)
     return (
@@ -1192,6 +1335,148 @@ export default withAuth(function SeasonCTF() {
                           </ReactMarkdown>
                         </div>
                       </div>
+
+                      {/* instance */}
+                      {selectedChallenge.instancingEnabled &&
+                        (() => {
+                          const inst = instances[selectedChallenge.slug];
+                          const acting = instanceActionSlug === selectedChallenge.slug;
+                          const isLive = inst && !["expired", "destroyed"].includes(inst.status);
+                          return (
+                            <div>
+                              <p
+                                className="ctf-roundo text-[10px] font-bold uppercase tracking-[0.14em] mb-3"
+                                style={{ color: "rgba(254,252,232,0.25)" }}
+                              >
+                                Instance
+                              </p>
+                              <div
+                                className="p-5 space-y-3"
+                                style={{
+                                  background: "rgba(254,252,232,0.02)",
+                                  border: `1px solid rgba(254,252,232,0.07)`,
+                                }}
+                              >
+                                {!isLive && (
+                                  <div className="flex items-center justify-between gap-3">
+                                    <p
+                                      className="ctf-body text-[12px]"
+                                      style={{ color: T.muted }}
+                                    >
+                                      Launch a private, isolated instance of this
+                                      challenge
+                                      {selectedChallenge.instancingTtlMinutes
+                                        ? ` (lasts up to ${selectedChallenge.instancingTtlMinutes} min)`
+                                        : ""}
+                                      .
+                                    </p>
+                                    <button
+                                      onClick={() =>
+                                        handleLaunchInstance(selectedChallenge.slug)
+                                      }
+                                      disabled={acting}
+                                      className="ctf-roundo flex-shrink-0 flex items-center gap-1.5 px-4 py-2 text-[11px] font-bold transition-all disabled:opacity-50"
+                                      style={{ background: T.cream, color: T.bg }}
+                                    >
+                                      {acting ? (
+                                        <IconLoader2 size={13} className="animate-spin" />
+                                      ) : (
+                                        <IconPlayerPlay size={13} />
+                                      )}
+                                      Launch
+                                    </button>
+                                  </div>
+                                )}
+
+                                {inst?.status === "pending" && (
+                                  <div className="flex items-center gap-2">
+                                    <IconLoader2
+                                      size={14}
+                                      className="animate-spin"
+                                      style={{ color: T.muted }}
+                                    />
+                                    <span
+                                      className="ctf-body text-[12px]"
+                                      style={{ color: T.muted }}
+                                    >
+                                      Provisioning your instance…
+                                    </span>
+                                  </div>
+                                )}
+
+                                {inst?.status === "running" && (
+                                  <>
+                                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                                      <a
+                                        href={inst.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="ctf-mono flex items-center gap-1.5 text-[12px] break-all"
+                                        style={{ color: "rgba(52,211,153,0.8)" }}
+                                      >
+                                        <IconExternalLink size={13} />
+                                        {inst.url}
+                                      </a>
+                                      <button
+                                        onClick={() =>
+                                          handleDestroyInstance(selectedChallenge.slug)
+                                        }
+                                        disabled={acting}
+                                        className="ctf-roundo flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold transition-all disabled:opacity-50"
+                                        style={{
+                                          border: "1px solid rgba(239,68,68,0.3)",
+                                          background: "rgba(239,68,68,0.06)",
+                                          color: "rgba(239,68,68,0.75)",
+                                        }}
+                                      >
+                                        {acting ? (
+                                          <IconLoader2 size={13} className="animate-spin" />
+                                        ) : (
+                                          <IconPlayerStop size={13} />
+                                        )}
+                                        Destroy
+                                      </button>
+                                    </div>
+                                    <div
+                                      className="ctf-body flex items-center gap-1.5 text-[11px]"
+                                      style={{ color: T.muted }}
+                                    >
+                                      <IconClock size={12} />
+                                      <InstanceCountdown expiresAt={inst.expiresAt} />
+                                    </div>
+                                  </>
+                                )}
+
+                                {["crashed", "failed"].includes(inst?.status) && (
+                                  <div className="space-y-3">
+                                    <div
+                                      className="flex items-center gap-2 text-[12px]"
+                                      style={{ color: "rgba(239,68,68,0.75)" }}
+                                    >
+                                      <IconAlertTriangle size={14} />
+                                      {inst.lastError || "The instance failed to start."}
+                                    </div>
+                                    <button
+                                      onClick={() =>
+                                        handleLaunchInstance(selectedChallenge.slug)
+                                      }
+                                      disabled={acting}
+                                      className="ctf-roundo flex items-center gap-1.5 px-4 py-2 text-[11px] font-bold transition-all disabled:opacity-50"
+                                      style={{ background: T.cream, color: T.bg }}
+                                    >
+                                      {acting ? (
+                                        <IconLoader2 size={13} className="animate-spin" />
+                                      ) : (
+                                        <IconPlayerPlay size={13} />
+                                      )}
+                                      Relaunch
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })()}
 
                       {/* attachment */}
                       {selectedChallenge.file && (
