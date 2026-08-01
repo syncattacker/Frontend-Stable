@@ -11,10 +11,12 @@ const CSP = [
 ].join("; ");
 
 /** @type {import('next').NextConfig} */
+
 const nextConfig = {
   async redirects() {
     return [{ source: "/reviewboard", destination: "/about", permanent: true }];
   },
+
   async headers() {
     return [
       {

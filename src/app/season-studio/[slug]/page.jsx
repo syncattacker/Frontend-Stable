@@ -507,6 +507,15 @@ export default withAuth(function SeasonStudio() {
   const [revealFlagModal, setRevealFlagModal] = useState(false);
   const [editingChallenge, setEditingChallenge] = useState(null);
   const [challengeLoading, setChallengeLoading] = useState(false);
+  // Local-session-only build tracker — there's no "list builds" endpoint,
+  // only get-by-id, so history resets on reload. Fine for a "just kicked
+  // this off, watch it finish" workflow.
+  const [imageBuilds, setImageBuilds] = useState([]);
+  const [buildFile, setBuildFile] = useState(null);
+  const [buildStarting, setBuildStarting] = useState(false);
+  const [buildChallengeId, setBuildChallengeId] = useState("");
+  const [linkSelections, setLinkSelections] = useState({});
+  const [linkingBuildId, setLinkingBuildId] = useState(null);
   const [publishingSeason, setPublishingSeason] = useState(false);
   const [deletingSeasonSlug, setDeletingSeasonSlug] = useState("");
   const [participantsError, setParticipantsError] = useState(null);
@@ -569,6 +578,14 @@ export default withAuth(function SeasonStudio() {
     file: null,
     hints: [],
     decay: { enabled: false, minPoints: "", decayConstant: 10 },
+    instancing: {
+      enabled: false,
+      image: "",
+      containerPort: "",
+      resourceLimits: { cpus: 1, memoryMb: 512 },
+      ttlMinutes: 60,
+      idleTimeoutMinutes: "",
+    },
   });
 
   const [notificationForm, setNotificationForm] = useState({
@@ -860,6 +877,7 @@ export default withAuth(function SeasonStudio() {
       can("admin.manage") && { id: 3, name: "Admins" },
       can("notification.send") && { id: 4, name: "Send Notification" },
       can("score.view") && { id: 5, name: "User Stats" },
+      can("challenge.image.build") && { id: 6, name: "Build Images" },
     ].filter(Boolean);
   }, [can]);
 
@@ -1081,6 +1099,117 @@ export default withAuth(function SeasonStudio() {
     return fileKey;
   };
 
+  const handleBuildFileChange = (e) => {
+    setBuildFile(e.target.files[0] || null);
+  };
+
+  const handleStartBuild = async () => {
+    if (!selectedSeason || !buildFile) return;
+    if (!/\.tar\.gz$/i.test(buildFile.name)) {
+      showToast("error", "Image build context must be a .tar.gz archive");
+      return;
+    }
+    setBuildStarting(true);
+    try {
+      const presignRes = await API.post(
+        `/api/v1/organizer/${selectedSeason.slug}/challenge-images/upload-url`,
+        { filename: buildFile.name },
+      );
+      const { uploadUrl, contextKey } = presignRes.data.data;
+
+      const uploadRes = await fetch(uploadUrl, {
+        method: "PUT",
+        body: buildFile,
+      });
+      if (!uploadRes.ok) throw new Error("Build context upload failed");
+
+      const buildRes = await API.post(
+        `/api/v1/organizer/${selectedSeason.slug}/challenge-images/build`,
+        buildChallengeId
+          ? { contextKey, challengeId: buildChallengeId }
+          : { contextKey },
+      );
+      setImageBuilds((prev) => [
+        { ...buildRes.data.data, filename: buildFile.name },
+        ...prev,
+      ]);
+      showToast("success", "Build started");
+      setBuildFile(null);
+    } catch (error) {
+      showToast("error", error.response?.data?.detail || error.message);
+    } finally {
+      setBuildStarting(false);
+    }
+  };
+
+  // No push notifications for build completion — poll while any build in
+  // this session's list is still in flight. When a linked build succeeds,
+  // the backend has already wired instancing.image/enabled onto the
+  // challenge itself — re-fetch the challenge list so the edit form and
+  // challenge cards pick that up without a manual refresh.
+  useEffect(() => {
+    const inFlight = imageBuilds.some((b) =>
+      ["pending", "building"].includes(b.status),
+    );
+    if (!inFlight || !selectedSeason) return;
+    const id = setInterval(async () => {
+      let justLinkedSucceeded = false;
+      const updated = await Promise.all(
+        imageBuilds.map(async (b) => {
+          if (!["pending", "building"].includes(b.status)) return b;
+          try {
+            const r = await API.get(
+              `/api/v1/organizer/${selectedSeason.slug}/challenge-images/${b.buildId}`,
+            );
+            const fresh = { ...r.data.data, filename: b.filename };
+            if (fresh.status === "succeeded" && fresh.challengeId) {
+              justLinkedSucceeded = true;
+            }
+            return fresh;
+          } catch {
+            return b;
+          }
+        }),
+      );
+      setImageBuilds(updated);
+      if (justLinkedSucceeded) fetchChallenges(selectedSeason.slug);
+    }, 4000);
+    return () => clearInterval(id);
+  }, [imageBuilds, selectedSeason]);
+
+  const copyImageTag = (tag) => {
+    navigator.clipboard?.writeText(tag);
+    showToast("success", "Image tag copied");
+  };
+
+  // Attaches an already-succeeded, never-linked build to a challenge after
+  // the fact — for builds started without picking "Link to Challenge" up
+  // front. The backend only auto-wires instancing.image at build-success
+  // time for whatever challengeId was set at request time (immutable, can
+  // never be changed after); this hits the new post-hoc /link endpoint
+  // instead, then refetches so the challenge's edit form picks up the image
+  // immediately.
+  const handleLinkBuild = async (buildId) => {
+    const challengeId = linkSelections[buildId];
+    if (!selectedSeason || !challengeId) return;
+    setLinkingBuildId(buildId);
+    try {
+      await API.patch(
+        `/api/v1/organizer/${selectedSeason.slug}/challenge-images/${buildId}/link`,
+        { challengeId },
+      );
+      setImageBuilds((prev) =>
+        prev.map((b) => (b.buildId === buildId ? { ...b, challengeId } : b)),
+      );
+      showToast("success", "Image linked to challenge");
+      fetchChallenges(selectedSeason.slug);
+    } catch (error) {
+      showToast("error", error.response?.data?.detail || error.message);
+    } finally {
+      setLinkingBuildId(null);
+    }
+  };
+
   const saveChallenge = async () => {
     if (!selectedSeason) {
       showToast("error", "Please select a season first");
@@ -1114,6 +1243,38 @@ export default withAuth(function SeasonStudio() {
         return;
       }
     }
+    if (challengeForm.instancing.enabled) {
+      // enabled:true now requires an image already on the document — that
+      // only happens once a linked build (Build Images tab) succeeds, so
+      // catch this client-side with a clear pointer instead of a bare 400.
+      if (!challengeForm.instancing.image) {
+        showToast(
+          "error",
+          "Enabling requires a successful linked image build first — see the Build Images tab, then come back and enable.",
+        );
+        return;
+      }
+      const containerPort = Number(challengeForm.instancing.containerPort);
+      if (!containerPort || containerPort < 1 || containerPort > 65535) {
+        showToast("error", "containerPort must be between 1 and 65535");
+        return;
+      }
+      const cpus = Number(challengeForm.instancing.resourceLimits.cpus);
+      if (!cpus || cpus < 1 || cpus > 4) {
+        showToast("error", "CPUs must be between 1 and 4");
+        return;
+      }
+      const memoryMb = Number(challengeForm.instancing.resourceLimits.memoryMb);
+      if (!memoryMb || memoryMb < 128 || memoryMb > 4096) {
+        showToast("error", "Memory must be between 128 and 4096 MB");
+        return;
+      }
+      const ttlMinutes = Number(challengeForm.instancing.ttlMinutes);
+      if (!ttlMinutes || ttlMinutes < 5 || ttlMinutes > 180) {
+        showToast("error", "TTL must be between 5 and 180 minutes");
+        return;
+      }
+    }
     setChallengeLoading(true);
     try {
       let fileKey = null;
@@ -1138,6 +1299,25 @@ export default withAuth(function SeasonStudio() {
               enabled: true,
               minPoints: Number(challengeForm.decay.minPoints),
               decayConstant: Number(challengeForm.decay.decayConstant) || 10,
+            }
+          : { enabled: false },
+        instancing: challengeForm.instancing.enabled
+          ? {
+              enabled: true,
+              containerPort: Number(challengeForm.instancing.containerPort),
+              resourceLimits: {
+                cpus: Number(challengeForm.instancing.resourceLimits.cpus) || 1,
+                memoryMb:
+                  Number(challengeForm.instancing.resourceLimits.memoryMb) || 512,
+              },
+              ttlMinutes: Number(challengeForm.instancing.ttlMinutes) || 60,
+              ...(challengeForm.instancing.idleTimeoutMinutes
+                ? {
+                    idleTimeoutMinutes: Number(
+                      challengeForm.instancing.idleTimeoutMinutes,
+                    ),
+                  }
+                : {}),
             }
           : { enabled: false },
       };
@@ -1186,6 +1366,14 @@ export default withAuth(function SeasonStudio() {
       file: null,
       hints: [],
       decay: { enabled: false, minPoints: "", decayConstant: 10 },
+      instancing: {
+        enabled: false,
+        image: "",
+        containerPort: "",
+        resourceLimits: { cpus: 1, memoryMb: 512 },
+        ttlMinutes: 60,
+        idleTimeoutMinutes: "",
+      },
     });
     setEditingChallenge(null);
   };
@@ -1221,6 +1409,23 @@ export default withAuth(function SeasonStudio() {
     }));
   };
 
+  const updateInstancingField = (field, value) => {
+    setChallengeForm((p) => ({
+      ...p,
+      instancing: { ...p.instancing, [field]: value },
+    }));
+  };
+
+  const updateInstancingResourceField = (field, value) => {
+    setChallengeForm((p) => ({
+      ...p,
+      instancing: {
+        ...p.instancing,
+        resourceLimits: { ...p.instancing.resourceLimits, [field]: value },
+      },
+    }));
+  };
+
   const handleChallengeFormChange = (e) => {
     const { name, value } = e.target;
     setChallengeForm((prev) => ({ ...prev, [name]: value }));
@@ -1243,6 +1448,14 @@ export default withAuth(function SeasonStudio() {
       file: null,
       hints: [],
       decay: { enabled: false, minPoints: "", decayConstant: 10 },
+      instancing: {
+        enabled: false,
+        image: "",
+        containerPort: "",
+        resourceLimits: { cpus: 1, memoryMb: 512 },
+        ttlMinutes: 60,
+        idleTimeoutMinutes: "",
+      },
     });
     setEditingChallenge(null);
     setShowChallengeModal(true);
@@ -1271,6 +1484,17 @@ export default withAuth(function SeasonStudio() {
         enabled: challenge.decay?.enabled || false,
         minPoints: challenge.decay?.minPoints ?? "",
         decayConstant: challenge.decay?.decayConstant ?? 10,
+      },
+      instancing: {
+        enabled: challenge.instancing?.enabled || false,
+        image: challenge.instancing?.image || "",
+        containerPort: challenge.instancing?.containerPort ?? "",
+        resourceLimits: {
+          cpus: challenge.instancing?.resourceLimits?.cpus ?? 1,
+          memoryMb: challenge.instancing?.resourceLimits?.memoryMb ?? 512,
+        },
+        ttlMinutes: challenge.instancing?.ttlMinutes ?? 60,
+        idleTimeoutMinutes: challenge.instancing?.idleTimeoutMinutes ?? "",
       },
     });
     setEditingChallenge(challenge);
@@ -1580,9 +1804,9 @@ export default withAuth(function SeasonStudio() {
         </div>
       </header>
 
-      <div className="flex min-h-[calc(100vh-49px)]">
+      <div className="flex flex-1 min-h-0">
         {/* ── SIDEBAR (untouched) ── */}
-        <aside className="w-70 shrink-0 bg-[#0A0A0A] border-r border-[rgba(254,252,232,0.12)] min-h-screen sticky top-0 h-screen overflow-y-auto">
+        <aside className="w-70 shrink-0 bg-[#0A0A0A] border-r border-[rgba(254,252,232,0.12)] h-full overflow-y-auto">
           <nav className="p-6">
             <div className="space-y-0.5">
               <h3 className="text-[9px] font-outfit text-[#a1a1aa] uppercase tracking-[0.25em] px-2 mb-3">
@@ -1734,7 +1958,7 @@ export default withAuth(function SeasonStudio() {
           </nav>
         </aside>
 
-        <main className="flex-1 min-w-0 px-10 py-6 overflow-y-auto">
+        <main className="flex-1 min-w-0 min-h-0 px-10 py-6 overflow-y-auto">
           {activeTab === 0 && (
             <div className="w-full max-w-[1400px]">
               <PageHeader
@@ -1953,7 +2177,7 @@ export default withAuth(function SeasonStudio() {
                   title="Select a season first"
                   desc="Go to Season Details to pick a season."
                 />
-              ) : challengeLoading ? (
+              ) : challengeLoading && challenges.length === 0 ? (
                 <LoadingState label="Loading challenges..." />
               ) : challenges.length === 0 ? (
                 <EmptyState
@@ -3067,6 +3291,178 @@ export default withAuth(function SeasonStudio() {
           {activeTab === 5 && selectedSeason && (
             <UserStats seasonSlug={selectedSeason.slug} />
           )}
+
+          {activeTab === 6 && selectedSeason && can("challenge.image.build") && (
+            <div className="p-6 space-y-6 max-w-2xl">
+              <div>
+                <Eyebrow>Build a Challenge Image</Eyebrow>
+                <p className="text-[11px] mt-1" style={{ color: T.muted }}>
+                  Upload a .tar.gz Kaniko build context (Dockerfile at the
+                  root). Link it to a challenge and, on success, that
+                  challenge&apos;s instancing image is wired up automatically
+                  — no copy/paste needed. Leave unlinked for a plain
+                  build/retry.
+                </p>
+              </div>
+              <div>
+                <Eyebrow>Link to Challenge (optional)</Eyebrow>
+                <div className="mt-1.5">
+                  <CustomSelect
+                    value={buildChallengeId}
+                    onChange={(val) => setBuildChallengeId(val)}
+                    disabled={buildStarting}
+                    placeholder="Don't link to a challenge"
+                    options={challenges.map((c) => ({
+                      value: c._id,
+                      label: c.name,
+                    }))}
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <label
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm cursor-pointer"
+                  style={{
+                    border: `1px solid ${T.border}`,
+                    borderRadius: "2px",
+                    color: T.muted,
+                  }}
+                >
+                  <DocumentArrowUpIcon className="h-4 w-4" />
+                  {buildFile ? buildFile.name : "Choose .tar.gz file"}
+                  <input
+                    type="file"
+                    accept=".tar.gz,application/gzip"
+                    className="sr-only"
+                    onChange={handleBuildFileChange}
+                    disabled={buildStarting}
+                  />
+                </label>
+                <PrimaryBtn onClick={handleStartBuild} disabled={!buildFile || buildStarting}>
+                  {buildStarting ? (
+                    <>
+                      <Spinner size={11} dark /> Uploading
+                    </>
+                  ) : (
+                    "Start Build →"
+                  )}
+                </PrimaryBtn>
+              </div>
+
+              <div>
+                <Eyebrow>Builds this session</Eyebrow>
+                {imageBuilds.length === 0 ? (
+                  <p className="text-[11px] mt-2" style={{ color: T.muted }}>
+                    No builds started yet.
+                  </p>
+                ) : (
+                  <div className="space-y-2 mt-2">
+                    {imageBuilds.map((b) => (
+                      <div
+                        key={b.buildId}
+                        className="p-3"
+                        style={{
+                          border: `1px solid ${T.border}`,
+                          borderRadius: "2px",
+                        }}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="min-w-0">
+                            <p
+                              className="text-sm truncate"
+                              style={{ color: T.cream }}
+                            >
+                              {b.filename}
+                            </p>
+                            <p
+                              className="text-[10px] uppercase tracking-widest mt-0.5"
+                              style={{
+                                color:
+                                  b.status === "succeeded"
+                                    ? "#34d399"
+                                    : b.status === "failed"
+                                      ? "#f87171"
+                                      : T.muted,
+                              }}
+                            >
+                              {b.status}
+                              {b.status === "failed" && b.error ? ` — ${b.error}` : ""}
+                            </p>
+                            {b.challengeId && (
+                              <p
+                                className="text-[10px] mt-0.5"
+                                style={{ color: T.muted }}
+                              >
+                                Linked:{" "}
+                                {challenges.find((c) => c._id === b.challengeId)
+                                  ?.name || b.challengeId}
+                              </p>
+                            )}
+                          </div>
+                          {b.status === "succeeded" && b.imageTag && (
+                            <button
+                              type="button"
+                              onClick={() => copyImageTag(b.imageTag)}
+                              className="flex-shrink-0 px-3 py-1.5 text-[11px] font-bold transition-all"
+                              style={{
+                                border: `1px solid ${T.border}`,
+                                color: T.muted,
+                              }}
+                            >
+                              Copy Tag
+                            </button>
+                          )}
+                          {["pending", "building"].includes(b.status) && (
+                            <Spinner size={12} />
+                          )}
+                        </div>
+                        {b.status === "succeeded" && !b.challengeId && (
+                          <div className="flex items-center gap-2 mt-2.5">
+                            <div className="flex-1 min-w-0">
+                              <CustomSelect
+                                value={linkSelections[b.buildId] || ""}
+                                onChange={(val) =>
+                                  setLinkSelections((prev) => ({
+                                    ...prev,
+                                    [b.buildId]: val,
+                                  }))
+                                }
+                                disabled={linkingBuildId === b.buildId}
+                                placeholder="Link to a challenge…"
+                                options={challenges.map((c) => ({
+                                  value: c._id,
+                                  label: c.name,
+                                }))}
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleLinkBuild(b.buildId)}
+                              disabled={
+                                !linkSelections[b.buildId] ||
+                                linkingBuildId === b.buildId
+                              }
+                              className="flex-shrink-0 px-3 py-1.5 text-[11px] font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                              style={{
+                                border: `1px solid ${T.border}`,
+                                color: T.muted,
+                              }}
+                            >
+                              {linkingBuildId === b.buildId ? (
+                                <Spinner size={11} />
+                              ) : (
+                                "Link"
+                              )}
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </main>
       </div>
 
@@ -3286,6 +3682,143 @@ export default withAuth(function SeasonStudio() {
                     </div>
                   )}
                 </div>
+                {can("challenge.instancing.manage") && (
+                  <div>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={challengeForm.instancing.enabled}
+                        onChange={(e) =>
+                          updateInstancingField("enabled", e.target.checked)
+                        }
+                        disabled={challengeLoading}
+                      />
+                      <Eyebrow>Ephemeral Instance</Eyebrow>
+                    </label>
+                    {challengeForm.instancing.enabled && (
+                      <div className="space-y-3 mt-2">
+                        <div>
+                          <Eyebrow>Image</Eyebrow>
+                          <div
+                            className="w-full px-4 py-2.5 text-sm mt-1.5"
+                            style={{
+                              ...inputStyle,
+                              color: challengeForm.instancing.image
+                                ? T.cream
+                                : "#f87171",
+                            }}
+                          >
+                            {challengeForm.instancing.image ||
+                              "No image linked yet — build one in the Build Images tab"}
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <Eyebrow>Container Port *</Eyebrow>
+                            <input
+                              type="number"
+                              value={challengeForm.instancing.containerPort}
+                              onChange={(e) =>
+                                updateInstancingField(
+                                  "containerPort",
+                                  e.target.value,
+                                )
+                              }
+                              disabled={challengeLoading}
+                              min="1"
+                              max="65535"
+                              placeholder="e.g. 8080"
+                              className="w-full px-4 py-2.5 text-sm mt-1.5 placeholder-zinc-600"
+                              style={inputStyle}
+                              onFocus={(e) =>
+                                (e.target.style.borderColor = T.borderHover)
+                              }
+                              onBlur={(e) =>
+                                (e.target.style.borderColor = T.border)
+                              }
+                            />
+                          </div>
+                          <div>
+                            <Eyebrow>TTL (minutes, 5–180)</Eyebrow>
+                            <input
+                              type="number"
+                              value={challengeForm.instancing.ttlMinutes}
+                              onChange={(e) =>
+                                updateInstancingField("ttlMinutes", e.target.value)
+                              }
+                              disabled={challengeLoading}
+                              min="5"
+                              max="180"
+                              className="w-full px-4 py-2.5 text-sm mt-1.5 placeholder-zinc-600"
+                              style={inputStyle}
+                              onFocus={(e) =>
+                                (e.target.style.borderColor = T.borderHover)
+                              }
+                              onBlur={(e) =>
+                                (e.target.style.borderColor = T.border)
+                              }
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <Eyebrow>CPUs (1–4)</Eyebrow>
+                            <input
+                              type="number"
+                              value={challengeForm.instancing.resourceLimits.cpus}
+                              onChange={(e) =>
+                                updateInstancingResourceField(
+                                  "cpus",
+                                  e.target.value,
+                                )
+                              }
+                              disabled={challengeLoading}
+                              min="1"
+                              max="4"
+                              className="w-full px-4 py-2.5 text-sm mt-1.5 placeholder-zinc-600"
+                              style={inputStyle}
+                              onFocus={(e) =>
+                                (e.target.style.borderColor = T.borderHover)
+                              }
+                              onBlur={(e) =>
+                                (e.target.style.borderColor = T.border)
+                              }
+                            />
+                          </div>
+                          <div>
+                            <Eyebrow>Memory (MB, 128–4096)</Eyebrow>
+                            <input
+                              type="number"
+                              value={challengeForm.instancing.resourceLimits.memoryMb}
+                              onChange={(e) =>
+                                updateInstancingResourceField(
+                                  "memoryMb",
+                                  e.target.value,
+                                )
+                              }
+                              disabled={challengeLoading}
+                              min="128"
+                              max="4096"
+                              className="w-full px-4 py-2.5 text-sm mt-1.5 placeholder-zinc-600"
+                              style={inputStyle}
+                              onFocus={(e) =>
+                                (e.target.style.borderColor = T.borderHover)
+                              }
+                              onBlur={(e) =>
+                                (e.target.style.borderColor = T.border)
+                              }
+                            />
+                          </div>
+                        </div>
+                        <p className="text-[10px]" style={{ color: T.muted }}>
+                          Build an image for this challenge in the Build
+                          Images tab — on success it wires itself onto this
+                          challenge automatically, no copy/paste needed.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
                 <div>
                   <Eyebrow>Tags</Eyebrow>
                   <div className="flex flex-wrap gap-1 mt-1.5 mb-1.5">
