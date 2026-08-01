@@ -37,6 +37,21 @@ const ROADMAP = [
 
 const ORGANIZER_ROLES = ["Admin", "Challenge Manager", "Moderator", "Viewer"];
 
+const PLATFORM_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "gopwnit Platform",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Web",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "INR"
+  },
+  "description": "Interactive hacking labs, CTF challenges across 10 categories, and complete infrastructure to host your own cybersecurity competitions.",
+  "url": "https://gopwnit.com/platform"
+};
+
 const fadeUp = {
   hidden: { opacity: 0, y: 18 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
@@ -67,6 +82,7 @@ function SectionHead({ eyebrow, title, sub }) {
 export default function PlatformPage() {
   return (
     <div className="flex flex-col min-h-screen" style={{ background: T.bg, color: T.cream }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(PLATFORM_JSON_LD) }} />
       <Navbar />
 
       <div className="fixed inset-0 z-0">

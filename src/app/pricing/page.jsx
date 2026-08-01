@@ -119,6 +119,32 @@ const FINE_PRINT = [
   "Extensions beyond the booked duration are billed only after client approval.",
 ];
 
+const PRICING_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  "name": "gopwnit CTF Hosting Services",
+  "provider": {
+    "@type": "Organization",
+    "name": "gopwnit",
+    "url": "https://gopwnit.com"
+  },
+  "description": "Professional CTF hosting, managed infrastructure, and event management for colleges and companies.",
+  "offers": [
+    {
+      "@type": "Offer",
+      "name": "Platform Hosting - Hacker",
+      "price": "19999",
+      "priceCurrency": "INR"
+    },
+    {
+      "@type": "Offer",
+      "name": "Managed CTF - Hacker",
+      "price": "26999",
+      "priceCurrency": "INR"
+    }
+  ]
+};
+
 const fadeUp = {
   hidden: { opacity: 0, y: 18 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
@@ -222,6 +248,7 @@ function FeatureList({ items, columns = 2 }) {
 export default function PricingPage() {
   return (
     <div className="flex flex-col min-h-screen" style={{ background: T.bg, color: T.cream }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(PRICING_JSON_LD) }} />
       <Navbar />
 
       <div className="fixed inset-0 z-0">
