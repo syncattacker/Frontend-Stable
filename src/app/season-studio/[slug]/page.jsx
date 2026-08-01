@@ -1774,9 +1774,9 @@ export default withAuth(function SeasonStudio() {
         </div>
       </header>
 
-      <div className="flex min-h-[calc(100vh-49px)]">
+      <div className="flex flex-1 min-h-0">
         {/* ── SIDEBAR (untouched) ── */}
-        <aside className="w-70 shrink-0 bg-[#0A0A0A] border-r border-[rgba(254,252,232,0.12)] min-h-screen sticky top-0 h-screen overflow-y-auto">
+        <aside className="w-70 shrink-0 bg-[#0A0A0A] border-r border-[rgba(254,252,232,0.12)] h-full overflow-y-auto">
           <nav className="p-6">
             <div className="space-y-0.5">
               <h3 className="text-[9px] font-outfit text-[#a1a1aa] uppercase tracking-[0.25em] px-2 mb-3">
@@ -1928,7 +1928,7 @@ export default withAuth(function SeasonStudio() {
           </nav>
         </aside>
 
-        <main className="flex-1 min-w-0 px-10 py-6 overflow-y-auto">
+        <main className="flex-1 min-w-0 min-h-0 px-10 py-6 overflow-y-auto">
           {activeTab === 0 && (
             <div className="w-full max-w-[1400px]">
               <PageHeader
