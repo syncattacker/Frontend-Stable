@@ -507,9 +507,10 @@ export default withAuth(function SeasonStudio() {
   const [revealFlagModal, setRevealFlagModal] = useState(false);
   const [editingChallenge, setEditingChallenge] = useState(null);
   const [challengeLoading, setChallengeLoading] = useState(false);
-  // Local-session-only build tracker — there's no "list builds" endpoint,
-  // only get-by-id, so history resets on reload. Fine for a "just kicked
-  // this off, watch it finish" workflow.
+  // Populated from GET .../challenge-images on season load (fetchImageBuilds
+  // below) and appended to locally when a new build starts — history now
+  // survives a refresh instead of resetting to empty (bug report
+  // 2026-08-01: "once I build the image I cannot see it after refresh").
   const [imageBuilds, setImageBuilds] = useState([]);
   const [buildFile, setBuildFile] = useState(null);
   const [buildStarting, setBuildStarting] = useState(false);
@@ -964,6 +965,18 @@ export default withAuth(function SeasonStudio() {
     }
   };
 
+  const fetchImageBuilds = async (seasonSlug) => {
+    if (!seasonSlug) return;
+    try {
+      const response = await API.get(
+        `/api/v1/organizer/${seasonSlug}/challenge-images`,
+      );
+      setImageBuilds(response.data.data || []);
+    } catch (error) {
+      setImageBuilds([]);
+    }
+  };
+
   // Intentionally mount-only: fetchSeasons closes over slugFromUrl and
   // handleSeasonSelect (itself unmemoized and calling fetchChallenges), so
   // making it "correct" per exhaustive-deps would require memoizing that
@@ -997,6 +1010,7 @@ export default withAuth(function SeasonStudio() {
       slug: season.slug,
     });
     fetchChallenges(season.slug);
+    fetchImageBuilds(season.slug);
   };
 
   const updateWebhook = async () => {

@@ -151,6 +151,34 @@ const InstanceCountdown = ({ expiresAt }) => {
     </span>
   );
 };
+
+// Elapsed-time counter for the "Provisioning…" state, paired with the
+// backend's estimatedReadySeconds (season.instance.controller.js) so the
+// player sees real progress instead of an indefinite spinner — provisioning
+// normally takes 5-20s but can self-heal from a rare stuck job for up to
+// ~30s more, and an unexplained wait past a minute reads as broken even
+// when it's still working (bug report 2026-08-01).
+const ProvisioningElapsed = ({ launchedAt, estimatedSeconds }) => {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+  const elapsedSec = Math.max(
+    0,
+    Math.floor((now - new Date(launchedAt).getTime()) / 1000),
+  );
+  const estimate = estimatedSeconds || 30;
+  const runningLate = elapsedSec > estimate;
+  return (
+    <span>
+      {elapsedSec}s elapsed
+      {runningLate
+        ? " — taking longer than usual, still working on it"
+        : ` (usually ready in ~${estimate}s)`}
+    </span>
+  );
+};
 // ─── PART 2: State · Data fetching · Handlers · Hero ─────────────────────────
 
 export default withAuth(function SeasonCTF() {
@@ -508,6 +536,38 @@ export default withAuth(function SeasonCTF() {
     [slug],
   );
 
+  // Shared fallback poller for both launch and destroy — the socket events
+  // (instanceReady/instanceExpired) cover the common case, but both actions
+  // are asynchronous on the backend (queued for the orchestrator worker),
+  // so this is what keeps the UI honest if a socket event is ever missed,
+  // and — for destroy specifically — is the fix for a real bug (2026-08-01):
+  // optimistically marking an instance "destroyed" right after the request
+  // was ACCEPTED (not completed) let the Launch button reappear while the
+  // old instance was still genuinely active, and since only one active
+  // instance is allowed per challenge, clicking Launch again just returned
+  // that same old, about-to-die instance's stale URL instead of a new one.
+  const pollInstanceUntil = useCallback(
+    async (challengeSlug, isDone, { intervalMs = 2000, maxAttempts = 40 } = {}) => {
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        await new Promise((resolve) => setTimeout(resolve, intervalMs));
+        let current;
+        try {
+          const r = await API.get(
+            `/api/v1/seasons/${slug}/challenges/${challengeSlug}/instance/mine`,
+            { withCredentials: true },
+          );
+          current = r.data?.data?.instance || null;
+        } catch {
+          continue; // transient — keep polling rather than giving up on one blip
+        }
+        setInstances((prev) => ({ ...prev, [challengeSlug]: current }));
+        if (isDone(current)) return current;
+      }
+      return undefined; // gave up — caller's finally block still clears the action lock
+    },
+    [slug],
+  );
+
   const handleLaunchInstance = useCallback(
     async (challengeSlug) => {
       if (instanceActionSlug) return;
@@ -519,6 +579,12 @@ export default withAuth(function SeasonCTF() {
           { withCredentials: true },
         );
         setInstances((prev) => ({ ...prev, [challengeSlug]: r.data.data }));
+        if (r.data.data?.status === "pending") {
+          await pollInstanceUntil(
+            challengeSlug,
+            (inst) => !inst || inst.status !== "pending",
+          );
+        }
       } catch (err) {
         showToast(
           "error",
@@ -528,7 +594,7 @@ export default withAuth(function SeasonCTF() {
         setInstanceActionSlug(null);
       }
     },
-    [slug, instanceActionSlug],
+    [slug, instanceActionSlug, pollInstanceUntil],
   );
 
   const handleDestroyInstance = useCallback(
@@ -541,15 +607,15 @@ export default withAuth(function SeasonCTF() {
           {},
           { withCredentials: true },
         );
-        // Teardown is queued/async — reflect that immediately rather than
-        // leaving the old "running" state showing; the instanceExpired
-        // socket event (or a manual re-check) will confirm it's fully gone.
-        setInstances((prev) => ({
-          ...prev,
-          [challengeSlug]: prev[challengeSlug]
-            ? { ...prev[challengeSlug], status: "destroyed" }
-            : null,
-        }));
+        // Deliberately NOT setting local state to "destroyed" here — see the
+        // comment on pollInstanceUntil above. Wait for real confirmation;
+        // instanceActionSlug staying set keeps Launch/Destroy disabled with
+        // a spinner the whole time, which is the correct "still working on
+        // it" signal rather than a premature Launch button.
+        await pollInstanceUntil(challengeSlug, (inst) =>
+          !inst ||
+          ["destroyed", "expired", "crashed", "failed"].includes(inst.status),
+        );
       } catch (err) {
         showToast(
           "error",
@@ -559,7 +625,7 @@ export default withAuth(function SeasonCTF() {
         setInstanceActionSlug(null);
       }
     },
-    [slug, instanceActionSlug],
+    [slug, instanceActionSlug, pollInstanceUntil],
   );
 
   // Fetch the current instance state when a challenge that supports
@@ -1399,7 +1465,11 @@ export default withAuth(function SeasonCTF() {
                                       className="ctf-body text-[12px]"
                                       style={{ color: T.muted }}
                                     >
-                                      Provisioning your instance…
+                                      Provisioning your instance…{" "}
+                                      <ProvisioningElapsed
+                                        launchedAt={inst.launchedAt}
+                                        estimatedSeconds={inst.estimatedReadySeconds}
+                                      />
                                     </span>
                                   </div>
                                 )}
