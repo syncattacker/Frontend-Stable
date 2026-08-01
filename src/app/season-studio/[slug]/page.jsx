@@ -514,6 +514,8 @@ export default withAuth(function SeasonStudio() {
   const [buildFile, setBuildFile] = useState(null);
   const [buildStarting, setBuildStarting] = useState(false);
   const [buildChallengeId, setBuildChallengeId] = useState("");
+  const [linkSelections, setLinkSelections] = useState({});
+  const [linkingBuildId, setLinkingBuildId] = useState(null);
   const [publishingSeason, setPublishingSeason] = useState(false);
   const [deletingSeasonSlug, setDeletingSeasonSlug] = useState("");
   const [participantsError, setParticipantsError] = useState(null);
@@ -1178,6 +1180,34 @@ export default withAuth(function SeasonStudio() {
   const copyImageTag = (tag) => {
     navigator.clipboard?.writeText(tag);
     showToast("success", "Image tag copied");
+  };
+
+  // Attaches an already-succeeded, never-linked build to a challenge after
+  // the fact — for builds started without picking "Link to Challenge" up
+  // front. The backend only auto-wires instancing.image at build-success
+  // time for whatever challengeId was set at request time (immutable, can
+  // never be changed after); this hits the new post-hoc /link endpoint
+  // instead, then refetches so the challenge's edit form picks up the image
+  // immediately.
+  const handleLinkBuild = async (buildId) => {
+    const challengeId = linkSelections[buildId];
+    if (!selectedSeason || !challengeId) return;
+    setLinkingBuildId(buildId);
+    try {
+      await API.patch(
+        `/api/v1/organizer/${selectedSeason.slug}/challenge-images/${buildId}/link`,
+        { challengeId },
+      );
+      setImageBuilds((prev) =>
+        prev.map((b) => (b.buildId === buildId ? { ...b, challengeId } : b)),
+      );
+      showToast("success", "Image linked to challenge");
+      fetchChallenges(selectedSeason.slug);
+    } catch (error) {
+      showToast("error", error.response?.data?.detail || error.message);
+    } finally {
+      setLinkingBuildId(null);
+    }
   };
 
   const saveChallenge = async () => {
@@ -2147,7 +2177,7 @@ export default withAuth(function SeasonStudio() {
                   title="Select a season first"
                   desc="Go to Season Details to pick a season."
                 />
-              ) : challengeLoading ? (
+              ) : challengeLoading && challenges.length === 0 ? (
                 <LoadingState label="Loading challenges..." />
               ) : challenges.length === 0 ? (
                 <EmptyState
@@ -3330,59 +3360,101 @@ export default withAuth(function SeasonStudio() {
                     {imageBuilds.map((b) => (
                       <div
                         key={b.buildId}
-                        className="p-3 flex items-center justify-between gap-3"
+                        className="p-3"
                         style={{
                           border: `1px solid ${T.border}`,
                           borderRadius: "2px",
                         }}
                       >
-                        <div className="min-w-0">
-                          <p
-                            className="text-sm truncate"
-                            style={{ color: T.cream }}
-                          >
-                            {b.filename}
-                          </p>
-                          <p
-                            className="text-[10px] uppercase tracking-widest mt-0.5"
-                            style={{
-                              color:
-                                b.status === "succeeded"
-                                  ? "#34d399"
-                                  : b.status === "failed"
-                                    ? "#f87171"
-                                    : T.muted,
-                            }}
-                          >
-                            {b.status}
-                            {b.status === "failed" && b.error ? ` — ${b.error}` : ""}
-                          </p>
-                          {b.challengeId && (
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="min-w-0">
                             <p
-                              className="text-[10px] mt-0.5"
-                              style={{ color: T.muted }}
+                              className="text-sm truncate"
+                              style={{ color: T.cream }}
                             >
-                              Linked:{" "}
-                              {challenges.find((c) => c._id === b.challengeId)
-                                ?.name || b.challengeId}
+                              {b.filename}
                             </p>
+                            <p
+                              className="text-[10px] uppercase tracking-widest mt-0.5"
+                              style={{
+                                color:
+                                  b.status === "succeeded"
+                                    ? "#34d399"
+                                    : b.status === "failed"
+                                      ? "#f87171"
+                                      : T.muted,
+                              }}
+                            >
+                              {b.status}
+                              {b.status === "failed" && b.error ? ` — ${b.error}` : ""}
+                            </p>
+                            {b.challengeId && (
+                              <p
+                                className="text-[10px] mt-0.5"
+                                style={{ color: T.muted }}
+                              >
+                                Linked:{" "}
+                                {challenges.find((c) => c._id === b.challengeId)
+                                  ?.name || b.challengeId}
+                              </p>
+                            )}
+                          </div>
+                          {b.status === "succeeded" && b.imageTag && (
+                            <button
+                              type="button"
+                              onClick={() => copyImageTag(b.imageTag)}
+                              className="flex-shrink-0 px-3 py-1.5 text-[11px] font-bold transition-all"
+                              style={{
+                                border: `1px solid ${T.border}`,
+                                color: T.muted,
+                              }}
+                            >
+                              Copy Tag
+                            </button>
+                          )}
+                          {["pending", "building"].includes(b.status) && (
+                            <Spinner size={12} />
                           )}
                         </div>
-                        {b.status === "succeeded" && b.imageTag && (
-                          <button
-                            type="button"
-                            onClick={() => copyImageTag(b.imageTag)}
-                            className="flex-shrink-0 px-3 py-1.5 text-[11px] font-bold transition-all"
-                            style={{
-                              border: `1px solid ${T.border}`,
-                              color: T.muted,
-                            }}
-                          >
-                            Copy Tag
-                          </button>
-                        )}
-                        {["pending", "building"].includes(b.status) && (
-                          <Spinner size={12} />
+                        {b.status === "succeeded" && !b.challengeId && (
+                          <div className="flex items-center gap-2 mt-2.5">
+                            <div className="flex-1 min-w-0">
+                              <CustomSelect
+                                value={linkSelections[b.buildId] || ""}
+                                onChange={(val) =>
+                                  setLinkSelections((prev) => ({
+                                    ...prev,
+                                    [b.buildId]: val,
+                                  }))
+                                }
+                                disabled={linkingBuildId === b.buildId}
+                                placeholder="Link to a challenge…"
+                                options={challenges.map((c) => ({
+                                  value: c._id,
+                                  label: c.name,
+                                }))}
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleLinkBuild(b.buildId)}
+                              disabled={
+                                !linkSelections[b.buildId] ||
+                                linkingBuildId === b.buildId
+                              }
+                              className="flex-shrink-0 px-3 py-1.5 text-[11px] font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                              style={{
+                                border: `1px solid ${T.border}`,
+                                color: T.muted,
+                              }}
+                            >
+                              {linkingBuildId === b.buildId ? (
+                                <Spinner size={11} />
+                              ) : (
+                                "Link"
+                              )}
+                            </button>
+                          </div>
                         )}
                       </div>
                     ))}
