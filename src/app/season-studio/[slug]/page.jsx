@@ -517,6 +517,7 @@ export default withAuth(function SeasonStudio() {
   const [buildChallengeId, setBuildChallengeId] = useState("");
   const [linkSelections, setLinkSelections] = useState({});
   const [linkingBuildId, setLinkingBuildId] = useState(null);
+  const [deletingBuildId, setDeletingBuildId] = useState(null);
   const [publishingSeason, setPublishingSeason] = useState(false);
   const [deletingSeasonSlug, setDeletingSeasonSlug] = useState("");
   const [participantsError, setParticipantsError] = useState(null);
@@ -1221,6 +1222,25 @@ export default withAuth(function SeasonStudio() {
       showToast("error", error.response?.data?.detail || error.message);
     } finally {
       setLinkingBuildId(null);
+    }
+  };
+
+  const handleDeleteBuild = async (buildId) => {
+    if (!selectedSeason) return;
+    if (!window.confirm("Delete this build? This only removes the build record — it does not affect a challenge that's already using its image. This cannot be undone.")) {
+      return;
+    }
+    setDeletingBuildId(buildId);
+    try {
+      await API.delete(
+        `/api/v1/organizer/${selectedSeason.slug}/challenge-images/${buildId}`,
+      );
+      setImageBuilds((prev) => prev.filter((b) => b.buildId !== buildId));
+      showToast("success", "Build deleted");
+    } catch (error) {
+      showToast("error", error.response?.data?.detail || error.message);
+    } finally {
+      setDeletingBuildId(null);
     }
   };
 
@@ -3428,6 +3448,24 @@ export default withAuth(function SeasonStudio() {
                           )}
                           {["pending", "building"].includes(b.status) && (
                             <Spinner size={12} />
+                          )}
+                          {["succeeded", "failed"].includes(b.status) && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteBuild(b.buildId)}
+                              disabled={deletingBuildId === b.buildId}
+                              className="flex-shrink-0 px-3 py-1.5 text-[11px] font-bold transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                              style={{
+                                border: "1px solid rgba(239,68,68,0.3)",
+                                color: "rgba(239,68,68,0.75)",
+                              }}
+                            >
+                              {deletingBuildId === b.buildId ? (
+                                <Spinner size={11} />
+                              ) : (
+                                "Delete"
+                              )}
+                            </button>
                           )}
                         </div>
                         {b.status === "succeeded" && !b.challengeId && (
