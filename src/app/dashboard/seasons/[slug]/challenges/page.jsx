@@ -202,7 +202,7 @@ export default withAuth(function SeasonCTF() {
   const hasConnectedOnceRef = useRef(false);
   // Keyed by hintId. `deduction`/`openedAt` come from GET .../hints/mine on
   // load (cheap, no content). `content` only shows up once the open
-  // endpoint has actually been called this session — it's idempotent
+  // endpoint has actually been called this session - it's idempotent
   // (no re-deduction) so re-opening an already-opened hint is just how we
   // fetch its content again after a refresh.
   const [openedHints, setOpenedHints] = useState({});
@@ -300,7 +300,7 @@ export default withAuth(function SeasonCTF() {
         return next;
       });
     } catch {
-      // non-fatal — hint deductions just won't be reflected until retried
+      // non-fatal - hint deductions just won't be reflected until retried
     }
   }, [slug]);
 
@@ -479,7 +479,7 @@ export default withAuth(function SeasonCTF() {
     }
   }, [selectedChallenge, slug]);
 
-  // Opening an already-opened hint is idempotent (no re-deduction) — it's
+  // Opening an already-opened hint is idempotent (no re-deduction) - it's
   // also how we fetch a hint's content again after a page refresh, since
   // GET .../hints/mine only ever returns the deduction/openedAt, not content.
   const handleOpenHint = useCallback(
@@ -796,7 +796,7 @@ export default withAuth(function SeasonCTF() {
             </motion.button>
           </div>
 
-          {/* season name — Bebas only here */}
+          {/* season name - Bebas only here */}
           <motion.h1
             className="ctf-bebas text-center"
             style={{
@@ -1024,7 +1024,7 @@ export default withAuth(function SeasonCTF() {
                                 e.currentTarget.style.borderColor = T.border;
                             }}
                           >
-                            {/* top row — difficulty + category + solved icon */}
+                            {/* top row - difficulty + category + solved icon */}
                             <div className="flex items-start justify-between mb-3">
                               <div className="flex items-center gap-2 flex-wrap">
                                 <span

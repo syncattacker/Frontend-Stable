@@ -70,7 +70,7 @@ export default function CookiesPage() {
                 style={{ color: T.muted }}
               >
                 We use cookies exclusively to keep gopwnit working and secure. No
-                advertising networks, no cross-site trackers, no behavioral profiling —
+                advertising networks, no cross-site trackers, no behavioral profiling -
                 consistent with the{" "}
                 <Link href="/privacy-policy" className="underline decoration-white/20 hover:text-yellow-50">
                   full Privacy Policy

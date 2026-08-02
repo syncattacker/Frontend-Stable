@@ -21,10 +21,10 @@ const T = {
 };
 
 const ONE_LINER =
-  "gopwnit is a cybersecurity skills platform where individuals learn offensive security through hands-on labs and CTF competitions, and organizations host their own CTF events — built and hosted in India.";
+  "gopwnit is a cybersecurity skills platform where individuals learn offensive security through hands-on labs and CTF competitions, and organizations host their own CTF events - built and hosted in India.";
 
 const BOILERPLATE =
-  "gopwnit is operated by GOPWNIT, a partnership firm based in India. The platform combines hands-on hacking labs, ten categories of CTF challenges, and structured learning paths for individual users, alongside hosting infrastructure — team management, live leaderboards, and Discord integration — for organizations running their own competitions. gopwnit has hosted two live CTF events, GLAU Mock CTF and Pentest Showdown, with 300+ participants each.";
+  "gopwnit is operated by GOPWNIT, a partnership firm based in India. The platform combines hands-on hacking labs, ten categories of CTF challenges, and structured learning paths for individual users, alongside hosting infrastructure - team management, live leaderboards, and Discord integration - for organizations running their own competitions. gopwnit has hosted two live CTF events, GLAU Mock CTF and Pentest Showdown, with 300+ participants each.";
 
 const FOUNDERS = [
   { name: "Abhishek Soni", role: "Founder", image: abhishek },

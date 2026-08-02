@@ -100,7 +100,7 @@ const UnderlineInput = ({ label, error, right, ...props }) => (
   </div>
 );
 
-/* ─── Card shell — shared between all screens ───────────────────────── */
+/* ─── Card shell - shared between all screens ───────────────────────── */
 const Card = ({ children }) => (
   <motion.div
     initial={{ opacity: 0, y: 20 }}

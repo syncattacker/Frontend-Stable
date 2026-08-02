@@ -15,7 +15,7 @@ const TOKENS = {
   border: "rgba(255, 255, 255, 0.07)",
   borderFocus: "rgba(232, 228, 217, 0.2)",
   textPrimary: "#E8E4D9",
-  textMuted: "#6b6b6b",
+  textMuted: "#a3a3a3",
   bgDeep: "#0A0A0A",
 };
 
@@ -170,6 +170,7 @@ const Navbar = () => {
         {/* Hamburger — Mobile */}
         <motion.button
           className="lg:hidden"
+          aria-label="Toggle navigation menu"
           variants={itemVariants}
           initial="rest"
           whileHover="hover"

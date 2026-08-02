@@ -379,7 +379,7 @@ function renderModalContent(sectionId) {
             />
             <GuidelineCard
               title="Scope Boundaries"
-              description="Stay within challenge scope — attack only designated targets, never platform infrastructure."
+              description="Stay within challenge scope - attack only designated targets, never platform infrastructure."
               icon={IconTarget}
             />
             <GuidelineCard
@@ -580,7 +580,7 @@ function renderModalContent(sectionId) {
                 {[
                   "Detailed description of the incident",
                   "Involved usernames or IDs",
-                  "Proof of violation — screenshots or logs",
+                  "Proof of violation - screenshots or logs",
                 ].map((item, i) => (
                   <li
                     key={i}
@@ -736,7 +736,7 @@ export default function CodeOfConduct() {
     >
       <Navbar />
 
-      {/* Background — untouched */}
+      {/* Background - untouched */}
       <div style={{ position: "fixed", inset: 0, zIndex: 0 }}>
         <AnimatedBlurBg />
       </div>

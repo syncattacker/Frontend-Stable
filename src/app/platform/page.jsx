@@ -37,6 +37,21 @@ const ROADMAP = [
 
 const ORGANIZER_ROLES = ["Admin", "Challenge Manager", "Moderator", "Viewer"];
 
+const PLATFORM_JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "gopwnit Platform",
+  "applicationCategory": "EducationalApplication",
+  "operatingSystem": "Web",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "INR"
+  },
+  "description": "Interactive hacking labs, CTF challenges across 10 categories, and complete infrastructure to host your own cybersecurity competitions.",
+  "url": "https://gopwnit.com/platform"
+};
+
 const fadeUp = {
   hidden: { opacity: 0, y: 18 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
@@ -67,6 +82,7 @@ function SectionHead({ eyebrow, title, sub }) {
 export default function PlatformPage() {
   return (
     <div className="flex flex-col min-h-screen" style={{ background: T.bg, color: T.cream }}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(PLATFORM_JSON_LD) }} />
       <Navbar />
 
       <div className="fixed inset-0 z-0">
@@ -99,16 +115,16 @@ export default function PlatformPage() {
         <section className="px-7 py-14 border-t" style={{ borderColor: T.border }}>
           <div className="max-w-5xl mx-auto">
             <SectionHead
-              eyebrow="01 — Practice"
+              eyebrow="01 - Practice"
               title="Interactive Hacking Labs"
-              sub="Contained, safe environments to practice real vulnerabilities — available any time, not just during a live event."
+              sub="Contained, safe environments to practice real vulnerabilities - available any time, not just during a live event."
             />
             <div className="flex items-center gap-4 p-6 border" style={{ borderColor: T.border, background: "rgba(254,252,232,0.02)" }}>
               <div className="w-11 h-11 flex items-center justify-center border flex-shrink-0" style={{ borderColor: "rgba(254,252,232,0.1)", background: "rgba(254,252,232,0.04)" }}>
                 <IconTerminal2 size={18} color={T.cream} style={{ opacity: 0.6 }} />
               </div>
               <p className="font-outfit text-[13.5px] leading-relaxed" style={{ color: T.muted }}>
-                Labs are ongoing — solve at your own pace, revisit them anytime,
+                Labs are ongoing - solve at your own pace, revisit them anytime,
                 and use them to build the fundamentals the roadmap below builds on.
               </p>
             </div>
@@ -119,7 +135,7 @@ export default function PlatformPage() {
         <section className="px-7 py-14 border-t" style={{ borderColor: T.border }}>
           <div className="max-w-5xl mx-auto">
             <SectionHead
-              eyebrow="02 — Compete"
+              eyebrow="02 - Compete"
               title="CTF Challenges, Ten Categories Deep"
               sub="Every challenge on gopwnit falls into one of ten categories, spanning the full breadth of offensive security."
             />
@@ -149,7 +165,7 @@ export default function PlatformPage() {
         <section className="px-7 py-14 border-t" style={{ borderColor: T.border }}>
           <div className="max-w-5xl mx-auto">
             <SectionHead
-              eyebrow="03 — Learn"
+              eyebrow="03 - Learn"
               title="A Structured Learning Path"
               sub="Not sure where to start? The path runs from Linux basics to Active Directory exploitation."
             />
@@ -171,7 +187,7 @@ export default function PlatformPage() {
         <section className="px-7 py-14 border-t" style={{ borderColor: T.border }}>
           <div className="max-w-5xl mx-auto">
             <SectionHead
-              eyebrow="04 — Track"
+              eyebrow="04 - Track"
               title="Live, Skill-Based Ranking"
               sub="Solve a challenge, watch your score move. Leaderboards run separately for solo and team competitions within each season."
             />
@@ -181,7 +197,7 @@ export default function PlatformPage() {
               </div>
               <p className="font-outfit text-[13.5px] leading-relaxed" style={{ color: T.muted }}>
                 Points are set by challenge difficulty and added to your score the
-                moment you solve — no waiting for a manual grade or a batch update.
+                moment you solve - no waiting for a manual grade or a batch update.
               </p>
             </div>
           </div>
@@ -191,9 +207,9 @@ export default function PlatformPage() {
         <section className="px-7 py-14 border-t" style={{ borderColor: T.border }}>
           <div className="max-w-5xl mx-auto">
             <SectionHead
-              eyebrow="05 — Host"
+              eyebrow="05 - Host"
               title="Tools To Run Your Own Event"
-              sub="Any college, club, or company can host a CTF season on gopwnit — the infrastructure is already built."
+              sub="Any college, club, or company can host a CTF season on gopwnit - the infrastructure is already built."
             />
             <div className="grid sm:grid-cols-2 gap-3 mb-6">
               <div className="p-6 border" style={{ borderColor: T.border, background: "rgba(254,252,232,0.02)" }}>
@@ -219,7 +235,7 @@ export default function PlatformPage() {
                 <h3 className="font-outfit text-[13px] font-bold mb-2" style={{ color: T.cream }}>Reviewed before launch</h3>
                 <p className="font-outfit text-[12.5px] leading-relaxed" style={{ color: T.muted }}>
                   Every hosted season is reviewed by our team before it goes public
-                  or opens for registration — quality control, not a rubber stamp.
+                  or opens for registration - quality control, not a rubber stamp.
                 </p>
               </div>
             </div>

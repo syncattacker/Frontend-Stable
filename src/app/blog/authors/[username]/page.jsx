@@ -30,7 +30,7 @@ export async function generateMetadata({ params }) {
   if (!profile) return { title: "Author Not Found" };
 
   return {
-    title: `${profile.user.username} — Author`,
+    title: `${profile.user.username} - Author`,
     description: `Articles by ${profile.user.username} on gopwnit.`,
   };
 }

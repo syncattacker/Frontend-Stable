@@ -46,7 +46,7 @@ export default async function BlogPage() {
             {posts.length === 0 ? (
               <div className="p-10 border text-center" style={{ borderColor: T.border, background: "rgba(254,252,232,0.02)" }}>
                 <p className="font-outfit text-[14px]" style={{ color: T.muted }}>
-                  No articles published yet — check back soon, or follow our{" "}
+                  No articles published yet - check back soon, or follow our{" "}
                   <a href="https://discord.gg/4Mb6xXce8q" target="_blank" rel="noopener noreferrer" className="underline decoration-white/20 hover:text-yellow-50" style={{ color: T.cream }}>
                     Discord
                   </a>{" "}

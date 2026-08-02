@@ -465,7 +465,7 @@ export default function SupportPage() {
           gap: 12,
         }}>
           <span className="sp-body" style={{ fontSize: 11, color: "rgba(254,252,232,0.2)" }}>
-            © 2026 gopwnit — Support Documentation
+            © 2026 gopwnit - Support Documentation
           </span>
           <div style={{ display: "flex", gap: 20 }}>
             <Link href="/privacy-policy" className="sp-link">Privacy Policy</Link>

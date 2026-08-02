@@ -762,7 +762,7 @@ export default function PrivacyPolicy() {
     <div className="pp-body flex flex-col min-h-screen bg-[#0A0A0A] text-yellow-50">
       <Navbar />
 
-      {/* Background — untouched */}
+      {/* Background - untouched */}
       <div className="fixed inset-0 z-0">
         <AnimatedBlurBg />
       </div>
@@ -777,7 +777,7 @@ export default function PrivacyPolicy() {
               transition={{ duration: 0.5 }}
               className="space-y-5"
             >
-              {/* Main heading — Bebas only here */}
+              {/* Main heading - Bebas only here */}
               <h1 className="pp-bebas text-[clamp(52px,9vw,96px)] text-yellow-50 leading-[0.92]">
                 PRIVACY
                 <br />

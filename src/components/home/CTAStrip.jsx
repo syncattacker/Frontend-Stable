@@ -10,7 +10,7 @@ const TOKENS = {
   bgDeep: "#0A0A0A",
   border: "rgba(255, 255, 255, 0.07)",
   textPrimary: "#E8E4D9",
-  textMuted: "#6b6b6b",
+  textMuted: "#a3a3a3",
 };
 
 const AuxButton = ({ children, primary = true, onClick }) => (

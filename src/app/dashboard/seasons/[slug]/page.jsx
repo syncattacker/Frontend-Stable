@@ -330,7 +330,7 @@ const SeasonCtfRegis = () => {
   const rules =
     ctfData.type === "solo"
       ? [
-          "Individual participation only — no team collaboration allowed",
+          "Individual participation only - no team collaboration allowed",
           "All challenges must be solved ethically and within the platform",
           "Sharing solutions or hints with other participants is prohibited",
           "Any attempt to attack the infrastructure will result in disqualification",
@@ -339,7 +339,7 @@ const SeasonCtfRegis = () => {
         ]
       : ctfData.type === "team"
         ? [
-            "Team participation required — collaborate only with your registered team members",
+            "Team participation required - collaborate only with your registered team members",
             "All challenges must be solved ethically and within the platform",
             "Sharing solutions or hints with other teams is prohibited",
             "Any attempt to attack the infrastructure will result in disqualification",
@@ -465,7 +465,7 @@ const SeasonCtfRegis = () => {
                     <span className="text-[#a1a1aa] font-semibold mr-2">
                       Timezone:
                     </span>
-                    {timezone} — All times reflect your local environment.
+                    {timezone} - All times reflect your local environment.
                   </p>
                 </div>
               </div>

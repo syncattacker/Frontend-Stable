@@ -252,7 +252,7 @@ export default function AboutPage() {
           >
             gopwnit is a cybersecurity skills platform where individuals learn offensive
             security through hands-on labs and CTF competitions, and organizations host
-            their own CTF events — built and hosted in India.
+            their own CTF events - built and hosted in India.
           </motion.p>
         </header>
 
@@ -279,13 +279,13 @@ export default function AboutPage() {
           </span>
           <p className="text-xl sm:text-2xl leading-relaxed font-light font-outfit" style={{ color: "rgba(254,252,232,0.85)" }}>
             We&rsquo;re building the most realistic and hands-on offensive security
-            platform we can — one that teaches real-world skills through immersive
+            platform we can - one that teaches real-world skills through immersive
             labs, competitive CTF challenges, and a community-driven learning
             environment, rather than theory alone.
           </p>
           <p className="text-base leading-relaxed mt-5 font-outfit" style={{ color: T.muted }}>
             gopwnit also gives colleges, clubs, and companies the infrastructure to
-            host their own CTF events — team management, live leaderboards, and
+            host their own CTF events - team management, live leaderboards, and
             challenge hosting, without building it themselves.{" "}
             <Link href="/host-a-ctf" className="underline decoration-white/20 hover:text-yellow-50" style={{ color: T.cream }}>
               See how hosting works

@@ -32,7 +32,7 @@ const TOKENS = {
   border: "rgba(255, 255, 255, 0.07)",
   borderFocus: "rgba(232, 228, 217, 0.2)",
   textPrimary: "#E8E4D9",
-  textMuted: "#6b6b6b",  
+  textMuted: "#a3a3a3",  
 };
 
 const ROADMAP = [
@@ -143,9 +143,9 @@ const SectionMarker = ({ number, title, align = "left" }) => (
       {number}
     </div>
     <div className="h-px w-12" style={{ background: "rgba(255,255,255,0.12)" }}></div>
-    <h3 className="text-sm font-bold tracking-[0.2em] uppercase font-outfit" style={{ color: TOKENS.textMuted }}>
+    <div className="text-sm font-bold tracking-[0.2em] uppercase font-outfit" style={{ color: TOKENS.textMuted }}>
       {title}
-    </h3>
+    </div>
   </div>
 );
 
@@ -357,12 +357,11 @@ export default function Landing() {
               className="text-base md:text-lg font-medium leading-relaxed max-w-xl mx-auto mb-12"
               style={{ color: TOKENS.textMuted }}
             >
-              Practice real vulnerabilities in hands-on labs, compete in live CTF
-              competitions, and{" "}
+              Whether you need CTF for beginners or advanced challenges, practice real vulnerabilities in hands-on hacking labs, compete in live competitions, and{" "}
               <Link href="/host-a-ctf" className="underline decoration-white/20 hover:text-white transition-colors" style={{ color: TOKENS.textPrimary }}>
                 host your own event
               </Link>
-              {" "}— the platform where offensive security skills are built, not just studied.
+              {" "}- your modern alternative to OverTheWire and HackTheBox where offensive security skills are built, not just studied.
             </motion.p>
 
             <motion.div
@@ -521,7 +520,7 @@ export default function Landing() {
                 <Image src={abhishek} alt="Abhishek Soni" fill className="object-cover" />
               </div>
               <div>
-                <h5 className="font-bold font-outfit" style={{ color: TOKENS.textPrimary }}>Abhishek Soni</h5>
+                <h3 className="font-bold font-outfit" style={{ color: TOKENS.textPrimary }}>Abhishek Soni</h3>
                 <p className="text-xs uppercase tracking-widest font-outfit" style={{ color: TOKENS.textMuted }}>
                   Founder, gopwnit
                 </p>
@@ -563,12 +562,12 @@ export default function Landing() {
                 className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8"
                 style={{ background: "linear-gradient(to top, rgba(10,10,10,0.9), transparent)" }}
               >
-                <h4
+                <h3
                   className="text-2xl font-black font-outfit uppercase"
                   style={{ color: TOKENS.textPrimary }}
                 >
                   GLAU - Mock CTF
-                </h4>
+                </h3>
                 <p className="text-sm" style={{ color: TOKENS.textMuted }}>
                   22nd January, 2026
                 </p>
@@ -591,12 +590,12 @@ export default function Landing() {
                 className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-8"
                 style={{ background: "linear-gradient(to top, rgba(10,10,10,0.9), transparent)" }}
               >
-                <h4
+                <h3
                   className="text-2xl font-black font-outfit uppercase"
                   style={{ color: TOKENS.textPrimary }}
                 >
                   Pentest Showdown
-                </h4>
+                </h3>
                 <p className="text-sm" style={{ color: TOKENS.textMuted }}>
                   30th January, 2026
                 </p>

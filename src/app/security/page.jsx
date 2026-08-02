@@ -33,7 +33,7 @@ const PRACTICES = [
   {
     icon: IconLock,
     title: "Encrypted Credentials",
-    desc: "Passwords are encrypted in transit and hashed before storage — we never store or transmit them as plain text.",
+    desc: "Passwords are encrypted in transit and hashed before storage - we never store or transmit them as plain text.",
   },
   {
     icon: IconFlag,
@@ -43,7 +43,7 @@ const PRACTICES = [
   {
     icon: IconGauge,
     title: "Rate Limiting",
-    desc: "Every sensitive action — login, signup, flag submission, password reset — has its own rate limit to slow down abuse and brute-force attempts.",
+    desc: "Every sensitive action - login, signup, flag submission, password reset - has its own rate limit to slow down abuse and brute-force attempts.",
   },
   {
     icon: IconUsersGroup,
@@ -153,7 +153,7 @@ export default function SecurityPage() {
                   Found a vulnerability?
                 </h3>
                 <p className="font-outfit text-[13px] leading-relaxed max-w-md" style={{ color: T.muted }}>
-                  We run a coordinated disclosure process — report it responsibly and
+                  We run a coordinated disclosure process - report it responsibly and
                   we&rsquo;ll work with you on it. See{" "}
                   <a href="/.well-known/security.txt" className="underline decoration-white/20 hover:text-yellow-50" style={{ color: T.cream }}>
                     security.txt

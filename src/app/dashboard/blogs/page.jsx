@@ -255,7 +255,7 @@ export default function KnowledgeBasePage() {
                     lineHeight: 1,
                   }}
                 >
-                  {isLoading ? "—" : pagination.total}
+                  {isLoading ? "-" : pagination.total}
                 </p>
               </div>
 
@@ -347,7 +347,7 @@ export default function KnowledgeBasePage() {
                   }}
                 >
                   {isLoading
-                    ? "—"
+                    ? "-"
                     : `${displayedArticles.length} / ${pagination.total}`}
                 </p>
               </div>
@@ -571,7 +571,7 @@ export default function KnowledgeBasePage() {
                 </p>
               </div>
 
-              {/* Sidebar content — sticky */}
+              {/* Sidebar content - sticky */}
               <div style={{ position: "sticky", top: "100px" }}>
                 <KnowledgeBaseSidebar />
               </div>
@@ -624,7 +624,7 @@ function ArticleCardWrapper({ article, index, total }) {
         flexDirection: "column",
       }}
     >
-      {/* Numbered index (top-right) — like "01", "02" in screenshot */}
+      {/* Numbered index (top-right) - like "01", "02" in screenshot */}
       <span
         style={{
           position: "absolute",
