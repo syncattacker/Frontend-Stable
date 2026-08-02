@@ -4,7 +4,12 @@ import React from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
-import { IconCalendarEvent, IconUsers, IconArrowRight, IconBrandDiscord } from "@tabler/icons-react";
+import {
+  IconCalendarEvent,
+  IconUsers,
+  IconArrowRight,
+  IconBrandDiscord,
+} from "@tabler/icons-react";
 import Navbar from "@/components/navbar/Navbar";
 import Footer from "@/components/footer/Footer";
 import AnimatedBlurBg from "@/components/home/AnimatedBlurBg";
@@ -55,7 +60,11 @@ const EVENTS_JSON_LD = PAST_EVENTS.map((ev) => ({
 
 const fadeUp = {
   hidden: { opacity: 0, y: 18 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
+  },
 };
 const stagger = {
   hidden: { opacity: 0 },
@@ -64,9 +73,16 @@ const stagger = {
 
 export default function EventsPage() {
   return (
-    <div className="flex flex-col min-h-screen" style={{ background: T.bg, color: T.cream }}>
+    <div
+      className="flex flex-col min-h-screen"
+      style={{ background: T.bg, color: T.cream }}
+    >
       {EVENTS_JSON_LD.map((ev, i) => (
-        <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ev) }} />
+        <script
+          key={i}
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(ev) }}
+        />
       ))}
       <Navbar />
 
@@ -79,17 +95,35 @@ export default function EventsPage() {
         <section className="px-7 py-16 md:py-20">
           <div className="max-w-3xl mx-auto">
             <motion.div initial="hidden" animate="visible" variants={stagger}>
-              <motion.p variants={fadeUp} className="font-outfit text-[11px] font-bold uppercase tracking-[0.3em] mb-5" style={{ color: T.muted }}>
+              <motion.p
+                variants={fadeUp}
+                className="font-outfit text-[11px] font-bold uppercase tracking-[0.3em] mb-5"
+                style={{ color: T.muted }}
+              >
                 Capture The Flag Schedule
               </motion.p>
               <motion.h1
                 variants={fadeUp}
-                style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "clamp(48px, 8vw, 80px)", lineHeight: 0.95, color: T.cream }}
+                style={{
+                  fontFamily: "'Bebas Neue', sans-serif",
+                  fontSize: "clamp(48px, 8vw, 80px)",
+                  lineHeight: 0.95,
+                  color: T.cream,
+                }}
               >
-                LIVE CTF<br />COMPETITIONS.
+                LIVE CTF
+                <br />
+                COMPETITIONS.
               </motion.h1>
-              <motion.p variants={fadeUp} className="font-outfit text-[15px] leading-relaxed max-w-lg mt-5" style={{ color: T.muted }}>
-                Looking for upcoming CTF events to test your ethical hacking skills? Track the latest competitions we've run, and the ones being planned - your modern alternative to CTFTime. Join our Discord for first word on what's next.
+              <motion.p
+                variants={fadeUp}
+                className="font-outfit text-[15px] leading-relaxed max-w-lg mt-5"
+                style={{ color: T.muted }}
+              >
+                Looking for upcoming CTF events to test your ethical hacking
+                skills? Track the latest competitions we&apos;ve run, and the
+                ones being planned - your modern alternative to CTFTime. Join
+                our Discord for first word on what&apos;s next.
               </motion.p>
             </motion.div>
           </div>
@@ -98,7 +132,10 @@ export default function EventsPage() {
         {/* Past events */}
         <section className="px-7 pb-14">
           <div className="max-w-5xl mx-auto">
-            <span className="font-outfit text-[10px] font-bold uppercase tracking-[0.3em] block mb-8" style={{ color: T.muted }}>
+            <span
+              className="font-outfit text-[10px] font-bold uppercase tracking-[0.3em] block mb-8"
+              style={{ color: T.muted }}
+            >
               Past Events
             </span>
             <motion.div
@@ -109,20 +146,50 @@ export default function EventsPage() {
               className="grid sm:grid-cols-2 gap-3"
             >
               {PAST_EVENTS.map((ev) => (
-                <motion.div key={ev.name} variants={fadeUp} className="border overflow-hidden" style={{ borderColor: T.border }}>
+                <motion.div
+                  key={ev.name}
+                  variants={fadeUp}
+                  className="border overflow-hidden"
+                  style={{ borderColor: T.border }}
+                >
                   <div className="relative h-56">
-                    <Image src={ev.image} alt={`${ev.name} CTF competition on gopwnit, ${ev.date}`} fill className="object-cover grayscale" />
+                    <Image
+                      src={ev.image}
+                      alt={`${ev.name} CTF competition on gopwnit, ${ev.date}`}
+                      fill
+                      className="object-cover grayscale"
+                    />
                   </div>
                   <div className="p-6">
                     <div className="flex items-center gap-3 mb-3">
                       <IconCalendarEvent size={13} style={{ color: T.muted }} />
-                      <span className="font-outfit text-[11px]" style={{ color: T.muted }}>{ev.date}</span>
+                      <span
+                        className="font-outfit text-[11px]"
+                        style={{ color: T.muted }}
+                      >
+                        {ev.date}
+                      </span>
                     </div>
-                    <h3 className="font-outfit text-xl font-black uppercase mb-2" style={{ color: T.cream }}>{ev.name}</h3>
-                    <p className="font-outfit text-[13px] leading-relaxed mb-4" style={{ color: T.muted }}>{ev.desc}</p>
+                    <h3
+                      className="font-outfit text-xl font-black uppercase mb-2"
+                      style={{ color: T.cream }}
+                    >
+                      {ev.name}
+                    </h3>
+                    <p
+                      className="font-outfit text-[13px] leading-relaxed mb-4"
+                      style={{ color: T.muted }}
+                    >
+                      {ev.desc}
+                    </p>
                     <div className="flex items-center gap-2">
                       <IconUsers size={13} style={{ color: T.muted }} />
-                      <span className="font-outfit text-[11px] uppercase tracking-widest" style={{ color: T.muted }}>{ev.participants} · {ev.format}</span>
+                      <span
+                        className="font-outfit text-[11px] uppercase tracking-widest"
+                        style={{ color: T.muted }}
+                      >
+                        {ev.participants} · {ev.format}
+                      </span>
                     </div>
                   </div>
                 </motion.div>
@@ -132,21 +199,51 @@ export default function EventsPage() {
         </section>
 
         {/* Upcoming - honest, no invented dates */}
-        <section className="px-7 py-14 border-t" style={{ borderColor: T.border }}>
+        <section
+          className="px-7 py-14 border-t"
+          style={{ borderColor: T.border }}
+        >
           <div className="max-w-5xl mx-auto">
-            <span className="font-outfit text-[10px] font-bold uppercase tracking-[0.3em] block mb-8" style={{ color: T.muted }}>
+            <span
+              className="font-outfit text-[10px] font-bold uppercase tracking-[0.3em] block mb-8"
+              style={{ color: T.muted }}
+            >
               What&rsquo;s Next
             </span>
-            <div className="flex flex-col md:flex-row md:items-center gap-6 justify-between p-8 md:p-10 border" style={{ borderColor: T.border, background: "rgba(254,252,232,0.02)" }}>
+            <div
+              className="flex flex-col md:flex-row md:items-center gap-6 justify-between p-8 md:p-10 border"
+              style={{
+                borderColor: T.border,
+                background: "rgba(254,252,232,0.02)",
+              }}
+            >
               <div className="flex items-start gap-4">
-                <div className="w-11 h-11 flex items-center justify-center border flex-shrink-0" style={{ borderColor: "rgba(254,252,232,0.1)", background: "rgba(254,252,232,0.04)" }}>
-                  <IconBrandDiscord size={18} color={T.cream} style={{ opacity: 0.6 }} />
+                <div
+                  className="w-11 h-11 flex items-center justify-center border flex-shrink-0"
+                  style={{
+                    borderColor: "rgba(254,252,232,0.1)",
+                    background: "rgba(254,252,232,0.04)",
+                  }}
+                >
+                  <IconBrandDiscord
+                    size={18}
+                    color={T.cream}
+                    style={{ opacity: 0.6 }}
+                  />
                 </div>
                 <div>
-                  <h3 className="font-outfit text-[16px] font-bold mb-2" style={{ color: T.cream }}>More events are being planned</h3>
-                  <p className="font-outfit text-[13px] leading-relaxed max-w-md" style={{ color: T.muted }}>
-                    We announce new seasons in our Discord first - join to be first
-                    in line for registration.
+                  <h3
+                    className="font-outfit text-[16px] font-bold mb-2"
+                    style={{ color: T.cream }}
+                  >
+                    More events are being planned
+                  </h3>
+                  <p
+                    className="font-outfit text-[13px] leading-relaxed max-w-md"
+                    style={{ color: T.muted }}
+                  >
+                    We announce new seasons in our Discord first - join to be
+                    first in line for registration.
                   </p>
                 </div>
               </div>
@@ -160,9 +257,16 @@ export default function EventsPage() {
                 Join Discord
               </a>
             </div>
-            <p className="font-outfit text-[13px] text-center mt-8 max-w-3xl mx-auto" style={{ color: T.muted }}>
+            <p
+              className="font-outfit text-[13px] text-center mt-8 max-w-3xl mx-auto"
+              style={{ color: T.muted }}
+            >
               Want to host your own?{" "}
-              <Link href="/host-a-ctf" className="underline decoration-white/20 hover:text-yellow-50" style={{ color: T.cream }}>
+              <Link
+                href="/host-a-ctf"
+                className="underline decoration-white/20 hover:text-yellow-50"
+                style={{ color: T.cream }}
+              >
                 See how hosting works
               </Link>
               .
