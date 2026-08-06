@@ -237,7 +237,9 @@ export default function Login({ isOpen, onClose, onSignUpClick }) {
 
       setTimeout(() => {
         onClose();
-        router.push("/dashboard/seasons");
+        const redirectUrl = localStorage.getItem("postLoginRedirect") || "/dashboard/seasons";
+        localStorage.removeItem("postLoginRedirect");
+        router.push(redirectUrl);
         setIsLoggingIn(false);
       }, 500);
     } catch (error) {
