@@ -13,6 +13,7 @@ const CSP = [
 /** @type {import('next').NextConfig} */
 
 const nextConfig = {
+  allowedDevOrigins: ["https://gopwnit.com", "https://*.gopwnit.com"],
   async redirects() {
     return [{ source: "/reviewboard", destination: "/about", permanent: true }];
   },
