@@ -19,6 +19,7 @@ import photo from "@/img/purple.svg";
 import Footer from "@/components/footer/Footer";
 import API from "@/utils/axios";
 import { showToast } from "@/utils/toast.jsx";
+import forge from "node-forge";
 
 const T = {
   bg:          "#111113",
@@ -243,12 +244,24 @@ function ResetPasswordContent() {
     setConfirmPasswordError(""); return true;
   };
 
+  const encryptPassword = (pw, publicKey) => {
+    const rsa = forge.pki.publicKeyFromPem(publicKey);
+    const encrypted = rsa.encrypt(pw, "RSA-OAEP", {
+      md: forge.md.sha256.create(),
+    });
+    return forge.util.encode64(encrypted);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validatePassword() | !validateConfirmPassword()) return;
     setIsLoading(true);
     try {
-      const res = await API.post("/auth/reset-password", { token, password, confirmPassword });
+      const res = await API.post("/auth/reset-password", {
+        token,
+        encryptedPassword: encryptPassword(password, process.env.NEXT_PUBLIC_KEY),
+        confirmEncryptedPassword: encryptPassword(confirmPassword, process.env.NEXT_PUBLIC_KEY),
+      });
       const msg = res.data.data.message || "Password reset successfully!";
       showToast("success", msg);
       setResetStatus("success");
