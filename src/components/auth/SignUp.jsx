@@ -196,18 +196,21 @@ export default function SignUp({
     }
   };
 
-  const checkUsernameAvailability = async (uname) => {
+  const checkUsernameAvailability = async (uname, signal) => {
     setUsernameChecking(true);
     try {
       const response = await API.get(
         `${process.env.NEXT_PUBLIC_AUTH_USERNAME_CHECK}`,
-        { params: { username: uname } },
+        { params: { username: uname }, signal },
       );
       setUsernameAvailable(!!response.data?.data?.isAvailable);
-    } catch {
+    } catch (error) {
+      if (error.name === "CanceledError") return;
       setUsernameAvailable(false);
     } finally {
-      setUsernameChecking(false);
+      if (!signal?.aborted) {
+        setUsernameChecking(false);
+      }
     }
   };
 
@@ -224,11 +227,15 @@ export default function SignUp({
       queueMicrotask(() => setUsernameAvailable(null));
       return;
     }
+    const controller = new AbortController();
     const t = setTimeout(
-      () => checkUsernameAvailability(username.toLowerCase()),
+      () => checkUsernameAvailability(username.toLowerCase(), controller.signal),
       200,
     );
-    return () => clearTimeout(t);
+    return () => {
+      clearTimeout(t);
+      controller.abort();
+    };
   }, [username]);
 
   useEffect(() => {
